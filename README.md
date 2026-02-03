@@ -11,19 +11,7 @@ Ralph is an autonomous development loop system that uses **Aider** with support 
 
 ## Quick Start
 
-To add Ralph to your existing project, copy the entire `ralph` directory into your repo:
-
-```bash
-cp -r path/to/ralph your-project/
-```
-
-Or if you are starting from this repo, clone and copy:
-
-```bash
-git clone https://github.com/danielsinewe/ralph-cursor.git
-cp -r ralph-cursor your-project/ralph
-```
-
+Clone or copy this repo, then:
 
 ```bash
 # 1. Run setup (one-time)
@@ -35,18 +23,19 @@ cp -r ralph-cursor your-project/ralph
 # 3. Edit your PRD
 code projects/my-feature/prd.md
 
-# 4. Convert PRD to JSON tasks
+# 4. Convert PRD to JSON tasks (Aider + your chosen model)
 ./convert.sh my-feature
+# Or with model: ./convert.sh my-feature --model local
 
 # 5. Start the loop (with tmux monitoring)
-# Claude mode (default):
+# Claude mode (default; requires ANTHROPIC_API_KEY):
 ./start.sh my-feature --monitor
 
-# Local mode:
-RALPH_MODE=local ./start.sh my-feature --monitor
+# Local mode (Ollama; script auto-starts Ollama and pulls model if needed):
+./start.sh my-feature --model local
 
-# Hybrid mode:
-RALPH_MODE=hybrid ./start.sh my-feature --monitor
+# Hybrid mode (Claude for priority 1–5, local for rest):
+./start.sh my-feature --model hybrid
 ```
 
 ## Prerequisites
@@ -108,18 +97,16 @@ export ANTHROPIC_API_KEY='sk-ant-...'
 Free, privacy-preserving development with local models.
 
 ```bash
-# Start Ollama server
-ollama serve
-
-# Pull a model
-ollama pull deepseek-coder:33b
-
-# Run Ralph with local model
-RALPH_MODE=local ./start.sh my-feature
+# Install Ollama first (see Prerequisites below)
+# Then run - the script will auto-start Ollama and pull the model if needed:
+./start.sh my-feature --model local
+# Or: RALPH_MODE=local ./start.sh my-feature
 ```
 
 **Pros**: Free, no rate limits, private, offline  
-**Cons**: Requires hardware (GPU recommended), quality varies
+**Cons**: Requires hardware (GPU recommended), quality varies  
+
+**Note**: If your network blocks Cloudflare R2 (e.g. corporate firewall), model pulls will fail. Use Claude mode or pull the model from another network (home, VPN), then run locally.
 
 ### 3. Hybrid Mode
 Automatic: Claude for critical tasks (priority 1-5), local for others.
@@ -142,19 +129,21 @@ For best coding results with Ollama:
 
 ## Configuration
 
-Edit `config.sh` to customize settings:
+`config.sh` is loaded automatically by `start.sh` and `convert.sh` (you do not run it yourself). Edit it to change defaults:
 
 ```bash
 # Model mode: claude, local, or hybrid
 MODE="${RALPH_MODE:-claude}"
 
-# Local model to use
+# Local model to use (for --model local)
 LOCAL_MODEL="deepseek-coder:33b"
 
 # Rate limiting
 MAX_CALLS_PER_HOUR=100
 AGENT_TIMEOUT_MINUTES=20
 ```
+
+**Environment variables** (override config): `RALPH_MODE`, `ANTHROPIC_API_KEY`, `MAX_CALLS_PER_HOUR`, `AGENT_TIMEOUT_MINUTES`
 
 ## Commands
 
@@ -166,14 +155,18 @@ Create a new project from template.
 # Creates: projects/signals/
 ```
 
-### `./convert.sh <project-name>`
+### `./convert.sh <project-name> [options]`
 Convert your PRD.md to actionable JSON tasks using Aider.
 
 ```bash
 ./convert.sh signals
+./convert.sh signals --model local   # Use local Ollama model
+./convert.sh signals --model claude # Use Claude API (default)
 # Reads: projects/signals/prd.md
-# Creates: projects/signals/prd.json
+# Creates: projects/signals/prd.json, requirements.md
 ```
+
+Options: `--model MODE` (claude, local, hybrid). Respects `RALPH_MODE` env var.
 
 ### `./start.sh <project-name> [options]`
 Run the autonomous development loop.
@@ -204,7 +197,7 @@ Options:
 Live status dashboard (auto-started with `--monitor`).
 
 ```bash
-./ralph/monitor.sh signals
+./monitor.sh signals
 ```
 
 ## Workflow
@@ -216,7 +209,7 @@ Live status dashboard (auto-started with `--monitor`).
 │     Human-readable requirements document                        │
 │                                                                 │
 │  2. Convert to JSON (prd.json)                                  │
-│     Cursor Agent (or Claude) breaks down PRD into tasks        │
+│     Aider (Claude or local Ollama) converts PRD into tasks     │
 │                                                                 │
 │  3. Ralph Loop                                                  │
 │     ┌─────────────────────────────────────────────────────┐     │
@@ -291,9 +284,9 @@ When running with `--monitor`:
 
 ## Safety Features
 
-- **Rate Limiting**: Max 100 calls/hour (configurable, mainly for Claude Code)
+- **Rate Limiting**: Max 100 calls/hour (configurable, mainly for Claude API)
 - **Circuit Breaker**: Auto-stops after repeated failures
-- **Exit Detection**: Stops when Agent signals completion
+- **Exit Detection**: Stops when Aider signals completion
 - **Branch Isolation**: Each feature runs on its own git branch
 
 ## Learnings System
@@ -376,6 +369,12 @@ Ralph automatically waits for the next hour. You can detach with `Ctrl+B, D` and
 ### Agent not responding
 Check the logs in `projects/<project>/logs/` for details.
 
+### Ollama model pull fails (connection reset / max retries)
+Your network may block Cloudflare R2 (common on corporate networks). Options:
+- Use Claude mode: `./start.sh <project> --model claude` (set `ANTHROPIC_API_KEY`)
+- Pull the model from another network (home, VPN), then use local mode
+- Ask IT to whitelist `*.r2.cloudflarestorage.com` and `ollama.com`
+
 ### Switching Models
 
 **Claude API is the default** - requires `ANTHROPIC_API_KEY` environment variable.
@@ -384,23 +383,21 @@ To use local models:
 
 1. Install Ollama:
    ```bash
-   # macOS/Linux
-   curl -fsSL https://ollama.ai/install.sh | sh
+   # Official script (macOS/Linux/WSL)
+   curl -fsSL https://ollama.com/install.sh | sh
+   
+   # WSL Ubuntu manual (if script fails): install zstd, then:
+   # curl -L https://github.com/ollama/ollama/releases/download/v0.15.4/ollama-linux-amd64.tar.zst -o /tmp/ollama.tar.zst
+   # zstd -d /tmp/ollama.tar.zst -o /tmp/ollama.tar
+   # sudo tar -xf /tmp/ollama.tar -C /usr/local/bin/
    ```
 
-2. Start Ollama server:
+2. Run with local mode (Ollama is auto-started if not running; model is auto-pulled if missing):
    ```bash
-   ollama serve
+   ./start.sh my-feature --model local
+   # Or: RALPH_MODE=local ./start.sh my-feature
    ```
 
-3. Pull a model:
-   ```bash
-   ollama pull deepseek-coder:33b
-   ```
+3. Or set default in `config.sh`: `MODE="local"`
 
-4. Run with local mode:
-   ```bash
-   RALPH_MODE=local ./start.sh my-feature
-   ```
-
-Or edit `config.sh` to set `MODE="local"` as default.
+**Corporate firewall**: If `ollama pull` fails with "connection reset" or "max retries exceeded", your network may block Cloudflare R2. Use Claude mode, or pull the model from another network (e.g. home or VPN), then use local mode.
