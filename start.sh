@@ -426,10 +426,14 @@ execute_aider() {
             # Log analysis
             log_analysis_summary "$project_dir"
             
-            # Mark story complete if successful
+            # Mark story complete only when we got file edits (avoid completing with no progress)
             if [[ $analysis_result -eq 0 ]]; then
-                mark_story_complete "$project_dir/prd.json" "$story_id"
-                log "SUCCESS" "📝 Story $story_id marked as complete"
+                if [[ "${files_modified:-0}" -gt 0 ]]; then
+                    mark_story_complete "$project_dir/prd.json" "$story_id"
+                    log "SUCCESS" "📝 Story $story_id marked as complete"
+                else
+                    log "WARN" "Story $story_id: no file changes (not marking complete)"
+                fi
             fi
             
             return 0
@@ -680,7 +684,7 @@ main_loop() {
             log "ERROR" "  or lack of progress."
             log "ERROR" ""
             log "ERROR" "  To reset and continue:"
-            log "ERROR" "    ./ralph/start.sh $project_name --reset"
+            log "ERROR" "    ./start.sh $project_name --reset"
             log "ERROR" ""
             log "ERROR" "═══════════════════════════════════════════════════════════"
             update_status "$project_dir" "$loop_count" "halted" ""

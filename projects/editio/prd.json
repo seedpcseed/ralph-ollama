@@ -87,7 +87,7 @@
       ],
       "acceptance": "Document is formatted correctly, including margins, page size, font size, headers/footers, and  numbering",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
