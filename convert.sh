@@ -8,6 +8,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECTS_DIR="$SCRIPT_DIR/projects"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
+source "$SCRIPT_DIR/lib/utils.sh"
 
 # Default model for conversion (use a capable model)
 CONVERT_MODEL="${CONVERT_MODEL:-llama3.1:latest}"
@@ -39,6 +40,14 @@ SCHEMA="$TEMPLATES_DIR/prd-schema.json"
 
 if [ ! -f "$PRD_MD" ]; then
     echo "Error: $PRD_MD not found"
+    exit 1
+fi
+
+if is_prd_template_unchanged "$PRD_MD" "$TEMPLATES_DIR/prd-template.md"; then
+    echo "Error: PRD has not been customized from the template."
+    echo "Edit $PRD_MD with your project requirements, then run convert again."
+    echo ""
+    echo "  Next: Edit $PROJECT_DIR/prd.md, then run $0 $PROJECT_NAME"
     exit 1
 fi
 

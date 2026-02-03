@@ -9,6 +9,16 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Validate prd.json has expected structure (branchName, userStories array)
+# Returns 0 if valid, 1 if invalid
+validate_prd_json() {
+    local prd_file="$1"
+    if [ ! -f "$prd_file" ]; then
+        return 1
+    fi
+    jq -e '.userStories | type == "array"' "$prd_file" >/dev/null 2>&1
+}
+
 # Get next incomplete story from PRD
 get_next_story() {
     local prd_file="$1"
@@ -18,13 +28,20 @@ get_next_story() {
         return 1
     fi
     
+    # Validate structure before querying
+    if ! validate_prd_json "$prd_file"; then
+        echo "ERROR"
+        return 1
+    fi
+    
     # Get first story where passes=false, sorted by priority
-    local next_story=$(jq -r '
+    local next_story
+    next_story=$(jq -r '
         .userStories 
         | map(select(.passes == false))
         | sort_by(.priority)
         | .[0] // empty
-    ' "$prd_file")
+    ' "$prd_file" 2>/dev/null) || { echo "ERROR"; return 1; }
     
     if [ -z "$next_story" ] || [ "$next_story" = "null" ]; then
         echo "COMPLETE"
@@ -235,6 +252,15 @@ IMPORTANT INSTRUCTIONS:
 
 Begin your implementation now:
 EOF
+}
+
+# Check if prd.md is unchanged from template (project not set up)
+# Returns 0 if unchanged, 1 if customized or files missing
+is_prd_template_unchanged() {
+    local prd_file="$1"
+    local template_file="$2"
+    [ -f "$prd_file" ] && [ -f "$template_file" ] || return 1
+    cmp -s "$prd_file" "$template_file"
 }
 
 # Extract JSON safely

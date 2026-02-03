@@ -179,12 +179,32 @@ fi
 # Required files
 PRD_JSON="$PROJECT_DIR/prd.json"
 STATUS_FILE="$PROJECT_DIR/status.json"
+
+if [ ! -f "$PRD_JSON" ]; then
+    echo "Error: prd.json not found. Run ./convert.sh $PROJECT_NAME first."
+    exit 1
+fi
+
+if ! validate_prd_json "$PRD_JSON"; then
+    echo "Error: prd.json is invalid or missing userStories."
+    echo "Run ./convert.sh $PROJECT_NAME to regenerate from prd.md"
+    exit 1
+fi
 PROGRESS_FILE="$PROJECT_DIR/progress.txt"
 LOG_DIR="$PROJECT_DIR/logs"
 CB_FILE="$PROJECT_DIR/.circuit_breaker"
 PROMPT_FILE="$PROJECT_DIR/PROMPT.md"
 
 mkdir -p "$LOG_DIR"
+
+# Require PRD to be customized (not still the template)
+if [ -f "$PROJECT_DIR/prd.md" ] && is_prd_template_unchanged "$PROJECT_DIR/prd.md" "$TEMPLATES_DIR/prd-template.md"; then
+    echo "Error: PRD has not been customized from the template."
+    echo "Edit $PROJECT_DIR/prd.md with your project requirements."
+    echo "Then run: ./convert.sh $PROJECT_NAME"
+    echo "Then run: $0 $PROJECT_NAME"
+    exit 1
+fi
 
 # Handle status and reset commands
 if [ "$SHOW_STATUS" = true ]; then
