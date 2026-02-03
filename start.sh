@@ -36,6 +36,7 @@ record_stuck_failure() {
     local verify_output="$3"
     local progress_file="$4"
     local attempts="$5"
+    local failure_type="${6:-unknown}"
 
     echo "⚠️  Detected repeated verification failure for story $story_id ($attempts attempts). Logging guidance for next attempt."
     touch "$progress_file"
@@ -43,16 +44,49 @@ record_stuck_failure() {
     {
         echo ""
         echo "## $(date '+%Y-%m-%d %H:%M:%S') - Stuck on story $story_id"
-        echo "Verification command failing repeatedly ($attempts attempts):"
+        echo "Verification command failing repeatedly ($attempts attempts, type: $failure_type):"
         echo "    $verify_cmd"
         if [ -n "$verify_output" ]; then
             echo "Latest output (truncated):"
             echo "$verify_output" | head -n 20 | sed 's/^/    /'
         fi
-        echo "Guidance: Investigate why this verification is failing and try a different approach instead of repeating the same steps."
-        if [[ "$verify_cmd" == *"pip install"* ]]; then
-            echo "Hint: For pip/install failures, confirm packaging metadata (setup.py/pyproject) and entry points are correct."
-        fi
+        
+        # Provide specific guidance based on failure type
+        case "$failure_type" in
+            syntax_error)
+                echo ""
+                echo "⚠️  VERIFICATION COMMAND HAS SYNTAX ERROR"
+                echo "The verify command in prd.json is malformed. Common issues:"
+                echo "  - Unmatched quotes (e.g., python -c 'func(\"/path\")' should be python -c 'func(\"/path\")')"
+                echo "  - Unquoted paths in Python expressions"
+                echo "ACTION: Fix the verify field in prd.json for story $story_id"
+                echo "Example fix: Use double quotes for outer, single for inner: python -c \"from mod import func; func('/path')\""
+                ;;
+            import_error)
+                echo ""
+                echo "Guidance: Import errors suggest missing modules or incorrect import paths."
+                echo "Check that:"
+                echo "  - Required modules exist and are in the correct location"
+                echo "  - Import paths match the actual file structure"
+                echo "  - __init__.py files exist where needed"
+                ;;
+            api_error)
+                echo ""
+                echo "Guidance: API errors suggest the function/class exists but has wrong signature or doesn't work as expected."
+                echo "Check the actual implementation matches what the verification expects."
+                ;;
+            command_not_found)
+                echo ""
+                echo "Guidance: Command not found - the tool/script may not be installed or in PATH."
+                ;;
+            *)
+                echo ""
+                echo "Guidance: Investigate why this verification is failing and try a different approach instead of repeating the same steps."
+                if [[ "$verify_cmd" == *"pip install"* ]]; then
+                    echo "Hint: For pip/install failures, confirm packaging metadata (setup.py/pyproject) and entry points are correct."
+                fi
+                ;;
+        esac
     } >> "$progress_file"
 }
 
@@ -469,7 +503,11 @@ while true; do
             echo "Story $STORY_ID not marked complete - verification failed"
             echo "Fix the implementation and Ralph will retry on next run"
             VERIFY_ERROR=$(echo "$VERIFY_LAST_OUTPUT" | head -n 3 | tr '\n' ' ' | cut -c1-150)
-            log_session_event "VERIFY_FAIL" "Story $STORY_ID: Verification failed. Command: $VERIFY_LAST_CMD. Error: $VERIFY_ERROR"
+            FAILURE_TYPE_MSG=""
+            if [ -n "${VERIFY_FAILURE_TYPE:-}" ]; then
+                FAILURE_TYPE_MSG=" (type: ${VERIFY_FAILURE_TYPE})"
+            fi
+            log_session_event "VERIFY_FAIL" "Story $STORY_ID: Verification failed$FAILURE_TYPE_MSG. Command: $VERIFY_LAST_CMD. Error: $VERIFY_ERROR"
 
             # Detect repeated failures (stuck loops) for this story
             normalized_output=$(printf '%s' "$VERIFY_LAST_OUTPUT" | normalize_output_for_signature)
@@ -493,8 +531,8 @@ while true; do
             if [ $current_count -ge $STUCK_THRESHOLD ]; then
                 last_logged="${STORY_STUCK_SIGNATURE[$STORY_ID]}"
                 if [ "$last_logged" != "$tmp_signature" ]; then
-                    record_stuck_failure "$STORY_ID" "$VERIFY_LAST_CMD" "$VERIFY_LAST_OUTPUT" "$PROGRESS_FILE" "$current_count"
-                    log_session_event "STUCK" "Story $STORY_ID: Detected stuck loop ($current_count identical failures). Guidance logged to progress.txt"
+                    record_stuck_failure "$STORY_ID" "$VERIFY_LAST_CMD" "$VERIFY_LAST_OUTPUT" "$PROGRESS_FILE" "$current_count" "${VERIFY_FAILURE_TYPE:-unknown}"
+                    log_session_event "STUCK" "Story $STORY_ID: Detected stuck loop ($current_count identical failures, type: ${VERIFY_FAILURE_TYPE:-unknown}). Guidance logged to progress.txt"
                     STORY_STUCK_SIGNATURE[$STORY_ID]="$tmp_signature"
                 else
                     echo "  (stuck note already recorded for this pattern)"

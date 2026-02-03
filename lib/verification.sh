@@ -23,6 +23,38 @@ get_default_test_cmd() {
     fi
 }
 
+# Validate and repair verification command syntax
+# Returns repaired command and sets VERIFY_CMD_ERROR_TYPE if issues found
+validate_and_repair_cmd() {
+    local cmd="$1"
+    VERIFY_CMD_ERROR_TYPE=""
+    
+    # Check for Python -c commands with quote nesting issues
+    if [[ "$cmd" =~ python.*-c.*\' ]]; then
+        # Extract the inner content between the outer single quotes
+        if [[ "$cmd" =~ python.*-c\ \'(.+)\' ]]; then
+            local inner="${BASH_REMATCH[1]}"
+            # Check if inner content has unescaped single quotes (quote nesting problem)
+            if [[ "$inner" =~ [^\\]\' ]]; then
+                VERIFY_CMD_ERROR_TYPE="quote_nesting"
+                # Fix: Replace outer single quotes with double quotes, keep inner single quotes
+                # This handles: python -c 'func('/path')' -> python -c "func('/path')"
+                cmd=$(echo "$cmd" | sed -E "s/python([^ ]*)\s+-c '(.+)'/python\\1 -c \"\\2\"/")
+            fi
+        fi
+    fi
+    
+    # Check for unquoted string literals in Python function calls (e.g., func(/path) instead of func('/path'))
+    if [[ "$cmd" =~ python.*-c.*\([^\"\']*/[^\"\']*\) ]]; then
+        VERIFY_CMD_ERROR_TYPE="unquoted_path"
+        # Try to quote unquoted paths in function calls
+        # Match patterns like func(/path/to/file) and quote the path
+        cmd=$(echo "$cmd" | sed -E "s|([\(, ])(/[^\"\'\)\s,]+)([\),])|\\1'\\2'\\3|g")
+    fi
+    
+    echo "$cmd"
+}
+
 # Expand common test commands for different languages
 expand_verify_cmd() {
     local cmd="$1"
@@ -92,6 +124,13 @@ run_story_verification() {
         local python_snippet="$verify_cmd"
         python_snippet="${python_snippet//\"/\\\"}"
         verify_cmd="python3 -c \"$python_snippet\""
+    fi
+
+    # Validate and repair command syntax before running
+    local original_cmd="$verify_cmd"
+    verify_cmd=$(validate_and_repair_cmd "$verify_cmd")
+    if [ -n "$VERIFY_CMD_ERROR_TYPE" ] && [ "$verify_cmd" != "$original_cmd" ]; then
+        echo "  (repaired verification command syntax: $VERIFY_CMD_ERROR_TYPE)"
     fi
 
     VERIFY_LAST_CMD="$verify_cmd"
@@ -168,6 +207,25 @@ run_story_verification() {
             fi
         fi
     fi
+    
+    # Categorize failure type for learning
+    local failure_type="implementation"
+    if echo "$verify_output" | grep -qE "SyntaxError|invalid syntax|unexpected token"; then
+        failure_type="syntax_error"
+        if [ -n "$VERIFY_CMD_ERROR_TYPE" ]; then
+            echo "  ⚠️  Verification command has syntax error (type: $VERIFY_CMD_ERROR_TYPE)"
+            echo "  Original command may need fixing in prd.json"
+        fi
+    elif echo "$verify_output" | grep -qE "ImportError|ModuleNotFoundError|cannot import"; then
+        failure_type="import_error"
+    elif echo "$verify_output" | grep -qE "AttributeError|NameError"; then
+        failure_type="api_error"
+    elif echo "$verify_output" | grep -qE "command not found|No such file"; then
+        failure_type="command_not_found"
+    fi
+    
+    # Export failure type for learning/logging
+    VERIFY_FAILURE_TYPE="$failure_type"
     
     echo "  ✗ Verification failed"
     echo "$verify_output" | head -20 | sed 's/^/    /'
