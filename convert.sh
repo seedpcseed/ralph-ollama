@@ -141,7 +141,7 @@ Examples:
 This will run a two-phase conversion process:
 
 Phase 1 - Initial Conversion:
-  - Read ralph/projects/<project-name>/prd.md
+  - Read projects/<project-name>/prd.md
   - Generate prd.json (actionable user stories)
   - Generate requirements.md (technical specifications)
 

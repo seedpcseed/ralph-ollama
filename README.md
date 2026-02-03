@@ -131,38 +131,38 @@ AGENT_TIMEOUT_MINUTES=20
 
 ## Commands
 
-### `./ralph/new.sh <project-name>`
+### `./new.sh <project-name>`
 Create a new project from template.
 
 ```bash
-./ralph/new.sh signals
-# Creates: ralph/projects/signals/
+./new.sh signals
+# Creates: projects/signals/
 ```
 
-### `./ralph/convert.sh <project-name>`
-Convert your PRD.md to actionable JSON tasks using Cursor Agent (or Claude).
+### `./convert.sh <project-name>`
+Convert your PRD.md to actionable JSON tasks using Aider.
 
 ```bash
-./ralph/convert.sh signals
-# Reads: ralph/projects/signals/prd.md
-# Creates: ralph/projects/signals/prd.json
+./convert.sh signals
+# Reads: projects/signals/prd.md
+# Creates: projects/signals/prd.json
 ```
 
-### `./ralph/start.sh <project-name> [options]`
+### `./start.sh <project-name> [options]`
 Run the autonomous development loop.
 
 ```bash
 # Without tmux (output directly in terminal)
-./ralph/start.sh signals
+./start.sh signals
 
 # With tmux monitoring (recommended)
-./ralph/start.sh signals --monitor
+./start.sh signals --monitor
 
 # Check status
-./ralph/start.sh signals --status
+./start.sh signals --status
 
 # Reset circuit breaker if stuck
-./ralph/start.sh signals --reset
+./start.sh signals --reset
 ```
 
 Options:
@@ -173,7 +173,7 @@ Options:
 - `-s, --status` - Show project status and exit
 - `-r, --reset` - Reset circuit breaker
 
-### `./ralph/monitor.sh <project-name>`
+### `./monitor.sh <project-name>`
 Live status dashboard (auto-started with `--monitor`).
 
 ```bash
@@ -310,11 +310,13 @@ Ralph updates `AGENTS.md` files in directories where it made changes:
 ## Project Structure
 
 ```
-ralph/
+.
 ├── new.sh          # Create new project
 ├── convert.sh      # PRD → JSON converter
 ├── start.sh        # Main loop
 ├── monitor.sh      # Status dashboard
+├── setup.sh        # One-time setup
+├── config.sh       # Configuration
 ├── lib/
 │   ├── utils.sh
 │   ├── circuit_breaker.sh
@@ -337,15 +339,15 @@ ralph/
 
 ### Circuit breaker opened
 ```bash
-./ralph/start.sh <project> --status  # Check what happened
-./ralph/start.sh <project> --reset   # Reset and continue
+./start.sh <project> --status  # Check what happened
+./start.sh <project> --reset   # Reset and continue
 ```
 
 ### Rate limit hit
 Ralph automatically waits for the next hour. You can detach with `Ctrl+B, D` and come back later.
 
 ### Agent not responding
-Check the logs in `ralph/projects/<project>/logs/` for details.
+Check the logs in `projects/<project>/logs/` for details.
 
 ### Switching Models
 

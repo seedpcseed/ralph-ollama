@@ -245,10 +245,10 @@ $prompt_template
 
 | File | Description |
 |------|-------------|
-| @ralph/projects/$project_name/prd.md | Full PRD with context |
-| @ralph/projects/$project_name/prd.json | User stories (\`passes: false\` = incomplete) |
-| @ralph/projects/$project_name/progress.txt | What previous iterations accomplished |
-| @ralph/projects/$project_name/requirements.md | Technical requirements |
+| @projects/$project_name/prd.md | Full PRD with context |
+| @projects/$project_name/prd.json | User stories (\`passes: false\` = incomplete) |
+| @projects/$project_name/progress.txt | What previous iterations accomplished |
+| @projects/$project_name/requirements.md | Technical requirements |
 
 $branch_info
 **Progress: $complete/$total complete ($incomplete remaining)**
@@ -808,7 +808,7 @@ PROJECT_DIR="$SCRIPT_DIR/projects/$PROJECT_NAME"
 # Check if project exists
 if [[ ! -d "$PROJECT_DIR" ]]; then
     log "ERROR" "Project '$PROJECT_NAME' does not exist"
-    log "INFO" "Create it first with: ./ralph/new.sh $PROJECT_NAME"
+    log "INFO" "Create it first with: ./new.sh $PROJECT_NAME"
     exit 1
 fi
 
