@@ -13,3 +13,48 @@ This file records learnings and patterns discovered during implementation.
 
 ## 2026-02-02 - Story 1.1
 ```
+
+## 2026-02-02 - Story 1.2
+```
+
+## 2026-02-02 - Story 1.2
+- Imported click and rich libraries for creating CLI apps and improved terminal output.
+- Created a simple welcome message with click and rich.
+```
+---
+END OF STORY
+STATUS: COMPLETE
+NEXT_STEPS: Move to the next user story.
+```
+
+## 2026-02-02 - Story 1.2
+---
+END OF STORY
+```
+
+## 2026-02-02 - Story 1.2
+---
+## Codebase Patterns
+(Patterns will be added here as discovered)
+
+## Key Files
+(Important files will be noted here)
+
+---
+END OF STORY
+STATUS: COMPLETE
+LEARNINGS: We have successfully set up the development environment. All necessary dependencies are installed and we're ready to start implementing user stories.
+NEXT_STEPS: Move on to implement Story 1.3 - Implement CLI for Log Lens.
+---
+END OF STORY
+```
+
+## 2026-02-02 - Story 1.2
+NEXT_STEPS: Move on to implement Story 1.4 - Implement parser for Log Lens.
+---
+```
+
+## 2026-02-02 - Story 1.2
+NEXT_STEPS: Move on to implement Story 1.3 - Implement parser for Log Lens.
+---
+```

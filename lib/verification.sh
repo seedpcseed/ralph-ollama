@@ -77,6 +77,14 @@ run_story_verification() {
     if [[ "$verify_cmd" == tree* ]] && ! command -v tree >/dev/null 2>&1; then
         verify_cmd=$(echo "$verify_cmd" | sed 's/^tree/ls -R/')
     fi
+
+    # If verify command looks like a bare Python snippet (e.g. "import click; ..."),
+    # wrap it in python3 -c "...". Escape embedded double quotes first.
+    if [[ "$verify_cmd" =~ ^(import|from)[[:space:]] ]]; then
+        local python_snippet="$verify_cmd"
+        python_snippet="${python_snippet//\"/\\\"}"
+        verify_cmd="python3 -c \"$python_snippet\""
+    fi
     
     # Run verification from project directory
     echo "  Verifying: $verify_cmd"

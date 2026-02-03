@@ -28,7 +28,7 @@
       "acceptance": "RUN \"python\" in your terminal, then import click and check the installed version. It should be equal to or greater than the one specified in PRD.",
       "verify": "import click; print(click.__version__)",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
