@@ -89,11 +89,26 @@ setup_aider() {
             if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
                 log "WARN" "Model '$LOCAL_MODEL' is not available locally"
                 log "INFO" "Pulling model (this may take several minutes)..."
-                if ollama pull "$LOCAL_MODEL"; then
+                if ollama pull "$LOCAL_MODEL" 2>&1 | tee /tmp/ollama_pull.log; then
                     log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                    rm -f /tmp/ollama_pull.log
                 else
-                    log "WARN" "Failed to pull model '$LOCAL_MODEL'"
-                    log "INFO" "Aider will attempt to use it anyway, or try manually: ollama pull $LOCAL_MODEL"
+                    log "ERROR" "Failed to pull model '$LOCAL_MODEL'"
+                    if grep -q "connection reset\|max retries exceeded" /tmp/ollama_pull.log 2>/dev/null; then
+                        log "ERROR" "Network/firewall blocking Cloudflare R2 storage"
+                        log "INFO" ""
+                        log "INFO" "Options:"
+                        log "INFO" "  1. Use Claude API mode: ./start.sh $PROJECT_NAME --model claude"
+                        log "INFO" "  2. Pull model from a different network (home, VPN, etc.)"
+                        log "INFO" "  3. Contact IT to whitelist Cloudflare R2 domains"
+                        log "INFO" ""
+                        rm -f /tmp/ollama_pull.log
+                        exit 1
+                    else
+                        log "WARN" "Pull failed for unknown reason"
+                        log "INFO" "Try manually: ollama pull $LOCAL_MODEL"
+                        rm -f /tmp/ollama_pull.log
+                    fi
                 fi
             else
                 log "INFO" "Model '$LOCAL_MODEL' is available"
