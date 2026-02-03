@@ -1,2 +1,2 @@
-# LogLens
-A powerful log analysis tool.
+# User Story Implementation
+This project is a task implementation for user stories based on the provided PRD (Product Requirement Document) format. The objective of this repository is to implement the user story from beginning to end, using an autonomous AI.

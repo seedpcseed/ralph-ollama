@@ -1,293 +1,101 @@
 {
-  "branchName": "ralph/loglens",
+  "branchName": "ralph/feature-name",
   "userStories": [
     {
-      "id": "1.1",
+      "id": "1.0",
       "category": "technical",
-      "story": "Set up project structure",
+      "story": "Setup the project repository and base files, including README, LICENSE, .gitignore.",
       "steps": [
-        "Install Python 3.9+ if not already installed",
-        "Create loglens directory",
-        "Initialize git repository"
+        "Create a new GitHub repo",
+        "Add necessary files"
       ],
-      "acceptance": "RUN \"tree\" in the root directory of your project and it should show a single directory named 'loglens'.",
-      "verify": "tree | grep loglens",
+      "acceptance": "RUN \"ls -al | grep 'README.md\\|LICENSE\\|.gitignore'\"",
+      "verify": "",
       "priority": 1,
       "passes": true,
       "notes": ""
     },
     {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Set up the project dependencies and ensure they are correctly installed.",
+      "steps": [
+        "Review project dependencies",
+        "Install dependencies"
+      ],
+      "acceptance": "RUN \"pip install -r requirements.txt\" or RUN \"npm install\" or RUN \"cargo build\" or RUN \"go build\"",
+      "verify": "",
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
       "id": "1.2",
       "category": "technical",
-      "story": "Configure dev environment",
+      "story": "Make the app installable/runnable.",
       "steps": [
-        "Create virtualenv: python3 -m venv venv",
-        "Activate virtualenv: source venv/bin/activate",
-        "Install dependencies: pip install click rich pytest"
+        "Create a setup.py or pyproject.toml for Python projects",
+        "Update package.json for Node.js projects"
       ],
-      "acceptance": "RUN \"python\" in your terminal, then import click and check the installed version. It should be equal to or greater than the one specified in PRD.",
-      "verify": "import click; print(click.__version__)",
-      "priority": 2,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "1.3",
-      "category": "technical",
-      "story": "Create base classes and interfaces",
-      "steps": [
-        "Create a new file named base.py in the parsers directory with a class BaseParser"
-      ],
-      "acceptance": "RUN \"python\" in your terminal, then import BaseParser from parsers.base and check its type.",
-      "verify": "from parsers.base import BaseParser; print(type(BaseParser))",
-      "priority": 3,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "1.4",
-      "category": "technical",
-      "story": "Install loglens via pip",
-      "steps": [
-        "Add a setup.py file in the root directory of your project"
-      ],
-      "acceptance": "RUN \"pip install .\" and then RUN \"loglens --help\". It should print the help message.",
-      "verify": "pip install .; loglens --help",
-      "priority": 4,
+      "acceptance": "",
+      "verify": "app --help",
+      "priority": 10,
       "passes": false,
       "notes": ""
     },
     {
       "id": "2.1",
       "category": "functional",
-      "story": "Parse Apache logs accurately",
+      "story": "Implement Feature 1.",
       "steps": [
-        "Implement the parse method in the ApacheParser class"
+        "Step 1",
+        "Step 2"
       ],
-      "acceptance": "RUN \"loglens analyze access.log --format apache\" and check if it correctly parses the log file.",
-      "verify": "loglens analyze access.log --format apache",
-      "priority": 5,
+      "acceptance": "RUN \"pytest\" or RUN \"cargo test\" or RUN \"go test ./...\" or RUN \"npm test\"",
+      "verify": "",
+      "priority": 3,
       "passes": false,
       "notes": ""
     },
     {
       "id": "2.2",
       "category": "functional",
-      "story": "Parse JSON logs correctly",
+      "story": "Implement Feature 2.",
       "steps": [
-        "Implement the parse method in the JsonParser class"
+        "Step 1",
+        "Step 2"
       ],
-      "acceptance": "RUN \"loglens analyze access.json --format json\" and check if it correctly parses the log file.",
-      "verify": "loglens analyze access.json --format json",
-      "priority": 6,
+      "acceptance": "RUN \"pytest\" or RUN \"cargo test\" or RUN \"go test ./...\" or RUN \"npm test\"",
+      "verify": "",
+      "priority": 4,
       "passes": false,
       "notes": ""
     },
     {
       "id": "2.3",
       "category": "functional",
-      "story": "Handle 100MB file in <10 seconds",
+      "story": "Implement Feature 3.",
       "steps": [
-        "Implement a stream based parser that uses generators"
+        "Step 1",
+        "Step 2"
       ],
-      "acceptance": "RUN \"loglens analyze access.log\" and check if it completes in less than 10 seconds.",
-      "verify": "time loglens analyze access.log",
-      "priority": 7,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "2.4",
-      "category": "functional",
-      "story": "Detect errors correctly (no false positives)",
-      "steps": [
-        "Implement error detection in the analyze method"
-      ],
-      "acceptance": "RUN \"loglens analyze access.log\" and check if it correctly detects errors.",
-      "verify": "loglens analyze access.log | grep 'total_errors'",
-      "priority": 8,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "2.5",
-      "category": "functional",
-      "story": "Generate readable HTML report",
-      "steps": [
-        "Implement a method in the AnalysisResult class that generates an HTML file"
-      ],
-      "acceptance": "RUN \"loglens analyze access.log --output report.html\" and check if it correctly generates a readable HTML file.",
-      "verify": "loglens analyze access.log --output report.html; open report.html",
-      "priority": 9,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "2.6",
-      "category": "functional",
-      "story": "CLI is intuitive and well-documented",
-      "steps": [
-        "Implement argparse in the CLI"
-      ],
-      "acceptance": "RUN \"loglens --help\" and check if it correctly prints the help message.",
-      "verify": "loglens --help",
-      "priority": 10,
+      "acceptance": "RUN \"pytest\" or RUN \"cargo test\" or RUN \"go test ./...\" or RUN \"npm test\"",
+      "verify": "",
+      "priority": 5,
       "passes": false,
       "notes": ""
     },
     {
       "id": "3.1",
-      "category": "quality",
-      "story": "Test coverage >80%",
+      "category": "functional",
+      "story": "Integration of all components.",
       "steps": [
-        "Implement unit tests"
+        "Step 1",
+        "Step 2"
       ],
-      "acceptance": "RUN \"pytest\" and check if the test coverage is greater than 80%.",
-      "verify": "coverage run -m pytest; coverage report --fail-under=80",
-      "priority": 11,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "3.2",
-      "category": "quality",
-      "story": "All tests pass",
-      "steps": [
-        "Implement unit tests"
-      ],
-      "acceptance": "RUN \"pytest\" and check if all tests pass.",
-      "verify": "pytest; echo $?",
-      "priority": 12,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "3.3",
-      "category": "quality",
-      "story": "No crashes on malformed input",
-      "steps": [
-        "Handle exceptions in the parsers"
-      ],
-      "acceptance": "RUN \"loglens analyze bad_access.log\" and check if it does not crash.",
-      "verify": "loglens analyze bad_access.log; echo $?",
-      "priority": 13,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "3.4",
-      "category": "quality",
-      "story": "Clear error messages",
-      "steps": [
-        "Implement verbose logging in the CLI"
-      ],
-      "acceptance": "RUN \"loglens analyze bad_access.log\" and check if it prints a clear error message.",
-      "verify": "loglens analyze bad_access.log | grep ERROR",
-      "priority": 14,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "3.5",
-      "category": "quality",
-      "story": "Memory efficient (streaming)",
-      "steps": [
-        "Use generators and iterators in the parsers"
-      ],
-      "acceptance": "RUN \"loglens analyze big_access.log\" and check if it does not use too much memory.",
-      "verify": "loglens analyze big_access.log; ps -p $$ -o vsz=",
-      "priority": 15,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "4.1",
-      "category": "deliverable",
-      "story": "Working loglens command installed via pip",
-      "steps": [
-        "Implement setup.py"
-      ],
-      "acceptance": "RUN \"pip install .\" and check if it correctly installs the loglens command.",
-      "verify": "pip install .; loglens --help",
-      "priority": 16,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "4.2",
-      "category": "deliverable",
-      "story": "README with usage examples",
-      "steps": [
-        "Implement a README.md file in the root directory of your project"
-      ],
-      "acceptance": "RUN \"cat README.md\" and check if it contains usage examples.",
-      "verify": "cat README.md | grep 'Usage:'",
-      "priority": 17,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "4.3",
-      "category": "deliverable",
-      "story": "Test fixtures and tests",
-      "steps": [
-        "Implement test fixtures in the tests directory"
-      ],
-      "acceptance": "RUN \"pytest\" and check if it correctly uses the test fixtures.",
-      "verify": "pytest; echo $?",
-      "priority": 18,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "4.4",
-      "category": "deliverable",
-      "story": "Sample HTML report from test data",
-      "steps": [
-        "Implement a method in the AnalysisResult class that generates an HTML file"
-      ],
-      "acceptance": "RUN \"loglens analyze access.log --output report.html\" and check if it correctly generates a readable HTML file.",
-      "verify": "loglens analyze access.log --output report.html; open report.html",
-      "priority": 19,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "4.5",
-      "category": "deliverable",
-      "story": "Documentation on how to add a new parser",
-      "steps": [
-        "Implement a documentation in the README.md file"
-      ],
-      "acceptance": "RUN \"cat README.md\" and check if it contains documentation on how to add a new parser.",
-      "verify": "cat README.md | grep 'How to add a new parser'",
-      "priority": 20,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "5.1",
-      "category": "non-functional",
-      "story": "Handle multiple formats (apache, json)",
-      "steps": [
-        "Implement a factory method that returns the correct parser based on the format"
-      ],
-      "acceptance": "RUN \"loglens analyze access.log\" and check if it correctly uses the ApacheParser.",
-      "verify": "loglens analyze access.log --format apache | grep 'Apache'",
-      "priority": 21,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "5.2",
-      "category": "non-functional",
-      "story": "Handle malformed lines gracefully",
-      "steps": [
-        "Implement a method in the parsers that handles malformed lines"
-      ],
-      "acceptance": "RUN \"loglens analyze bad_access.log\" and check if it correctly handles malformed lines.",
-      "verify": "loglens analyze bad_access.log | grep 'Malformed'",
-      "priority": 22,
+      "acceptance": "RUN \"app --help\" and ensure all features work correctly",
+      "verify": "",
+      "priority": 9,
       "passes": false,
       "notes": ""
     }
