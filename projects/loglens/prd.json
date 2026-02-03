@@ -41,7 +41,7 @@
       "acceptance": "RUN \"python\" in your terminal, then import BaseParser from parsers.base and check its type.",
       "verify": "from parsers.base import BaseParser; print(type(BaseParser))",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
