@@ -99,7 +99,7 @@
       ],
       "acceptance": "The plugin system is functional, plugins can be loaded and executed",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
