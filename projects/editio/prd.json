@@ -1,0 +1,54 @@
+{
+  "MVP": {
+    "output_formats": [
+      {
+        "name": "PDF",
+        "description": "LaTeX-based PDF"
+      },
+      {
+        "name": "HTML",
+        "description": "MathJax-enabled HTML"
+      }
+    ],
+    "cross_references": true,
+    "math_rendering": true,
+    "bibliography_system": true
+  },
+  "Phase2": {
+    "output_formats": [
+      {
+        "name": "PDF",
+        "description": "LaTeX-based PDF"
+      },
+      {
+        "name": "LaTeX",
+        "description": "Native LaTeX output"
+      },
+      {
+        "name": "HTML",
+        "description": "MathJax-enabled HTML"
+      },
+      {
+        "name": "Word",
+        "description": "DOCX output"
+      }
+    ],
+    "document_chaining": true,
+    "template_system": true,
+    "academic_extensions": [
+      {
+        "name": "P1 Extensions",
+        "description": "Multi-column layouts, marginal notes, etc."
+      },
+      {
+        "name": "CSL support",
+        "description": "Citation style language support"
+      }
+    ]
+  },
+  "Phase3": {
+    "native_math_renderer": true,
+    "performance_optimized": true,
+    "comprehensive_template_library": true
+  }
+}

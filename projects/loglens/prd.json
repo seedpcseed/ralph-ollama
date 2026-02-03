@@ -202,8 +202,8 @@
       "steps": [
         "Implement logging"
       ],
-      "acceptance": "RUN \"pip install loglens\" passes; RUN \"loglens --help\" passes",
-      "verify": "RUN \"pip install loglens\"",
+      "acceptance": "RUN \"pip install .\" passes; RUN \"loglens --help\" passes",
+      "verify": "pip install .",
       "priority": 5,
       "passes": false,
       "notes": ""

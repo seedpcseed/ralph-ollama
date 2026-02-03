@@ -75,6 +75,14 @@ record_stuck_failure() {
                 echo "Guidance: API errors suggest the function/class exists but has wrong signature or doesn't work as expected."
                 echo "Check the actual implementation matches what the verification expects."
                 ;;
+            missing_file)
+                echo ""
+                echo "⚠️  REQUIRED FILES ARE MISSING"
+                echo "The verification is failing because required files don't exist."
+                echo "Check the error message to see which files are missing."
+                echo "ACTION: Ensure the story implementation creates the required files."
+                echo "Common missing files: setup.py, pyproject.toml, __init__.py, or other project files"
+                ;;
             command_not_found)
                 echo ""
                 echo "Guidance: Command not found - the tool/script may not be installed or in PATH."

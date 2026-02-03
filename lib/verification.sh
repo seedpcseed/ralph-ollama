@@ -91,11 +91,21 @@ run_story_verification() {
     local verify_cmd
     verify_cmd=$(echo "$story_json" | jq -r '.verify // empty')
     
+    # Strip RUN keyword if present in verify field (some models include it incorrectly)
+    # Handle: RUN "command", RUN command, or just command
+    if [[ "$verify_cmd" =~ ^RUN[[:space:]]+\"(.+)\"$ ]]; then
+        verify_cmd="${BASH_REMATCH[1]}"
+    elif [[ "$verify_cmd" =~ ^RUN[[:space:]]+(.+)$ ]]; then
+        verify_cmd="${BASH_REMATCH[1]}"
+    fi
+    
     # 2. Parse acceptance for RUN "command" pattern
     if [ -z "$verify_cmd" ]; then
         local acceptance
         acceptance=$(echo "$story_json" | jq -r '.acceptance // ""')
         if [[ "$acceptance" =~ RUN\ \"([^\"]+)\" ]]; then
+            verify_cmd="${BASH_REMATCH[1]}"
+        elif [[ "$acceptance" =~ RUN\ ([^\"[:space:]]+) ]]; then
             verify_cmd="${BASH_REMATCH[1]}"
         fi
     fi
@@ -172,7 +182,9 @@ run_story_verification() {
     fi
     
     # Detect when CLI command exists but shows wrong output (e.g. setup.py help instead of CLI help)
-    if echo "$verify_output" | grep -qE "setup\.py|distutils|pydistutils"; then
+    # Only trigger if output looks like setup.py help (has "Common commands:" or "setup.py build" as first lines)
+    # NOT if it's just an error message mentioning setup.py (like "setup.py not found")
+    if echo "$verify_output" | head -3 | grep -qE "^Common commands:|^  setup\.py build|^  setup\.py install"; then
         failure_type="wrong_command"
         VERIFY_FAILURE_TYPE="wrong_command"
         echo "  ⚠️  Command exists but shows setup.py/distutils help instead of CLI"
@@ -230,6 +242,8 @@ run_story_verification() {
         failure_type="api_error"
     elif echo "$verify_output" | grep -qE "command not found|No such file"; then
         failure_type="command_not_found"
+    elif echo "$verify_output" | grep -qE "not found|not installable|Neither.*found|FileNotFoundError"; then
+        failure_type="missing_file"
     fi
     
     # Export failure type for learning/logging

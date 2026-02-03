@@ -1,0 +1,12 @@
+# Ralph Progress Tracker
+
+This file records learnings and patterns discovered during implementation.
+
+## Codebase Patterns
+(Patterns will be added here as discovered)
+
+## Key Files
+(Important files will be noted here)
+
+---
+

@@ -210,6 +210,19 @@ fi
 # Save JSON
 echo "$JSON" | jq . > "$PRD_JSON"
 
+# Validate JSON structure matches expected schema
+if ! validate_prd_json "$PRD_JSON"; then
+    echo "Error: Generated JSON doesn't match expected PRD schema"
+    echo "Expected: { branchName: string, userStories: array }"
+    echo "Got:"
+    echo "$JSON" | jq 'keys' 2>/dev/null || echo "  (invalid structure)"
+    echo ""
+    echo "The model may have generated a different format (e.g. package.json, Cargo.toml)."
+    echo "Try a different model or check the PRD.md format."
+    rm "$TEMP_PROMPT"
+    exit 1
+fi
+
 rm "$TEMP_PROMPT"
 
 # Show summary
