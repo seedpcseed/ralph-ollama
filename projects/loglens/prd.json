@@ -54,7 +54,7 @@
       "acceptance": "All commands work; help text clear",
       "verify": "",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
