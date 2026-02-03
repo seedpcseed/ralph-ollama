@@ -112,7 +112,7 @@
       ],
       "acceptance": "The CLI works as expected, configuration files are parsed correctly",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
