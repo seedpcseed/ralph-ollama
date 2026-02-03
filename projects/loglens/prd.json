@@ -1,0 +1,212 @@
+{
+  "branchName": "ralph/loglens",
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Set up project structure and configure dev environment.",
+      "steps": [
+        "Create loglens/ directory",
+        "Install dependencies (click, rich, pytest)"
+      ],
+      "acceptance": "RUN \"pytest\" passes; imports work",
+      "verify": "",
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "1.2",
+      "category": "technical",
+      "story": "Parse common Apache/Nginx combined log format.",
+      "steps": [
+        "Implement Apache/Nginx parser",
+        "Handle malformed lines gracefully"
+      ],
+      "acceptance": "RUN \"loglens --help\" passes; parse 1000-line Apache log in <1s correctly extract all fields",
+      "verify": "",
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.3",
+      "category": "functional",
+      "story": "Count total requests and count by status code (2xx, 3xx, 4xx, 5xx).",
+      "steps": [
+        "Implement basic statistics",
+        "Calculate request rate over time"
+      ],
+      "acceptance": "Accurate stats for test fixture; outputs to console",
+      "verify": "",
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.4",
+      "category": "ui",
+      "story": "Implement CLI interface with commands.",
+      "steps": [
+        "Parse and show stats",
+        "Auto-detect format and analyze"
+      ],
+      "acceptance": "All commands work; help text clear",
+      "verify": "",
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.5",
+      "category": "technical",
+      "story": "Identify all 4xx and 5xx responses.",
+      "steps": [
+        "Group errors by path and status code",
+        "Show error rate over time"
+      ],
+      "acceptance": "Correctly identifies errors in test data; flags spikes",
+      "verify": "",
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.1",
+      "category": "functional",
+      "story": "Parse JSON logs (one JSON object per line).",
+      "steps": [
+        "Auto-detect schema",
+        "Extract nested fields"
+      ],
+      "acceptance": "Parse JSON logs from common frameworks (Express, FastAPI)",
+      "verify": "",
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.2",
+      "category": "technical",
+      "story": "Identify repeated patterns and detect login attempts.",
+      "steps": [
+        "Detect potential security issues",
+        "Suspicious user agents"
+      ],
+      "acceptance": "Flags known attack patterns in test data",
+      "verify": "",
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.3",
+      "category": "technical",
+      "story": "Response time anomalies and traffic anomalies.",
+      "steps": [
+        "Geographic anomalies",
+        "Simple statistical anomaly detection"
+      ],
+      "acceptance": "Detects planted anomalies in test fixtures",
+      "verify": "",
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.4",
+      "category": "ui",
+      "story": "Generate static HTML report with summary statistics and charts.",
+      "steps": [
+        "Top tables",
+        "Anomaly highlights"
+      ],
+      "acceptance": "Opens in browser; all sections present",
+      "verify": "",
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.5",
+      "category": "technical",
+      "story": "Implement time range filtering.",
+      "steps": [
+        "Natural language",
+        "Range specification"
+      ],
+      "acceptance": "Correctly filters logs by time range",
+      "verify": "",
+      "priority": 15,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "3.1",
+      "category": "technical",
+      "story": "Parse RFC 3164 and RFC 5424 formats.",
+      "steps": [
+        "Extract facility",
+        "Severity, hostname, process"
+      ],
+      "acceptance": "Parse standard syslog files",
+      "verify": "",
+      "priority": 21,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "3.2",
+      "category": "technical",
+      "story": "Define custom regex patterns and YAML config file for custom formats.",
+      "steps": [
+        "Custom format support"
+      ],
+      "acceptance": "Parse custom format via config",
+      "verify": "",
+      "priority": 22,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "3.3",
+      "category": "technical",
+      "story": "Implement real-time monitoring and alerting.",
+      "steps": [
+        "Live statistics updating",
+        "Alert on error rate threshold"
+      ],
+      "acceptance": "Updates stats in real-time",
+      "verify": "",
+      "priority": 23,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "3.4",
+      "category": "technical",
+      "story": "Implement export capabilities to CSV, JSON, and SQLite database.",
+      "steps": [
+        "Export functionality"
+      ],
+      "acceptance": "All export formats valid and loadable",
+      "verify": "",
+      "priority": 24,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "Make installable/runnable",
+      "category": "technical",
+      "story": "Implement setup.py and pyproject.toml for installation.",
+      "steps": [
+        "Implement logging"
+      ],
+      "acceptance": "RUN \"pip install loglens\" passes; RUN \"loglens --help\" passes",
+      "verify": "RUN \"pip install loglens\"",
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}
