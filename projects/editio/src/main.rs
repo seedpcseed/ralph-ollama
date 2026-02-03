@@ -5,7 +5,7 @@ use std::path::PathBuf;
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        println!("Usage: editio <file>");
+        println!("Usage: editio 《file》");
         return;
     }
 
@@ -15,7 +15,7 @@ fn main() {
             println!("{}", contents);
         },
         Err(_) => {
-            eprintln!("Could not read file {}", filename);
+            eprintln!("Could not read file 《{}》", filename);
         }
     }
 }
