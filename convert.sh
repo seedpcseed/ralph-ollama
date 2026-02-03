@@ -4,7 +4,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# For convert: run Aider from ralph-ollama so it sees this repo's .git and project files
+REPO_ROOT="$SCRIPT_DIR"
 source "$SCRIPT_DIR/lib/utils.sh"
 source "$SCRIPT_DIR/config.sh"  # Load configuration
 
@@ -312,7 +313,7 @@ Story guidelines:
 
 ### 4. After editing both files, output a brief summary of what was created.
 
-Important Requirement: For both files, use simple, direct and informational language. Avoid being verbose where it's not necessary.
+Important: You MUST actually edit the files. Replace the contents of prd.json with a full JSON object that has branchName and userStories (an array of at least one story per major PRD section). Do not leave userStories as an empty array. Replace or expand requirements.md with real technical specs from the PRD. Use simple, direct language.
 
 Now read the PRD and edit the files.
 PROMPTEOF
@@ -394,6 +395,15 @@ main() {
         fi
     fi
 
+    # Ensure prd.json and requirements.md exist with valid content so Aider can edit them
+    # (empty or invalid files can cause Aider to skip applying edits)
+    if [[ ! -s "$json_file" ]] || ! jq -e '.userStories | type == "array"' "$json_file" 2>/dev/null; then
+        printf '{"branchName":"ralph/%s","userStories":[]}\n' "$project_name" > "$json_file"
+    fi
+    if [[ ! -s "$req_file" ]]; then
+        echo "# Technical requirements (generated from PRD)" > "$req_file"
+    fi
+
     log "INFO" "Converting PRD to tasks for project: $project_name"
     log "INFO" "Aider will edit prd.json and requirements.md directly..."
     log "INFO" "Using model: $AIDER_MODEL"
@@ -422,17 +432,21 @@ main() {
     start_spinner "(Phase 1: Initial conversion)..."
     local convert_success=true
     
-    # Change to repo root for Aider
+    # Run Aider from ralph-ollama (repo with .git and projects/)
     cd "$REPO_ROOT"
-    
-    # Build Aider command - include project files so the model can read/edit them
+    local prd_rel="projects/$project_name/prd.md"
+    local json_rel="projects/$project_name/prd.json"
+    local req_rel="projects/$project_name/requirements.md"
+
+    # Build Aider command - paths relative to ralph-ollama
     local aider_cmd=(
         aider
-        "$prd_file"
-        "$json_file"
-        "$req_file"
+        "$prd_rel"
+        "$json_rel"
+        "$req_rel"
         --model "$AIDER_MODEL"
         --yes
+        --no-stream
         --message-file "$temp_prompt"
     )
     
@@ -495,17 +509,20 @@ main() {
     start_spinner "(Phase 2: Verification & gap analysis)..."
     local verify_success=true
     
-    # Change to repo root for Aider
     cd "$REPO_ROOT"
-    
-    # Build Aider command for verification - include project files
+    local prd_rel="projects/$project_name/prd.md"
+    local json_rel="projects/$project_name/prd.json"
+    local req_rel="projects/$project_name/requirements.md"
+
+    # Build Aider command for verification
     local aider_cmd=(
         aider
-        "$prd_file"
-        "$json_file"
-        "$req_file"
+        "$prd_rel"
+        "$json_rel"
+        "$req_rel"
         --model "$AIDER_MODEL"
         --yes
+        --no-stream
         --message-file "$verify_prompt"
     )
     
