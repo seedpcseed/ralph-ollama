@@ -305,6 +305,8 @@ generate_prompt() {
     local story_text=$(echo "$story_json" | jq -r '.story')
     local steps=$(echo "$story_json" | jq -r '.steps | join("\n")')
     local acceptance=$(echo "$story_json" | jq -r '.acceptance')
+    local project_name
+    project_name=$(basename "$project_dir")
     
     # Read progress for context
     local progress=""
@@ -336,12 +338,15 @@ $prd_content
 ## Recent Progress
 $progress
 
+## How to edit files (required)
+You are running inside Aider. You MUST create or edit files so your changes are applied.
+Use the whole-file format: put the file path on a line by itself (e.g. projects/$project_name/src/main.rs), then on the very next line write \`\`\` (three backticks), then the complete file contents, then a line with \`\`\`. There must be NO blank line between the path and the \`\`\`.
+To create a new file, use the same format with the path where the file should go (e.g. projects/$project_name/Cargo.toml). You must output at least one file create or edit for this task to count as done.
+
 ## Instructions
-1. Implement this story completely
-2. Follow the steps provided
-3. Ensure acceptance criteria are met
-4. Write clean, tested code
-5. When complete, respond with "Task complete" or "Story complete"
+1. Implement this story completely by creating or editing files (see format above).
+2. Follow the steps and meet acceptance criteria.
+3. When done, respond with "Task complete" or "Story complete".
 
 Begin implementation now.
 EOF
