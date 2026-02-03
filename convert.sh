@@ -1,12 +1,15 @@
 #!/bin/bash
 
-# Ralph Convert - Convert PRD.md to prd.json and requirements.md using Claude
+# Ralph Convert - Convert PRD.md to prd.json and requirements.md using Aider
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$SCRIPT_DIR/lib/utils.sh"
+source "$SCRIPT_DIR/config.sh"  # Load configuration
 
-CLAUDE_CMD="claude --dangerously-skip-permissions"
+# Aider model variable (set by setup_aider)
+AIDER_MODEL=""
 
 # Spinner characters
 SPINNER_CHARS='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
@@ -125,18 +128,59 @@ get_relative_path() {
     fi
 }
 
+# Setup Aider based on mode (same as start.sh)
+setup_aider() {
+    local mode=$1
+    
+    case $mode in
+        claude)
+            if [ -z "$ANTHROPIC_API_KEY" ]; then
+                log "ERROR" "ANTHROPIC_API_KEY not set for Claude mode"
+                log "INFO" "Set it with: export ANTHROPIC_API_KEY='your-key-here'"
+                exit 1
+            fi
+            AIDER_MODEL="anthropic/claude-sonnet-4-5"
+            log "INFO" "Using Claude Sonnet 4.5 via API"
+            ;;
+        local)
+            # Check if Ollama is running
+            if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+                log "ERROR" "Ollama not running. Start with: ollama serve"
+                exit 1
+            fi
+            AIDER_MODEL="ollama/$LOCAL_MODEL"
+            log "INFO" "Using local model: $LOCAL_MODEL"
+            ;;
+        hybrid)
+            # For convert, hybrid mode uses Claude (conversion is critical)
+            AIDER_MODEL="anthropic/claude-sonnet-4-5"
+            log "INFO" "Using Claude for conversion (hybrid mode uses Claude for critical tasks)"
+            ;;
+        *)
+            log "ERROR" "Unknown mode '$mode'. Use: claude, local, or hybrid"
+            exit 1
+            ;;
+    esac
+}
+
 show_help() {
     cat << HELPEOF
 Ralph Convert - Convert PRD.md to JSON tasks and requirements
 
-Usage: $0 <project-name>
+Usage: $0 <project-name> [OPTIONS]
 
 Arguments:
     project-name    Name of the Ralph project to convert
 
+Options:
+    --model MODE    Model mode: claude, local, or hybrid (default: $MODE)
+    -h, --help      Show this help
+
 Examples:
     $0 signals
     $0 pagination
+    $0 signals --model local
+    RALPH_MODE=hybrid $0 pagination
 
 This will run a two-phase conversion process:
 
@@ -149,6 +193,10 @@ Phase 2 - Verification:
   - Re-read the original PRD and generated files
   - Verify comprehensive coverage of all requirements
   - Add any missing stories or technical details
+
+Environment Variables:
+    RALPH_MODE      Model mode: claude, local, or hybrid (default: claude)
+    ANTHROPIC_API_KEY   Required for Claude mode
 
 HELPEOF
 }
@@ -292,7 +340,8 @@ main() {
     fi
 
     log "INFO" "Converting PRD to tasks for project: $project_name"
-    log "INFO" "Claude will edit prd.json and requirements.md directly..."
+    log "INFO" "Aider will edit prd.json and requirements.md directly..."
+    log "INFO" "Using model: $AIDER_MODEL"
 
     # Create log directory
     local timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
@@ -314,10 +363,31 @@ main() {
     local convert_log="$project_dir/logs/convert_${timestamp}.log"
     log "INFO" "Log file: $(get_relative_path "$convert_log")"
 
-    # Run Claude with spinner
+    # Run Aider with spinner
     start_spinner "(Phase 1: Initial conversion)..."
     local convert_success=true
-    if ! $CLAUDE_CMD < "$temp_prompt" > "$convert_log" 2>&1; then
+    
+    # Change to repo root for Aider
+    cd "$REPO_ROOT"
+    
+    # Build Aider command
+    local aider_cmd=(
+        aider
+        --model "$AIDER_MODEL"
+        --yes
+        --message-file "$temp_prompt"
+    )
+    
+    if [ "$AIDER_AUTO_COMMITS" = true ]; then
+        aider_cmd+=(--auto-commits --commit)
+    fi
+    
+    if [ "$AIDER_NO_PRETTY" = true ]; then
+        aider_cmd+=(--no-pretty)
+    fi
+    
+    # Execute Aider
+    if ! "${aider_cmd[@]}" > "$convert_log" 2>&1; then
         convert_success=false
     fi
     stop_spinner

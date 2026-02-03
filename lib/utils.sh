@@ -405,8 +405,17 @@ check_dependencies() {
         done
         echo ""
         echo "Install with:"
+        echo "  ./setup.sh"
+        echo ""
+        echo "Or manually:"
         echo "  brew install jq tmux"
-        echo "  pip3 install aider-chat"
+        if command -v pipx &> /dev/null; then
+            echo "  pipx install aider-chat  # Recommended for Python 3.13"
+        elif command -v uv &> /dev/null; then
+            echo "  uv pip install aider-chat  # Alternative for Python 3.13"
+        else
+            echo "  pip3 install aider-chat  # Requires Python 3.10-3.12"
+        fi
         return 1
     fi
     

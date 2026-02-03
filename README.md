@@ -58,9 +58,36 @@ Run the setup script to install dependencies:
 ```
 
 This will install:
-- **Aider** (`pip3 install aider-chat`)
+- **Aider** (`pip3 install aider-chat`) - Requires Python 3.10-3.12
 - **jq** (JSON processor)
 - **tmux** (optional, for monitoring)
+
+### Python Version Requirements
+
+Aider requires Python 3.10-3.12. If you're using Python 3.13, use one of these alternatives:
+
+**Option 1: Use pipx (Recommended)**
+```bash
+pipx install aider-chat
+```
+
+**Option 2: Use uv**
+```bash
+uv pip install aider-chat
+```
+
+**Option 3: Use Python 3.12**
+```bash
+# Install pyenv
+curl https://pyenv.run | bash
+
+# Install Python 3.12
+pyenv install 3.12
+pyenv local 3.12
+
+# Then run setup.sh
+./setup.sh
+```
 
 ## Model Options
 
