@@ -18,10 +18,10 @@ fn main() {
             for line in contents.lines() {
                 if line.starts_with("![") && line.ends_with(')') {
                     figure_count += 1;
-                    println!("Figure {}: {}", figure_count, line);
+                    println!("Figure 《{}》: 《{}》", figure_count, line);
                 } else if line.starts_with("|") && line.ends_with('|') {
                     table_count += 1;
-                    println!("Table {}: {}", table_count, line);
+                    println!("Table 《{}》: 《{}》", table_count, line);
                 }
             }
         },
