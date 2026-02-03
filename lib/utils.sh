@@ -212,11 +212,19 @@ $acceptance
 
 EOF
 
-    # Add progress/learnings if available
+    # Add progress/learnings if available (limit size aggressively to avoid "argument list too long")
     if [ -f "$progress_file" ]; then
+        PROGRESS_SIZE=$(wc -c < "$progress_file" 2>/dev/null || echo "0")
+        # Limit to last 1000 chars or last 15 lines (whichever is smaller) to keep prompt manageable
+        if [ "$PROGRESS_SIZE" -gt 1000 ]; then
+            PROGRESS_CONTENT=$(tail -n 15 "$progress_file" | tail -c 1000)
+            PROGRESS_CONTENT="(Showing last 15 lines, truncated for size)\n$PROGRESS_CONTENT"
+        else
+            PROGRESS_CONTENT=$(cat "$progress_file")
+        fi
         cat << EOF
-PREVIOUS LEARNINGS:
-$(cat "$progress_file")
+PREVIOUS LEARNINGS (recent):
+$PROGRESS_CONTENT
 
 EOF
     fi
@@ -261,6 +269,28 @@ is_prd_template_unchanged() {
     local template_file="$2"
     [ -f "$prd_file" ] && [ -f "$template_file" ] || return 1
     cmp -s "$prd_file" "$template_file"
+}
+
+# Trim progress.txt if it gets too large (prevent "argument list too long" errors)
+trim_progress_file() {
+    local progress_file="$1"
+    local max_size="${2:-50000}"  # Default 50KB
+    
+    if [ ! -f "$progress_file" ]; then
+        return 0
+    fi
+    
+    local size=$(wc -c < "$progress_file" 2>/dev/null || echo "0")
+    if [ "$size" -gt "$max_size" ]; then
+        # Keep header and last 50 lines
+        {
+            head -n 15 "$progress_file"
+            echo ""
+            echo "--- (File trimmed on $(date '+%Y-%m-%d %H:%M:%S') - was ${size} bytes) ---"
+            echo ""
+            tail -n 50 "$progress_file"
+        } > "${progress_file}.tmp" && mv "${progress_file}.tmp" "$progress_file"
+    fi
 }
 
 # Extract JSON safely

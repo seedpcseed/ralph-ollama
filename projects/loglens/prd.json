@@ -40,7 +40,7 @@
       "acceptance": "RUN \"python -m loglens\" and verify that both parse and analyze are listed as subcommands.",
       "verify": "python -m loglens",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {

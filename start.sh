@@ -273,6 +273,31 @@ echo ""
 LOOP_COUNT=0
 CALL_COUNT=0
 HOUR_START=$(date +%s)
+SESSION_START=$(date +%s)
+SESSION_LOG="$LOG_DIR/session_$(date +%Y%m%d_%H%M%S).log"
+
+# Initialize session log
+{
+    echo "=================================================="
+    echo "Ralph Session Log"
+    echo "=================================================="
+    echo "Project: $PROJECT_NAME"
+    echo "Model: $OLLAMA_MODEL"
+    echo "Started: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "=================================================="
+    echo ""
+} > "$SESSION_LOG"
+
+# Log session event
+log_session_event() {
+    local event_type="$1"
+    shift
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [$event_type] $message" | tee -a "$SESSION_LOG"
+}
+
+log_session_event "SESSION" "Started Ralph loop"
 
 while true; do
     LOOP_COUNT=$((LOOP_COUNT + 1))
@@ -284,6 +309,9 @@ while true; do
     # Check circuit breaker
     if ! check_circuit_breaker "$CB_FILE"; then
         echo "Circuit breaker OPEN. Loop stopped."
+        SESSION_DURATION=$(( $(date +%s) - SESSION_START ))
+        log_session_event "SESSION" "Stopped: Circuit breaker OPEN after $LOOP_COUNT loops ($(($SESSION_DURATION / 60))m $(($SESSION_DURATION % 60))s)"
+        echo "Session log: $SESSION_LOG"
         echo "Run: $0 $PROJECT_NAME --reset to continue"
         exit 1
     fi
@@ -313,7 +341,10 @@ while true; do
     
     if [ "$NEXT_STORY" = "COMPLETE" ]; then
         echo "🎉 All stories complete!"
+        SESSION_DURATION=$(( $(date +%s) - SESSION_START ))
+        log_session_event "SESSION" "Completed all stories after $LOOP_COUNT loops ($(($SESSION_DURATION / 60))m $(($SESSION_DURATION % 60))s)"
         update_status "$STATUS_FILE" "completed" "$LOOP_COUNT" 0
+        echo "Session log: $SESSION_LOG"
         exit 0
     fi
     
@@ -324,8 +355,10 @@ while true; do
     fi
     
     STORY_ID=$(echo "$NEXT_STORY" | jq -r '.id')
+    STORY_DESC=$(echo "$NEXT_STORY" | jq -r '.story')
     echo "Working on story: $STORY_ID"
-    echo "$NEXT_STORY" | jq -r '.story'
+    echo "$STORY_DESC"
+    log_session_event "STORY" "Starting story $STORY_ID: $STORY_DESC"
     
     # Build prompt
     FULL_PROMPT=$(build_ollama_prompt "$PROJECT_DIR" "$NEXT_STORY")
@@ -335,12 +368,42 @@ while true; do
     CALL_COUNT=$((CALL_COUNT + 1))
     
     RESPONSE_FILE="$LOG_DIR/response_${LOOP_COUNT}.txt"
+    PROMPT_FILE="$LOG_DIR/prompt_${LOOP_COUNT}.txt"
     
-    # Run ollama with timeout
-    if timeout "${TIMEOUT_MINUTES}m" ollama run "$OLLAMA_MODEL" "$FULL_PROMPT" > "$RESPONSE_FILE" 2>&1; then
+    # Write prompt to file to avoid "argument list too long" errors
+    # Use printf to preserve exact content (echo might add newlines)
+    printf '%s' "$FULL_PROMPT" > "$PROMPT_FILE"
+    
+    # Run ollama with timeout, using process substitution to avoid argument length limits
+    # Check prompt size and warn if very large
+    PROMPT_SIZE=$(wc -c < "$PROMPT_FILE" 2>/dev/null || echo "0")
+    if [ "$PROMPT_SIZE" -gt 100000 ]; then
+        log_session_event "WARN" "Story $STORY_ID: Large prompt ($PROMPT_SIZE bytes), may cause issues"
+    fi
+    
+    # Use process substitution to pass prompt file content
+    # This avoids shell argument length limits by not expanding the prompt in the command line
+    if timeout "${TIMEOUT_MINUTES}m" bash -c "ollama run '$OLLAMA_MODEL' \"\$(cat '$PROMPT_FILE')\"" > "$RESPONSE_FILE" 2>&1; then
         OLLAMA_EXIT=0
     else
         OLLAMA_EXIT=$?
+        # If we got "argument list too long", try alternative method
+        if grep -q "Argument list too long" "$RESPONSE_FILE" 2>/dev/null; then
+            log_session_event "ERROR" "Story $STORY_ID: Prompt too large ($PROMPT_SIZE bytes), truncating progress.txt"
+            # Truncate progress.txt to prevent future issues
+            if [ -f "$PROJECT_DIR/progress.txt" ]; then
+                tail -n 20 "$PROJECT_DIR/progress.txt" > "${PROJECT_DIR}/progress.txt.tmp" && mv "${PROJECT_DIR}/progress.txt.tmp" "$PROJECT_DIR/progress.txt"
+            fi
+        fi
+    fi
+    
+    # Keep prompt file for debugging (truncate if very large)
+    if [ -f "$PROMPT_FILE" ]; then
+        PROMPT_SIZE=$(wc -c < "$PROMPT_FILE" 2>/dev/null || echo "0")
+        if [ "$PROMPT_SIZE" -gt 100000 ]; then
+            # Truncate very large prompts to last 50KB for debugging
+            tail -c 50000 "$PROMPT_FILE" > "${PROMPT_FILE}.truncated" && mv "${PROMPT_FILE}.truncated" "$PROMPT_FILE"
+        fi
     fi
     
     cat "$RESPONSE_FILE" >> "$LOG_FILE"
@@ -348,9 +411,12 @@ while true; do
     if [ $OLLAMA_EXIT -ne 0 ]; then
         if [ $OLLAMA_EXIT -eq 124 ]; then
             echo "Timeout after ${TIMEOUT_MINUTES} minutes"
+            log_session_event "ERROR" "Story $STORY_ID: Ollama timeout after ${TIMEOUT_MINUTES}m"
             record_circuit_breaker_failure "$CB_FILE" "timeout"
         else
             echo "Ollama failed with exit code: $OLLAMA_EXIT"
+            ERROR_PREVIEW=$(head -n 5 "$RESPONSE_FILE" | tr '\n' ' ' | cut -c1-200)
+            log_session_event "ERROR" "Story $STORY_ID: Ollama failed (exit $OLLAMA_EXIT). Preview: $ERROR_PREVIEW"
             record_circuit_breaker_failure "$CB_FILE" "ollama_error"
         fi
         continue
@@ -359,7 +425,12 @@ while true; do
     # Apply file writes from model response (extract code blocks and write to project)
     RESPONSE_TEXT=$(cat "$RESPONSE_FILE")
     echo "Applying file writes from response..."
-    apply_response_to_files "$RESPONSE_TEXT" "$PROJECT_DIR" "$STORY_ID"
+    FILES_OUTPUT=$(apply_response_to_files "$RESPONSE_TEXT" "$PROJECT_DIR" "$STORY_ID" 2>&1)
+    echo "$FILES_OUTPUT"
+    if echo "$FILES_OUTPUT" | grep -q "Wrote"; then
+        FILES_LIST=$(echo "$FILES_OUTPUT" | grep "Wrote" | sed 's/.*Wrote //' | tr '\n' ',' | sed 's/,$//')
+        log_session_event "FILES" "Story $STORY_ID: Wrote files: $FILES_LIST"
+    fi
     
     # Analyze response
     ANALYSIS=$(analyze_ollama_response "$RESPONSE_TEXT" "$STORY_ID")
@@ -370,6 +441,8 @@ while true; do
     echo "Analysis: status=$STATUS, complete=$COMPLETE"
     
     if [ "$STATUS" = "error" ]; then
+        ERROR_MSG=$(echo "$ANALYSIS" | jq -r '.error // "unknown error"' 2>/dev/null || echo "unknown error")
+        log_session_event "ERROR" "Story $STORY_ID: Response analysis failed - $ERROR_MSG"
         record_circuit_breaker_failure "$CB_FILE" "analysis_error"
         continue
     fi
@@ -381,6 +454,10 @@ while true; do
         echo "## $(date '+%Y-%m-%d') - Story $STORY_ID" >> "$PROGRESS_FILE"
         echo "$LEARNINGS" >> "$PROGRESS_FILE"
         echo "Learnings recorded to $PROGRESS_FILE"
+        # Trim progress file if it gets too large (every 10 loops to avoid overhead)
+        if [ $((LOOP_COUNT % 10)) -eq 0 ]; then
+            trim_progress_file "$PROGRESS_FILE"
+        fi
     fi
     
     if [ "$COMPLETE" = "true" ]; then
@@ -391,6 +468,8 @@ while true; do
         if [ $VERIFY_RESULT -eq 1 ]; then
             echo "Story $STORY_ID not marked complete - verification failed"
             echo "Fix the implementation and Ralph will retry on next run"
+            VERIFY_ERROR=$(echo "$VERIFY_LAST_OUTPUT" | head -n 3 | tr '\n' ' ' | cut -c1-150)
+            log_session_event "VERIFY_FAIL" "Story $STORY_ID: Verification failed. Command: $VERIFY_LAST_CMD. Error: $VERIFY_ERROR"
 
             # Detect repeated failures (stuck loops) for this story
             normalized_output=$(printf '%s' "$VERIFY_LAST_OUTPUT" | normalize_output_for_signature)
@@ -415,6 +494,7 @@ while true; do
                 last_logged="${STORY_STUCK_SIGNATURE[$STORY_ID]}"
                 if [ "$last_logged" != "$tmp_signature" ]; then
                     record_stuck_failure "$STORY_ID" "$VERIFY_LAST_CMD" "$VERIFY_LAST_OUTPUT" "$PROGRESS_FILE" "$current_count"
+                    log_session_event "STUCK" "Story $STORY_ID: Detected stuck loop ($current_count identical failures). Guidance logged to progress.txt"
                     STORY_STUCK_SIGNATURE[$STORY_ID]="$tmp_signature"
                 else
                     echo "  (stuck note already recorded for this pattern)"
@@ -423,6 +503,7 @@ while true; do
             fi
         else
             echo "✓ Story $STORY_ID marked complete"
+            log_session_event "SUCCESS" "Story $STORY_ID completed: $STORY_DESC"
             mark_story_complete "$PRD_JSON" "$STORY_ID"
             
             # Reset circuit breaker on success
