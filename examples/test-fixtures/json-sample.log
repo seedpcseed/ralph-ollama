@@ -1,0 +1,47 @@
+{"timestamp": "2024-01-15T10:15:00Z", "level": "INFO", "service": "api", "message": "Server started on port 8000", "pid": 1234}
+{"timestamp": "2024-01-15T10:15:01Z", "level": "INFO", "service": "api", "message": "Database connection established", "db": "postgresql", "host": "localhost"}
+{"timestamp": "2024-01-15T10:15:05Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "GET", "path": "/api/users", "ip": "192.168.1.100", "response_time": 45}
+{"timestamp": "2024-01-15T10:15:06Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "GET", "path": "/api/users", "status": 200, "response_time": 45}
+{"timestamp": "2024-01-15T10:15:07Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "POST", "path": "/api/login", "ip": "192.168.1.101"}
+{"timestamp": "2024-01-15T10:15:08Z", "level": "WARN", "service": "api", "message": "Invalid credentials", "username": "user123", "ip": "192.168.1.101"}
+{"timestamp": "2024-01-15T10:15:08Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "POST", "path": "/api/login", "status": 401, "response_time": 120}
+{"timestamp": "2024-01-15T10:15:10Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "GET", "path": "/api/products", "ip": "192.168.1.102", "user_id": 42}
+{"timestamp": "2024-01-15T10:15:11Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "GET", "path": "/api/products", "status": 200, "response_time": 67, "cached": true}
+{"timestamp": "2024-01-15T10:15:12Z", "level": "INFO", "service": "worker", "message": "Processing job", "job_id": "job-123", "type": "email"}
+{"timestamp": "2024-01-15T10:15:15Z", "level": "INFO", "service": "worker", "message": "Job completed", "job_id": "job-123", "duration": 3.2}
+{"timestamp": "2024-01-15T10:15:16Z", "level": "ERROR", "service": "api", "message": "Database query failed", "error": "connection timeout", "query": "SELECT * FROM users WHERE id = $1", "duration": 5000}
+{"timestamp": "2024-01-15T10:15:16Z", "level": "ERROR", "service": "api", "message": "Request failed", "method": "GET", "path": "/api/users/999", "status": 500, "response_time": 5010}
+{"timestamp": "2024-01-15T10:15:17Z", "level": "WARN", "service": "api", "message": "Slow query detected", "query": "SELECT * FROM orders JOIN users", "duration": 1200}
+{"timestamp": "2024-01-15T10:15:18Z", "level": "INFO", "service": "api", "message": "Cache miss", "key": "user:42:profile", "regenerating": true}
+{"timestamp": "2024-01-15T10:15:20Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "DELETE", "path": "/api/users/123", "ip": "192.168.1.103", "user_id": 1}
+{"timestamp": "2024-01-15T10:15:21Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "DELETE", "path": "/api/users/123", "status": 204, "response_time": 89}
+{"timestamp": "2024-01-15T10:15:25Z", "level": "ERROR", "service": "api", "message": "Unhandled exception", "error": "NullPointerException", "stack_trace": "  File 'api.py', line 42, in handle_request\n    user = User.get(id)\n  File 'models.py', line 15, in get\n    return self.query.filter_by(id=id).first()\nAttributeError: 'NoneType' object has no attribute 'first'"}
+{"timestamp": "2024-01-15T10:15:25Z", "level": "ERROR", "service": "api", "message": "Request failed", "method": "GET", "path": "/api/profile", "status": 500, "response_time": 5}
+{"timestamp": "2024-01-15T10:15:30Z", "level": "WARN", "service": "api", "message": "Rate limit exceeded", "ip": "192.168.1.250", "endpoint": "/api/search", "requests": 100, "window": "1m"}
+{"timestamp": "2024-01-15T10:15:31Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "GET", "path": "/api/search", "status": 429, "response_time": 2}
+{"timestamp": "2024-01-15T10:15:32Z", "level": "INFO", "service": "scheduler", "message": "Cron job started", "job": "cleanup_old_logs", "schedule": "0 2 * * *"}
+{"timestamp": "2024-01-15T10:15:35Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "POST", "path": "/api/upload", "ip": "192.168.1.104", "size": 5242880}
+{"timestamp": "2024-01-15T10:15:40Z", "level": "INFO", "service": "api", "message": "File uploaded", "path": "/uploads/file123.jpg", "size": 5242880, "duration": 5.2}
+{"timestamp": "2024-01-15T10:15:40Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "POST", "path": "/api/upload", "status": 201, "response_time": 5200}
+{"timestamp": "2024-01-15T10:15:45Z", "level": "WARN", "service": "api", "message": "Deprecated API endpoint used", "path": "/api/v1/users", "client": "mobile-app-v1.2", "ip": "192.168.1.105"}
+{"timestamp": "2024-01-15T10:15:50Z", "level": "INFO", "service": "api", "message": "Health check", "status": "healthy", "checks": {"database": "ok", "redis": "ok", "disk_space": "ok"}}
+{"timestamp": "2024-01-15T10:15:55Z", "level": "ERROR", "service": "worker", "message": "Job failed", "job_id": "job-456", "error": "timeout", "retries": 3, "will_retry": true}
+{"timestamp": "2024-01-15T10:16:00Z", "level": "INFO", "service": "api", "message": "WebSocket connection opened", "connection_id": "ws-789", "ip": "192.168.1.106"}
+{"timestamp": "2024-01-15T10:16:05Z", "level": "INFO", "service": "api", "message": "WebSocket message received", "connection_id": "ws-789", "type": "ping"}
+{"timestamp": "2024-01-15T10:16:10Z", "level": "WARN", "service": "api", "message": "Suspicious activity detected", "ip": "192.168.1.251", "pattern": "sql_injection", "path": "/search?q=test' OR 1=1--"}
+{"timestamp": "2024-01-15T10:16:11Z", "level": "WARN", "service": "api", "message": "Request blocked", "ip": "192.168.1.251", "reason": "security_policy", "path": "/search"}
+{"timestamp": "2024-01-15T10:16:15Z", "level": "INFO", "service": "api", "message": "Incoming request", "method": "GET", "path": "/metrics", "ip": "192.168.1.200"}
+{"timestamp": "2024-01-15T10:16:15Z", "level": "INFO", "service": "api", "message": "Request completed", "method": "GET", "path": "/metrics", "status": 200, "response_time": 15}
+{"timestamp": "2024-01-15T10:16:20Z", "level": "INFO", "service": "cache", "message": "Cache eviction", "keys_evicted": 150, "reason": "memory_pressure", "free_memory_mb": 512}
+{"timestamp": "2024-01-15T10:16:25Z", "level": "ERROR", "service": "api", "message": "External API call failed", "api": "payment_gateway", "error": "503 Service Unavailable", "retries": 3}
+{"timestamp": "2024-01-15T10:16:25Z", "level": "ERROR", "service": "api", "message": "Request failed", "method": "POST", "path": "/api/checkout", "status": 503, "response_time": 10000}
+{"timestamp": "2024-01-15T10:16:30Z", "level": "INFO", "service": "api", "message": "Background task queued", "task": "generate_report", "user_id": 42, "priority": "low"}
+{"timestamp": "2024-01-15T10:16:35Z", "level": "WARN", "service": "database", "message": "Connection pool exhausted", "active": 50, "max": 50, "waiting": 5}
+{"timestamp": "2024-01-15T10:16:40Z", "level": "INFO", "service": "api", "message": "API key created", "user_id": 123, "key_id": "ak_test_1234567890", "scopes": ["read:users", "write:products"]}
+{"timestamp": "2024-01-15T10:16:45Z", "level": "INFO", "service": "scheduler", "message": "Cron job completed", "job": "cleanup_old_logs", "duration": 73.5, "records_deleted": 1523}
+{"timestamp": "2024-01-15T10:16:50Z", "level": "ERROR", "service": "api", "message": "Disk space critical", "mount": "/data", "used_percent": 95, "available_mb": 512}
+{"timestamp": "2024-01-15T10:16:55Z", "level": "WARN", "service": "api", "message": "High memory usage", "used_mb": 3584, "total_mb": 4096, "percent": 87.5}
+{"timestamp": "2024-01-15T10:17:00Z", "level": "INFO", "service": "api", "message": "Graceful shutdown initiated", "reason": "SIGTERM received"}
+{"timestamp": "2024-01-15T10:17:01Z", "level": "INFO", "service": "api", "message": "Draining connections", "active_connections": 12}
+{"timestamp": "2024-01-15T10:17:05Z", "level": "INFO", "service": "api", "message": "All connections closed", "duration": 4.2}
+{"timestamp": "2024-01-15T10:17:05Z", "level": "INFO", "service": "api", "message": "Server shutdown complete", "uptime_seconds": 125}

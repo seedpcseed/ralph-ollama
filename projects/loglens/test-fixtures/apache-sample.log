@@ -1,0 +1,78 @@
+# Sample Apache Combined Log Format
+# This is a test fixture for the LogLens project
+# Format: IP - - [timestamp] "METHOD path HTTP/1.1" status size "referrer" "user-agent"
+
+192.168.1.100 - - [15/Jan/2024:10:15:23 +0000] "GET /index.html HTTP/1.1" 200 1024 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+192.168.1.101 - - [15/Jan/2024:10:15:24 +0000] "GET /about.html HTTP/1.1" 200 2048 "http://example.com/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+192.168.1.100 - - [15/Jan/2024:10:15:25 +0000] "GET /api/users HTTP/1.1" 200 512 "-" "curl/7.68.0"
+192.168.1.102 - - [15/Jan/2024:10:15:26 +0000] "POST /api/login HTTP/1.1" 401 128 "-" "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X)"
+192.168.1.103 - - [15/Jan/2024:10:15:27 +0000] "GET /products HTTP/1.1" 200 3072 "http://example.com/about.html" "Mozilla/5.0 (X11; Linux x86_64)"
+192.168.1.100 - - [15/Jan/2024:10:15:28 +0000] "GET /api/products/123 HTTP/1.1" 404 256 "-" "curl/7.68.0"
+192.168.1.104 - - [15/Jan/2024:10:15:29 +0000] "GET /admin HTTP/1.1" 403 128 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.100 - - [15/Jan/2024:10:15:30 +0000] "GET /contact.html HTTP/1.1" 200 1536 "http://example.com/products" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+192.168.1.105 - - [15/Jan/2024:10:15:31 +0000] "GET /search?q=test HTTP/1.1" 200 2560 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+192.168.1.106 - - [15/Jan/2024:10:15:32 +0000] "POST /api/register HTTP/1.1" 201 256 "-" "Mozilla/5.0 (Android 11; Mobile)"
+
+# Errors - 4xx
+192.168.1.107 - - [15/Jan/2024:10:15:33 +0000] "GET /missing.html HTTP/1.1" 404 512 "-" "Mozilla/5.0 (Windows NT 10.0)"
+192.168.1.100 - - [15/Jan/2024:10:15:34 +0000] "GET /api/users/999 HTTP/1.1" 404 128 "-" "curl/7.68.0"
+192.168.1.108 - - [15/Jan/2024:10:15:35 +0000] "POST /api/login HTTP/1.1" 401 128 "-" "Mozilla/5.0 (iPhone)"
+192.168.1.109 - - [15/Jan/2024:10:15:36 +0000] "DELETE /api/admin/delete HTTP/1.1" 403 256 "-" "curl/7.68.0"
+192.168.1.110 - - [15/Jan/2024:10:15:37 +0000] "GET /api/data?invalid HTTP/1.1" 400 128 "-" "Mozilla/5.0"
+
+# Errors - 5xx
+192.168.1.100 - - [15/Jan/2024:10:15:38 +0000] "GET /api/broken HTTP/1.1" 500 1024 "-" "curl/7.68.0"
+192.168.1.111 - - [15/Jan/2024:10:15:39 +0000] "POST /api/timeout HTTP/1.1" 503 512 "-" "Mozilla/5.0"
+192.168.1.112 - - [15/Jan/2024:10:15:40 +0000] "GET /api/slow HTTP/1.1" 504 256 "-" "curl/7.68.0"
+
+# Bot traffic
+192.168.1.200 - - [15/Jan/2024:10:15:41 +0000] "GET /robots.txt HTTP/1.1" 200 128 "-" "Googlebot/2.1"
+192.168.1.200 - - [15/Jan/2024:10:15:42 +0000] "GET /sitemap.xml HTTP/1.1" 200 256 "-" "Googlebot/2.1"
+192.168.1.201 - - [15/Jan/2024:10:15:43 +0000] "GET / HTTP/1.1" 200 4096 "-" "Bingbot/2.0"
+
+# Normal traffic continues
+192.168.1.113 - - [15/Jan/2024:10:15:44 +0000] "GET /blog/article-1 HTTP/1.1" 200 5120 "http://example.com/" "Mozilla/5.0"
+192.168.1.114 - - [15/Jan/2024:10:15:45 +0000] "GET /blog/article-2 HTTP/1.1" 200 4800 "http://example.com/blog" "Mozilla/5.0"
+192.168.1.115 - - [15/Jan/2024:10:15:46 +0000] "GET /images/logo.png HTTP/1.1" 200 15360 "http://example.com/" "Mozilla/5.0"
+192.168.1.116 - - [15/Jan/2024:10:15:47 +0000] "GET /css/style.css HTTP/1.1" 200 8192 "http://example.com/" "Mozilla/5.0"
+192.168.1.117 - - [15/Jan/2024:10:15:48 +0000] "GET /js/app.js HTTP/1.1" 200 20480 "http://example.com/" "Mozilla/5.0"
+
+# Anomaly: Sudden spike from one IP (suspicious behavior)
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/users HTTP/1.1" 200 512 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/products HTTP/1.1" 200 1024 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/orders HTTP/1.1" 200 768 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/customers HTTP/1.1" 200 1536 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/reports HTTP/1.1" 200 2048 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /api/analytics HTTP/1.1" 200 1280 "-" "curl/7.68.0"
+192.168.1.250 - - [15/Jan/2024:10:15:49 +0000] "GET /admin/dashboard HTTP/1.1" 403 256 "-" "curl/7.68.0"
+
+# Potential security issue: SQL injection attempt
+192.168.1.251 - - [15/Jan/2024:10:15:50 +0000] "GET /search?q=test%27+OR+1=1-- HTTP/1.1" 400 128 "-" "curl/7.68.0"
+192.168.1.251 - - [15/Jan/2024:10:15:51 +0000] "GET /api/users?id=1%27+UNION+SELECT+* HTTP/1.1" 400 128 "-" "curl/7.68.0"
+
+# More normal traffic
+192.168.1.118 - - [15/Jan/2024:10:15:52 +0000] "GET /pricing.html HTTP/1.1" 200 2304 "-" "Mozilla/5.0"
+192.168.1.119 - - [15/Jan/2024:10:15:53 +0000] "POST /api/contact HTTP/1.1" 200 256 "-" "Mozilla/5.0"
+192.168.1.120 - - [15/Jan/2024:10:15:54 +0000] "GET /features.html HTTP/1.1" 200 3584 "http://example.com/pricing.html" "Mozilla/5.0"
+
+# Edge cases: Malformed lines (should be handled gracefully)
+This is not a valid log line
+192.168.1.121 - - [15/Jan/2024:10:15:55 +0000] "GET
+Another malformed line without proper structure
+
+# More normal traffic
+192.168.1.122 - - [15/Jan/2024:10:15:56 +0000] "GET /docs/api HTTP/1.1" 200 6144 "-" "Mozilla/5.0"
+192.168.1.123 - - [15/Jan/2024:10:15:57 +0000] "GET /docs/guide HTTP/1.1" 200 7168 "http://example.com/docs/api" "Mozilla/5.0"
+192.168.1.124 - - [15/Jan/2024:10:15:58 +0000] "POST /api/feedback HTTP/1.1" 201 128 "-" "Mozilla/5.0"
+192.168.1.125 - - [15/Jan/2024:10:15:59 +0000] "GET /downloads/app.zip HTTP/1.1" 200 1048576 "-" "Mozilla/5.0"
+192.168.1.126 - - [15/Jan/2024:10:16:00 +0000] "GET /api/status HTTP/1.1" 200 64 "-" "curl/7.68.0"
+
+# Summary for this fixture:
+# Total lines: 50
+# Successful (2xx): ~30
+# Client errors (4xx): ~10
+# Server errors (5xx): ~3
+# Bot requests: 3
+# Anomaly (spike from 192.168.1.250): 7 requests in 1 second
+# Security issues: 2 SQL injection attempts
+# Malformed lines: 3

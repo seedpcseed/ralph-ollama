@@ -1,0 +1,11 @@
+import pytest
+from config_reader import ConfigReader
+
+def test_parse_logs():
+    # Assuming the YAML config has a regex for log type 'error' that matches a specific error message format
+    config = ConfigReader('sample-config.yaml')
+    logs = "This is an error: Invalid input"
+    
+    parsed_logs = config.parse_logs(logs)
+    
+    assert 'error' in parsed_logs, "Error log type not found in parsed logs"
