@@ -1,1 +1,132 @@
-{"branchName":"ralph/editio","userStories":[{"id":"1.1","category":"technical","story":"Create a two-pass layout engine with CSS-style float algorithm","steps":["Implement the CSS-style float algorithm"],"acceptance":"The text wrapping around figures works reliably, including with lists","priority":10,"passes":false,"notes":""},{"id":"1.2","category":"technical","story":"Implement a PDF generation engine with custom layout","steps":["Integrate printpdf library","Implement PDF writer"],"acceptance":"The PDF output is generated correctly, including figure placement and text wrapping around  figures","priority":9,"passes":false,"notes":""},{"id":"1.3","category":"technical","story":"Implement a cross-references system","steps":["Design and implement the cross-references system"],"acceptance":"Cross-references work correctly in the compiled document","priority":8,"passes":false,"notes":""},{"id":"1.4","category":"technical","story":"Implement a basic math rendering system","steps":["Parse LaTeX math syntax","Implement Level 1 math support"],"acceptance":"Basic math renders in PDF, cross-referencing works correctly","priority":7,"passes":false,"notes":""},{"id":"1.5","category":"technical","story":"Implement a bibliography system","steps":["Parse BibTeX files","Implement citation processing"],"acceptance":"Bibliography generates correctly, cross-referencing works correctly","priority":6,"passes":false,"notes":""},{"id":"1.6","category":"technical","story":"Implement figure and table support","steps":["Design and implement the image and table AST nodes","Implement numbering and cross-referencing"],"acceptance":"Figures and tables are rendered correctly, including captions and cross-referencing","priority":5,"passes":false,"notes":""},{"id":"1.7","category":"technical","story":"Implement basic document formatting","steps":["Parse YAML front matter","Implement page-level controls"],"acceptance":"Document is formatted correctly, including margins, page size, font size, headers/footers, and  numbering","priority":4,"passes":false,"notes":""},{"id":"1.8","category":"technical","story":"Implement the plugin system architecture","steps":["Design the editio-plugin API crate"],"acceptance":"The plugin system is functional, plugins can be loaded and executed","priority":3,"passes":false,"notes":""},{"id":"1.9","category":"technical","story":"Implement the CLI and configuration system","steps":["Design the CLI commands","Parse editio.toml or .editio.yaml"],"acceptance":"The CLI works as expected, configuration files are parsed correctly","priority":2,"passes":false,"notes":""},{"id":"1.10","category":"technical","story":"Implement testing and quality assurance","steps":["Unit tests for parser, AST builder, layout engine","Integration tests for end-to-end  compilation"],"acceptance":"All unit and integration tests pass","priority":1,"passes":false,"notes":""}]}
+{
+  "branchName": "ralph/editio",
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Create a two-pass layout engine with CSS-style float algorithm",
+      "steps": [
+        "Implement the CSS-style float algorithm"
+      ],
+      "acceptance": "The text wrapping around figures works reliably, including with lists",
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.2",
+      "category": "technical",
+      "story": "Implement a PDF generation engine with custom layout",
+      "steps": [
+        "Integrate printpdf library",
+        "Implement PDF writer"
+      ],
+      "acceptance": "The PDF output is generated correctly, including figure placement and text wrapping around  figures",
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.3",
+      "category": "technical",
+      "story": "Implement a cross-references system",
+      "steps": [
+        "Design and implement the cross-references system"
+      ],
+      "acceptance": "Cross-references work correctly in the compiled document",
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.4",
+      "category": "technical",
+      "story": "Implement a basic math rendering system",
+      "steps": [
+        "Parse LaTeX math syntax",
+        "Implement Level 1 math support"
+      ],
+      "acceptance": "Basic math renders in PDF, cross-referencing works correctly",
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.5",
+      "category": "technical",
+      "story": "Implement a bibliography system",
+      "steps": [
+        "Parse BibTeX files",
+        "Implement citation processing"
+      ],
+      "acceptance": "Bibliography generates correctly, cross-referencing works correctly",
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.6",
+      "category": "technical",
+      "story": "Implement figure and table support",
+      "steps": [
+        "Design and implement the image and table AST nodes",
+        "Implement numbering and cross-referencing"
+      ],
+      "acceptance": "Figures and tables are rendered correctly, including captions and cross-referencing",
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.7",
+      "category": "technical",
+      "story": "Implement basic document formatting",
+      "steps": [
+        "Parse YAML front matter",
+        "Implement page-level controls"
+      ],
+      "acceptance": "Document is formatted correctly, including margins, page size, font size, headers/footers, and  numbering",
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.8",
+      "category": "technical",
+      "story": "Implement the plugin system architecture",
+      "steps": [
+        "Design the editio-plugin API crate"
+      ],
+      "acceptance": "The plugin system is functional, plugins can be loaded and executed",
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.9",
+      "category": "technical",
+      "story": "Implement the CLI and configuration system",
+      "steps": [
+        "Design the CLI commands",
+        "Parse editio.toml or .editio.yaml"
+      ],
+      "acceptance": "The CLI works as expected, configuration files are parsed correctly",
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.10",
+      "category": "technical",
+      "story": "Implement testing and quality assurance",
+      "steps": [
+        "Unit tests for parser, AST builder, layout engine",
+        "Integration tests for end-to-end  compilation"
+      ],
+      "acceptance": "All unit and integration tests pass",
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    }
+  ]
+}
