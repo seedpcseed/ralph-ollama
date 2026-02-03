@@ -115,13 +115,62 @@ EOF
 echo "Analyzing PRD with $MODEL..."
 RESPONSE=$(ollama run "$MODEL" "$(cat "$TEMP_PROMPT")")
 
-# Extract JSON from response (in case model adds explanation)
-# First try: extract JSON between ```json and ``` code blocks (preserves full multi-line JSON)
-JSON=$(echo "$RESPONSE" | sed -n '/```json/,/```/p' | sed '1d;$d')
+# Extract JSON from response (model may wrap in markdown and add trailing text)
+extract_json_block() {
+    local raw="$1"
+    # Try ```json ... ``` then ``` ... ``` (allow optional leading/trailing whitespace on fence lines)
+    local block
+    block=$(echo "$raw" | sed -n '/^[[:space:]]*```json[[:space:]]*$/,/^[[:space:]]*```[[:space:]]*$/p' | sed '1d;$d')
+    if [ -z "$block" ]; then
+        block=$(echo "$raw" | sed -n '/^[[:space:]]*```[[:space:]]*$/,/^[[:space:]]*```[[:space:]]*$/p' | sed '1d;$d')
+    fi
+    if [ -n "$block" ]; then
+        # Strip trailing ``` from last line (model may put }]}  ``` on same line)
+        echo "$block" | sed '$s/[[:space:]]*```[[:space:]]*$//'
+        return
+    fi
+    # Brace-matching fallback: from first { to matching }
+    local start
+    start=$(echo "$raw" | grep -n '^{' | head -1 | cut -d: -f1)
+    if [ -n "$start" ]; then
+        echo "$raw" | tail -n +"$start" | python3 -c "
+import sys
+s = sys.stdin.read()
+depth = 0
+i = 0
+while i < len(s):
+    if s[i] == '{': depth += 1
+    elif s[i] == '}': depth -= 1
+    if depth == 0:
+        print(s[:i+1])
+        break
+    i += 1
+"
+    fi
+}
 
-if [ -z "$JSON" ]; then
-    # Fallback: extract from first { to matching closing } (multi-line)
-    JSON=$(echo "$RESPONSE" | sed -n '/^{/,/^}/p')
+JSON=$(extract_json_block "$RESPONSE")
+
+# If block extraction left trailing text (e.g. ``` on new line + "Now, you can use..."), take only up to last valid }
+if [ -n "$JSON" ] && ! echo "$JSON" | jq . > /dev/null 2>&1; then
+    # Trim to first { through matching closing }; strip anything after
+    JSON=$(echo "$RESPONSE" | python3 -c "
+import sys
+s = sys.stdin.read()
+try:
+    start = s.index('{')
+except ValueError:
+    sys.exit(1)
+depth = 0
+i = start
+while i < len(s):
+    if s[i] == '{': depth += 1
+    elif s[i] == '}': depth -= 1
+    if depth == 0:
+        print(s[start:i+1])
+        break
+    i += 1
+" 2>/dev/null)
 fi
 
 if [ -z "$JSON" ]; then
@@ -134,7 +183,6 @@ fi
 
 # Validate JSON (with repair attempt for truncated model output)
 if ! echo "$JSON" | jq . > /dev/null 2>&1; then
-    # Try repair: models often truncate before closing. Try } first (truncated after ]), then ]} (truncated after last story)
     if echo "${JSON}}" | jq . > /dev/null 2>&1; then
         JSON="${JSON}}"
     elif echo "${JSON}]}" | jq . > /dev/null 2>&1; then
