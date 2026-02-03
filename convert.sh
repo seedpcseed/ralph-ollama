@@ -265,57 +265,43 @@ create_conversion_prompt() {
     cat << PROMPTEOF
 # PRD to Tasks Conversion
 
-You are converting a PRD into actionable tasks. Read and edit the following files:
+You are running inside Aider. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them. You MUST use your edit capability to change the files. Do not say you cannot access files. Do not reply with only examples in code blocks; apply the changes by editing the files.
 
-## Files to work with:
-- READ: $project_dir/prd.md (the source PRD)
-- EDIT: $project_dir/prd.json (write user stories here)
-- EDIT: $project_dir/requirements.md (write technical specs here)
+## Your task
+1. Read projects/$project_name/prd.md (it is in the chat) to understand the requirements.
+2. Edit projects/$project_name/prd.json: replace its entire contents with a JSON object that has "branchName": "ralph/$project_name" and "userStories": [ ... ] — an array of story objects. Extract user stories from the PRD; create at least one story per major section. Do not leave userStories empty.
+3. Edit projects/$project_name/requirements.md: replace or expand with technical specifications taken from the PRD (architecture, data models, API, UI, performance, security).
 
-## Instructions:
+## Story object shape (for each item in userStories)
+- id: e.g. "1.1", "1.2"
+- category: "technical" | "functional" | "ui"
+- story: one sentence, action verb
+- steps: array of short strings
+- acceptance: testable criteria
+- priority: 1-10 (lower first)
+- passes: false
+- notes: ""
 
-### 1. First, read the PRD file to understand the requirements.
+Categories: technical = DB/API/backend/schemas; functional = business logic; ui = frontend/pages/styling. Order by dependency (infra before features).
 
-### 2. Edit prd.json with this structure:
-\`\`\`json
-{
-  "branchName": "ralph/$project_name",
-  "userStories": [
-    {
-      "id": "1.1",
-      "category": "technical|functional|ui",
-      "story": "Clear one-sentence description starting with action verb",
-      "steps": ["Step 1", "Step 2", "Step 3"],
-      "acceptance": "Testable criteria for completion",
-      "priority": 1,
-      "passes": false,
-      "notes": ""
-    }
-  ]
-}
+## Edit format (required)
+You are using Aider's "whole" edit format. To edit a file you MUST use this exact format:
+- One line with ONLY the file path (no blank line after it).
+- The very next line must be exactly \`\`\` (triple backticks, no word after them).
+- Then the complete file contents.
+- Then a line with exactly \`\`\`.
+
+CRITICAL: There must be NO blank line between the path and the \`\`\`. The path must be the line immediately above the opening \`\`\`.
+
+Example (no blank line between path and backticks):
+projects/$project_name/prd.json
+\`\`\`
+{"branchName":"ralph/$project_name","userStories":[{"id":"1.1",...}]}
 \`\`\`
 
-Story guidelines:
-- "technical" = Database, API, backend, types/schemas
-- "functional" = Business logic, features
-- "ui" = Frontend components, pages, styling
-- Priority: 1-10 (lower = higher priority, implement first)
-- Each story should be completable in 30-60 minutes
-- Order by dependencies (infrastructure before features, backend before frontend)
+Use paths: projects/$project_name/prd.json and projects/$project_name/requirements.md. For requirements.md use the same format (path, then \`\`\` on next line, then full file content). Do not use \`\`\`json or \`\`\`diff.
 
-### 3. Edit requirements.md with technical specifications:
-- System architecture requirements
-- Data models and structures
-- API specifications
-- User interface requirements
-- Performance requirements
-- Security considerations
-
-### 4. After editing both files, output a brief summary of what was created.
-
-Important: You MUST actually edit the files. Replace the contents of prd.json with a full JSON object that has branchName and userStories (an array of at least one story per major PRD section). Do not leave userStories as an empty array. Replace or expand requirements.md with real technical specs from the PRD. Use simple, direct language.
-
-Now read the PRD and edit the files.
+Apply both file edits, then a one-line summary.
 PROMPTEOF
 }
 
@@ -447,13 +433,15 @@ main() {
         --model "$AIDER_MODEL"
         --yes
         --no-stream
+        --no-show-model-warnings
         --message-file "$temp_prompt"
     )
     
     if [ "$AIDER_AUTO_COMMITS" = true ]; then
-        aider_cmd+=(--auto-commits --commit)
+        aider_cmd+=(--auto-commits)
     fi
-    
+    # Do NOT add --commit: Aider runs --commit before --message-file and then exits, so the model would never run.
+
     if [ "$AIDER_NO_PRETTY" = true ]; then
         aider_cmd+=(--no-pretty)
     fi
@@ -476,6 +464,29 @@ main() {
     local story_count=0
     if [[ -f "$json_file" ]]; then
         story_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
+    fi
+
+    # Fallback: if model output prd.json in the log but Aider didn't apply it (e.g. blank line before ```), extract and write
+    if [[ "$story_count" -eq 0 ]] && [[ -f "$convert_log" ]]; then
+        local json_extract
+        json_extract=$(awk -v path="projects/$project_name/prd.json" '
+            $0 ~ "^" path " *$" { want=1; next }
+            want && $0 ~ "^```" && !capturing { capturing=1; buf=""; next }
+            want && capturing && $0 ~ "^```" { print buf; exit }
+            capturing { buf = (buf == "" ? $0 : buf "\n" $0) }
+        ' "$convert_log")
+        if [[ -n "$json_extract" ]]; then
+            # Sanitize: model often puts literal newlines inside string values; collapse so JSON is valid
+            json_extract=$(echo "$json_extract" | perl -0777 -pe 's/\n\s*([a-zA-Z])/ \1/g' 2>/dev/null || echo "$json_extract")
+            local count
+            count=$(echo "$json_extract" | jq -r '.userStories | length' 2>/dev/null || echo "0")
+            if [[ "$count" != "" && "$count" != "null" && "${count:-0}" -gt 0 ]]; then
+                if echo "$json_extract" | jq -c . > "$json_file" 2>/dev/null; then
+                    story_count=$count
+                    log "INFO" "Recovered prd.json from log ($count stories)"
+                fi
+            fi
+        fi
     fi
 
     if [[ "$story_count" -eq 0 ]]; then
@@ -523,13 +534,15 @@ main() {
         --model "$AIDER_MODEL"
         --yes
         --no-stream
+        --no-show-model-warnings
         --message-file "$verify_prompt"
     )
     
     if [ "$AIDER_AUTO_COMMITS" = true ]; then
-        aider_cmd+=(--auto-commits --commit)
+        aider_cmd+=(--auto-commits)
     fi
-    
+    # Do NOT add --commit: same as Phase 1, would exit before processing message-file.
+
     if [ "$AIDER_NO_PRETTY" = true ]; then
         aider_cmd+=(--no-pretty)
     fi

@@ -4,7 +4,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Git repo and Aider run from ralph-ollama (same as convert.sh)
+REPO_ROOT="$SCRIPT_DIR"
 
 source "$SCRIPT_DIR/lib/utils.sh"
 source "$SCRIPT_DIR/lib/circuit_breaker.sh"
@@ -527,15 +528,19 @@ setup_tmux() {
 }
 
 # Validate that current branch matches prd.json branchName
+# $1 = project_dir, $2 = git_dir (where Aider runs; default: current dir)
 validate_branch() {
     local project_dir=$1
+    local git_dir="${2:-.}"
     local prd_file="$project_dir/prd.json"
     
-    local current_branch=$(git branch --show-current 2>/dev/null)
-    local expected_branch=$(get_branch_name "$prd_file")
+    local current_branch
+    current_branch=$(cd "$git_dir" && git branch --show-current 2>/dev/null)
+    local expected_branch
+    expected_branch=$(get_branch_name "$prd_file")
     
     if [[ -z "$current_branch" ]]; then
-        log "WARN" "Not in a git repository or detached HEAD"
+        log "WARN" "Not in a git repository or detached HEAD (in $git_dir)"
         return 0
     fi
     
@@ -550,13 +555,14 @@ validate_branch() {
         log "ERROR" "  BRANCH MISMATCH DETECTED"
         log "ERROR" "═══════════════════════════════════════════════════════════"
         log "ERROR" ""
-        log "ERROR" "  Current branch:   $current_branch"
+        log "ERROR" "  Working directory: $git_dir"
+        log "ERROR" "  Current branch:    $current_branch"
         log "ERROR" "  Expected branch:  $expected_branch"
         log "ERROR" ""
-        log "ERROR" "  The prd.json requires work to be done on: $expected_branch"
+        log "ERROR" "  The prd.json requires work on branch: $expected_branch"
         log "ERROR" ""
-        log "ERROR" "  Please switch to the correct branch:"
-        log "ERROR" "    git checkout $expected_branch"
+        log "ERROR" "  Switch to the correct branch in that directory:"
+        log "ERROR" "    cd $git_dir && git checkout $expected_branch"
         log "ERROR" ""
         log "ERROR" "═══════════════════════════════════════════════════════════"
         exit 1
@@ -566,20 +572,25 @@ validate_branch() {
 }
 
 # Confirm current branch before starting
+# $1 = project_dir, $2 = git_dir (where Aider runs; default: current dir)
 confirm_branch() {
     local project_dir=$1
+    local git_dir="${2:-.}"
     local prd_file="$project_dir/prd.json"
     
-    local current_branch=$(git branch --show-current 2>/dev/null)
-    local expected_branch=$(get_branch_name "$prd_file")
+    local current_branch
+    current_branch=$(cd "$git_dir" && git branch --show-current 2>/dev/null)
+    local expected_branch
+    expected_branch=$(get_branch_name "$prd_file")
 
     if [[ -z "$current_branch" ]]; then
-        log "WARN" "Not in a git repository or detached HEAD"
+        log "WARN" "Not in a git repository or detached HEAD (in $git_dir)"
         return 0
     fi
 
     echo ""
     echo "═══════════════════════════════════════════════════════════"
+    echo "  Working directory: $git_dir"
     echo "  Branch: $current_branch"
     if [[ -n "$expected_branch" ]]; then
         echo "  ⚠️  IMPORTANT: You can ONLY push to this branch!"
@@ -625,11 +636,11 @@ main_loop() {
     fi
     log "INFO" "Complete token: $COMPLETE_TOKEN"
     
-    # Validate branch matches prd.json branchName
-    validate_branch "$project_dir"
+    # Validate branch matches prd.json branchName (check repo where Aider will run)
+    validate_branch "$project_dir" "$REPO_ROOT"
     
     # Confirm current branch before starting
-    confirm_branch "$project_dir"
+    confirm_branch "$project_dir" "$REPO_ROOT"
     
     # Show initial status
     local total=$(count_total_stories "$project_dir/prd.json")
