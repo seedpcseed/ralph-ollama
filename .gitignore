@@ -26,3 +26,4 @@ projects/*/status.json
 
 # Archive (optional - remove if you want to track)
 # ralph-ollama-complete.tar.gz
+.aider*

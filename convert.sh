@@ -425,9 +425,12 @@ main() {
     # Change to repo root for Aider
     cd "$REPO_ROOT"
     
-    # Build Aider command
+    # Build Aider command - include project files so the model can read/edit them
     local aider_cmd=(
         aider
+        "$prd_file"
+        "$json_file"
+        "$req_file"
         --model "$AIDER_MODEL"
         --yes
         --message-file "$temp_prompt"
@@ -495,9 +498,12 @@ main() {
     # Change to repo root for Aider
     cd "$REPO_ROOT"
     
-    # Build Aider command for verification
+    # Build Aider command for verification - include project files
     local aider_cmd=(
         aider
+        "$prd_file"
+        "$json_file"
+        "$req_file"
         --model "$AIDER_MODEL"
         --yes
         --message-file "$verify_prompt"
