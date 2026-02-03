@@ -373,3 +373,4 @@ Based on the Ralph Wiggum technique by Geoffrey Huntley. Adapted for Ollama by t
 - [Original Ralph Technique](https://github.com/snwfdhmp/awesome-ralph)
 - [DeepSeek Coder](https://ollama.com/library/deepseek-coder)
 - [Code Llama](https://ollama.com/library/codellama)
+# ralph-ollama
