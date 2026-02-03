@@ -32,6 +32,7 @@ expand_verify_cmd() {
         cargo\ test*) echo "$cmd" ;;
         go\ test*) echo "$cmd" ;;
         npm\ test*) echo "$cmd" ;;
+        tree\ *|tree) echo "$cmd" ;;
         *) echo "$cmd" ;;
     esac
 }
@@ -71,6 +72,11 @@ run_story_verification() {
     
     # Expand common commands (pytest, cargo test, go test, etc.)
     verify_cmd=$(expand_verify_cmd "$verify_cmd")
+
+    # If verify command uses tree and tree is unavailable, fall back to ls -R
+    if [[ "$verify_cmd" == tree* ]] && ! command -v tree >/dev/null 2>&1; then
+        verify_cmd=$(echo "$verify_cmd" | sed 's/^tree/ls -R/')
+    fi
     
     # Run verification from project directory
     echo "  Verifying: $verify_cmd"

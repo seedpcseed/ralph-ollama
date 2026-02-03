@@ -10,3 +10,6 @@ This file records learnings and patterns discovered during implementation.
 
 ---
 
+
+## 2026-02-02 - Story 1.1
+```

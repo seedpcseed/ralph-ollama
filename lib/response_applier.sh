@@ -74,14 +74,18 @@ apply_response_to_files() {
                     fi
                 fi
                 # Reject paths with spaces or that look like instructions
-                if [ -n "$file_path" ] && [[ "$file_path" != *" "* ]] && [[ "$file_path" != *".."* ]]; then
+                if [ -n "$file_path" ] && [[ "$file_path" != *" "* ]] && [[ "$file_path" != *".."* ]] && [[ "$file_path" != */ ]]; then
                     file_path=$(echo "$file_path" | sed 's|^\./||')
                     local full_path="$project_dir/$file_path"
                     local dir_path=$(dirname "$full_path")
                     mkdir -p "$dir_path"
-                    printf '%s' "$block_content" > "$full_path"
-                    echo "  ✓ Wrote $file_path"
-                    files_written=$((files_written + 1))
+                    if [ -d "$full_path" ]; then
+                        echo "  (skipped directory path $file_path)"
+                    else
+                        printf '%s' "$block_content" > "$full_path"
+                        echo "  ✓ Wrote $file_path"
+                        files_written=$((files_written + 1))
+                    fi
                 fi
             fi
             block_path=""
