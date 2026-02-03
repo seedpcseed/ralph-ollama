@@ -1,7 +1,13 @@
 import click
-from rich import print  # Using Rich for better terminal output
+from loglens import version
 
-@click.command()
+@click.group()
+@click.version_option(version=version.__version__)
 def cli():
-    """Welcome to Log Lens!"""
-    print("[bold green]Welcome to Log Lens![/bold green]")
+    pass
+
+@cli.command("analyze")
+@click.argument('logfile', type=click.Path(exists=True))
+def analyze(logfile):
+    """Analyze a log file"""
+    click.echo(f"Analyzing {logfile}...")

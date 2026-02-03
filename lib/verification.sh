@@ -37,6 +37,10 @@ expand_verify_cmd() {
     esac
 }
 
+# Global state exposed for diagnostics (read by start.sh)
+VERIFY_LAST_CMD=""
+VERIFY_LAST_OUTPUT=""
+
 # Run verification for a story. Returns 0 if pass, 1 if fail, 2 if skip (no verify)
 # Usage: run_story_verification <project_dir> <story_json>
 run_story_verification() {
@@ -47,6 +51,10 @@ run_story_verification() {
         return 1
     fi
     
+    # Reset last attempt state
+    VERIFY_LAST_CMD=""
+    VERIFY_LAST_OUTPUT=""
+
     # 1. Check for explicit "verify" field in story
     local verify_cmd
     verify_cmd=$(echo "$story_json" | jq -r '.verify // empty')
@@ -85,12 +93,24 @@ run_story_verification() {
         python_snippet="${python_snippet//\"/\\\"}"
         verify_cmd="python3 -c \"$python_snippet\""
     fi
+
+    VERIFY_LAST_CMD="$verify_cmd"
     
     # Run verification from project directory
     echo "  Verifying: $verify_cmd"
     local verify_output verify_exit
     verify_output=$(cd "$project_dir" && eval "$verify_cmd" 2>&1)
     verify_exit=$?
+
+    local output_lines
+    output_lines=$(printf '%s\n' "$verify_output" | wc -l | awk '{print $1}')
+    if [ "$output_lines" -le 40 ]; then
+        VERIFY_LAST_OUTPUT="$verify_output"
+    else
+        VERIFY_LAST_OUTPUT=$(printf "%s\n...\n%s\n" \
+            "$(echo "$verify_output" | head -n 20)" \
+            "$(echo "$verify_output" | tail -n 20)")
+    fi
     
     if [ $verify_exit -eq 0 ]; then
         echo "  ✓ Verification passed"
@@ -119,11 +139,28 @@ run_story_verification() {
         default_cmd=$(get_default_test_cmd "$project_dir")
         if [ -n "$default_cmd" ]; then
             echo "  (verify command unavailable - trying $default_cmd)"
+            VERIFY_LAST_CMD="$default_cmd"
             if verify_output=$(cd "$project_dir" && eval "$default_cmd" 2>&1); then
+                output_lines=$(printf '%s\n' "$verify_output" | wc -l | awk '{print $1}')
+                if [ "$output_lines" -le 40 ]; then
+                    VERIFY_LAST_OUTPUT="$verify_output"
+                else
+                    VERIFY_LAST_OUTPUT=$(printf "%s\n...\n%s\n" \
+                        "$(echo "$verify_output" | head -n 20)" \
+                        "$(echo "$verify_output" | tail -n 20)")
+                fi
                 echo "  ✓ Verification passed ($default_cmd fallback)"
                 return 0
             fi
             verify_exit=$?
+            output_lines=$(printf '%s\n' "$verify_output" | wc -l | awk '{print $1}')
+            if [ "$output_lines" -le 40 ]; then
+                VERIFY_LAST_OUTPUT="$verify_output"
+            else
+                VERIFY_LAST_OUTPUT=$(printf "%s\n...\n%s\n" \
+                    "$(echo "$verify_output" | head -n 20)" \
+                    "$(echo "$verify_output" | tail -n 20)")
+            fi
             # pytest exit 5 = no tests yet
             if [[ "$default_cmd" == *pytest* ]] && [ $verify_exit -eq 5 ]; then
                 echo "  ✓ Verification passed ($default_cmd fallback - no tests yet)"

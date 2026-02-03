@@ -24,6 +24,60 @@ DEFAULT_MODEL="codellama:latest"
 DEFAULT_TIMEOUT=20
 DEFAULT_MAX_CALLS=100
 SLEEP_DURATION=3600  # 1 hour
+STUCK_THRESHOLD=3
+
+declare -A STORY_FAILURE_COUNT
+declare -A STORY_FAILURE_SIGNATURE
+declare -A STORY_STUCK_SIGNATURE
+
+record_stuck_failure() {
+    local story_id="$1"
+    local verify_cmd="$2"
+    local verify_output="$3"
+    local progress_file="$4"
+    local attempts="$5"
+
+    echo "⚠️  Detected repeated verification failure for story $story_id ($attempts attempts). Logging guidance for next attempt."
+    touch "$progress_file"
+
+    {
+        echo ""
+        echo "## $(date '+%Y-%m-%d %H:%M:%S') - Stuck on story $story_id"
+        echo "Verification command failing repeatedly ($attempts attempts):"
+        echo "    $verify_cmd"
+        if [ -n "$verify_output" ]; then
+            echo "Latest output (truncated):"
+            echo "$verify_output" | head -n 20 | sed 's/^/    /'
+        fi
+        echo "Guidance: Investigate why this verification is failing and try a different approach instead of repeating the same steps."
+        if [[ "$verify_cmd" == *"pip install"* ]]; then
+            echo "Hint: For pip/install failures, confirm packaging metadata (setup.py/pyproject) and entry points are correct."
+        fi
+    } >> "$progress_file"
+}
+
+compute_failure_signature() {
+    if command -v md5sum >/dev/null 2>&1; then
+        md5sum | awk '{print $1}'
+    elif command -v sha1sum >/dev/null 2>&1; then
+        sha1sum | awk '{print $1}'
+    else
+        python3 - <<'PY'
+import sys, hashlib
+data = sys.stdin.buffer.read()
+print(hashlib.sha256(data).hexdigest())
+PY
+    fi
+}
+
+normalize_output_for_signature() {
+    sed -E '
+        s/[0-9a-f]{8,}/<HEX>/g;
+        s#[0-9]{4,}#<NUM>#g;
+        s#/tmp/[^[:space:]]+#/tmp/<PATH>#g;
+        s#/home/[^[:space:]]+#/home/<PATH>#g;
+    '
+}
 
 # Parse arguments
 PROJECT_NAME=""
@@ -317,6 +371,36 @@ while true; do
         if [ $VERIFY_RESULT -eq 1 ]; then
             echo "Story $STORY_ID not marked complete - verification failed"
             echo "Fix the implementation and Ralph will retry on next run"
+
+            # Detect repeated failures (stuck loops) for this story
+            normalized_output=$(printf '%s' "$VERIFY_LAST_OUTPUT" | normalize_output_for_signature)
+            tmp_signature=$(printf '%s\n%s\n' "$VERIFY_LAST_CMD" "$normalized_output" | compute_failure_signature)
+            prev_signature="${STORY_FAILURE_SIGNATURE[$STORY_ID]}"
+
+            current_count=${STORY_FAILURE_COUNT[$STORY_ID]:-0}
+
+            if [ -n "$prev_signature" ] && [ "$tmp_signature" = "$prev_signature" ]; then
+                current_count=$((current_count + 1))
+            else
+                current_count=1
+                STORY_FAILURE_SIGNATURE[$STORY_ID]="$tmp_signature"
+            fi
+            STORY_FAILURE_COUNT[$STORY_ID]=$current_count
+
+            if [ $current_count -gt 1 ]; then
+                echo "  (stuck detection: same failure pattern seen ${current_count} times)"
+            fi
+
+            if [ $current_count -ge $STUCK_THRESHOLD ]; then
+                last_logged="${STORY_STUCK_SIGNATURE[$STORY_ID]}"
+                if [ "$last_logged" != "$tmp_signature" ]; then
+                    record_stuck_failure "$STORY_ID" "$VERIFY_LAST_CMD" "$VERIFY_LAST_OUTPUT" "$PROGRESS_FILE" "$current_count"
+                    STORY_STUCK_SIGNATURE[$STORY_ID]="$tmp_signature"
+                else
+                    echo "  (stuck note already recorded for this pattern)"
+                fi
+                STORY_FAILURE_COUNT[$STORY_ID]=0
+            fi
         else
             echo "✓ Story $STORY_ID marked complete"
             mark_story_complete "$PRD_JSON" "$STORY_ID"
@@ -329,6 +413,10 @@ while true; do
                 git add .
                 git commit -m "Ralph: Completed story $STORY_ID" || true
             fi
+
+            STORY_FAILURE_COUNT[$STORY_ID]=0
+            STORY_FAILURE_SIGNATURE[$STORY_ID]=""
+            STORY_STUCK_SIGNATURE[$STORY_ID]=""
         fi
     else
         echo "Story $STORY_ID not yet complete, continuing..."
