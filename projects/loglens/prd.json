@@ -26,7 +26,7 @@
       "acceptance": "RUN \"python --version\" and verify that it is at least 3.9. RUN \"pip list\" and verify that all packages are installed.",
       "verify": "python --version && pip list",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
