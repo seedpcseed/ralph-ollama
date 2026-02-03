@@ -339,9 +339,20 @@ $prd_content
 $progress
 
 ## How to edit files (required)
-You are running inside Aider. You MUST create or edit files so your changes are applied.
-Use the whole-file format: put the file path on a line by itself (e.g. projects/$project_name/src/main.rs), then on the very next line write \`\`\` (three backticks), then the complete file contents, then a line with \`\`\`. There must be NO blank line between the path and the \`\`\`.
-To create a new file, use the same format with the path where the file should go (e.g. projects/$project_name/Cargo.toml). You must output at least one file create or edit for this task to count as done.
+You are inside Aider. To create or edit a file you MUST use this exact format:
+- Line 1: file path only, e.g. projects/$project_name/README.md
+- Line 2: exactly \`\`\` (three backticks, no space after)
+- Next lines: full file contents
+- Last line: exactly \`\`\`
+No blank line between the path and the \`\`\`. Example for a new file:
+
+projects/$project_name/README.md
+\`\`\`
+# Editio
+Rust-based academic typesetting.
+\`\`\`
+
+You must output at least one file in this format for this task. Do not only describe or show code in \`\`\`rust blocks—use the path-plus-backticks format above so Aider applies the edit.
 
 ## Instructions
 1. Implement this story completely by creating or editing files (see format above).

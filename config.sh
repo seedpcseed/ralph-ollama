@@ -11,6 +11,7 @@ MODE="${RALPH_MODE:-claude}"
 # Model specifications
 CLAUDE_MODEL="claude-sonnet-4-5"
 LOCAL_MODEL="deepseek-coder:33b"  # or llama3, codestral, qwen2.5-coder
+# LOCAL_MODEL="gpt-oss:120b"
 
 # API Keys (only needed for claude mode)
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
