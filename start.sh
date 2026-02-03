@@ -51,13 +51,53 @@ setup_aider() {
             log "INFO" "Using Claude Sonnet 4.5 via API"
             ;;
         local)
-            # Check if Ollama is running
-            if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
-                log "ERROR" "Ollama not running. Start with: ollama serve"
-                exit 1
-            fi
             AIDER_MODEL="ollama/$LOCAL_MODEL"
             log "INFO" "Using local model: $LOCAL_MODEL"
+            
+            # Check if Ollama is running, start if not
+            if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+                if ! command -v ollama &> /dev/null; then
+                    log "ERROR" "Ollama is not installed"
+                    log "INFO" "Install from: https://ollama.ai"
+                    exit 1
+                fi
+                
+                log "INFO" "Ollama server is not running, starting it..."
+                # Start Ollama in background
+                ollama serve > /dev/null 2>&1 &
+                local ollama_pid=$!
+                
+                # Wait for Ollama to start (max 10 seconds)
+                local wait_count=0
+                while [ $wait_count -lt 10 ]; do
+                    if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+                        log "SUCCESS" "Ollama server started (PID: $ollama_pid)"
+                        break
+                    fi
+                    sleep 1
+                    wait_count=$((wait_count + 1))
+                done
+                
+                if [ $wait_count -eq 10 ]; then
+                    log "ERROR" "Ollama server failed to start after 10 seconds"
+                    log "INFO" "Try starting manually: ollama serve"
+                    exit 1
+                fi
+            fi
+            
+            # Check if model is available
+            if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
+                log "WARN" "Model '$LOCAL_MODEL' is not available locally"
+                log "INFO" "Pulling model (this may take several minutes)..."
+                if ollama pull "$LOCAL_MODEL"; then
+                    log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                else
+                    log "WARN" "Failed to pull model '$LOCAL_MODEL'"
+                    log "INFO" "Aider will attempt to use it anyway, or try manually: ollama pull $LOCAL_MODEL"
+                fi
+            else
+                log "INFO" "Model '$LOCAL_MODEL' is available"
+            fi
             ;;
         hybrid)
             AIDER_MODEL="hybrid"  # Will be set per-story

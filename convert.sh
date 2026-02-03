@@ -143,13 +143,53 @@ setup_aider() {
             log "INFO" "Using Claude Sonnet 4.5 via API"
             ;;
         local)
-            # Check if Ollama is running
-            if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
-                log "ERROR" "Ollama not running. Start with: ollama serve"
-                exit 1
-            fi
             AIDER_MODEL="ollama/$LOCAL_MODEL"
             log "INFO" "Using local model: $LOCAL_MODEL"
+            
+            # Check if Ollama is running, start if not
+            if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+                if ! command -v ollama &> /dev/null; then
+                    log "ERROR" "Ollama is not installed"
+                    log "INFO" "Install from: https://ollama.ai"
+                    exit 1
+                fi
+                
+                log "INFO" "Ollama server is not running, starting it..."
+                # Start Ollama in background
+                ollama serve > /dev/null 2>&1 &
+                local ollama_pid=$!
+                
+                # Wait for Ollama to start (max 10 seconds)
+                local wait_count=0
+                while [ $wait_count -lt 10 ]; do
+                    if curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+                        log "SUCCESS" "Ollama server started (PID: $ollama_pid)"
+                        break
+                    fi
+                    sleep 1
+                    wait_count=$((wait_count + 1))
+                done
+                
+                if [ $wait_count -eq 10 ]; then
+                    log "ERROR" "Ollama server failed to start after 10 seconds"
+                    log "INFO" "Try starting manually: ollama serve"
+                    exit 1
+                fi
+            fi
+            
+            # Check if model is available
+            if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
+                log "WARN" "Model '$LOCAL_MODEL' is not available locally"
+                log "INFO" "Pulling model (this may take several minutes)..."
+                if ollama pull "$LOCAL_MODEL"; then
+                    log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                else
+                    log "WARN" "Failed to pull model '$LOCAL_MODEL'"
+                    log "INFO" "Aider will attempt to use it anyway, or try manually: ollama pull $LOCAL_MODEL"
+                fi
+            else
+                log "INFO" "Model '$LOCAL_MODEL' is available"
+            fi
             ;;
         hybrid)
             # For convert, hybrid mode uses Claude (conversion is critical)
@@ -314,7 +354,7 @@ main() {
     # Check if project exists
     if [[ ! -d "$project_dir" ]]; then
         log "ERROR" "Project '$project_name' does not exist"
-        log "INFO" "Create it first with: ./ralph/new.sh $project_name"
+        log "INFO" "Create it first with: ./new.sh $project_name"
         exit 1
     fi
 
@@ -395,7 +435,7 @@ main() {
     rm -f "$temp_prompt"
 
     if [[ "$convert_success" != "true" ]]; then
-        log "ERROR" "Claude conversion failed"
+        log "ERROR" "Aider conversion failed"
         log "INFO" "Check log: $(get_relative_path "$convert_log")"
         exit 1
     fi
@@ -433,10 +473,31 @@ main() {
     local verify_log="$project_dir/logs/verify_${timestamp}.log"
     log "INFO" "Log file: $(get_relative_path "$verify_log")"
 
-    # Run verification with spinner
+    # Run verification with Aider
     start_spinner "(Phase 2: Verification & gap analysis)..."
     local verify_success=true
-    if ! $CLAUDE_CMD < "$verify_prompt" > "$verify_log" 2>&1; then
+    
+    # Change to repo root for Aider
+    cd "$REPO_ROOT"
+    
+    # Build Aider command for verification
+    local aider_cmd=(
+        aider
+        --model "$AIDER_MODEL"
+        --yes
+        --message-file "$verify_prompt"
+    )
+    
+    if [ "$AIDER_AUTO_COMMITS" = true ]; then
+        aider_cmd+=(--auto-commits --commit)
+    fi
+    
+    if [ "$AIDER_NO_PRETTY" = true ]; then
+        aider_cmd+=(--no-pretty)
+    fi
+    
+    # Execute Aider
+    if ! "${aider_cmd[@]}" > "$verify_log" 2>&1; then
         verify_success=false
     fi
     stop_spinner
@@ -530,21 +591,45 @@ main() {
     echo ""
     echo "Next steps:"
     echo "  1. Review: cat $json_file | jq ."
-    echo "  2. Start:  ./ralph/start.sh $project_name"
+    echo "  2. Start:  ./start.sh $project_name"
     echo ""
 }
 
-# Handle command line arguments
-case "${1:-}" in
-    -h|--help)
-        show_help
-        exit 0
-        ;;
-    "")
-        show_help
-        exit 1
-        ;;
-    *)
-        main "$@"
-        ;;
-esac
+# Parse command line arguments
+MODE="${RALPH_MODE:-claude}"
+PROJECT_NAME=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --model)
+            MODE="$2"
+            shift 2
+            ;;
+        *)
+            if [[ -z "$PROJECT_NAME" ]]; then
+                PROJECT_NAME="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Setup Aider based on mode
+setup_aider "$MODE"
+
+# Check dependencies
+check_dependencies || exit 1
+
+# Validate project name
+if [[ -z "$PROJECT_NAME" ]]; then
+    log "ERROR" "Project name is required"
+    show_help
+    exit 1
+fi
+
+# Run main function
+main "$PROJECT_NAME"
