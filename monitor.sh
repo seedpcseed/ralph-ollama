@@ -108,7 +108,7 @@ display_dashboard() {
     if [[ ! -f "$status_file" ]]; then
         echo -e "${YELLOW}Waiting for Ralph to start...${NC}"
         echo ""
-        echo "Run: ./ralph/start.sh $project_name"
+        echo "Run: ./start.sh $project_name"
         return
     fi
     

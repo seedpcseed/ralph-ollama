@@ -369,6 +369,15 @@ execute_aider() {
     # Change to repo root for Aider
     cd "$REPO_ROOT"
     
+    # Project files for Aider (repo-relative; exclude logs and state)
+    local aider_files=()
+    while IFS= read -r f; do
+        [[ -n "$f" ]] && aider_files+=("${f#$REPO_ROOT/}")
+    done < <(find "$project_dir" -type f \
+        ! -path '*/logs/*' ! -name '*.log' ! -name '.ralph_*' ! -name 'progress.txt' \
+        ! -name 'status.json' ! -name '.call_count' ! -name '.last_reset' \
+        ! -name '.circuit_breaker*' ! -name '.last_analysis.json' 2>/dev/null | head -50)
+    
     # Retry loop for timeout handling
     while true; do
         timeout_attempt=$((timeout_attempt + 1))
@@ -382,17 +391,21 @@ execute_aider() {
             log "INFO" "⏳ Starting Aider with model: $current_model (timeout: ${AGENT_TIMEOUT_MINUTES}m)..."
         fi
         
-        # Build Aider command
-        local aider_cmd=(
-            aider
+        # Build Aider command (include project files so the model can edit them)
+        local aider_cmd=(aider)
+        if [[ ${#aider_files[@]} -gt 0 ]]; then
+            aider_cmd+=("${aider_files[@]}")
+        fi
+        aider_cmd+=(
             --model "$current_model"
             --yes
             --message-file "$prompt_file"
         )
         
         if [ "$AIDER_AUTO_COMMITS" = true ]; then
-            aider_cmd+=(--auto-commits --commit)
+            aider_cmd+=(--auto-commits)
         fi
+        # Do NOT add --commit: Aider runs --commit before --message-file and then exits without running the model.
         
         if [ "$AIDER_NO_PRETTY" = true ]; then
             aider_cmd+=(--no-pretty)
@@ -425,10 +438,14 @@ execute_aider() {
             # Log analysis
             log_analysis_summary "$project_dir"
             
-            # Mark story complete if successful
+            # Mark story complete only if analysis succeeded and we got file edits (or explicit completion)
             if [[ $analysis_result -eq 0 ]]; then
-                mark_story_complete "$project_dir/prd.json" "$story_id"
-                log "SUCCESS" "📝 Story $story_id marked as complete"
+                if [[ "${files_modified:-0}" -gt 0 ]]; then
+                    mark_story_complete "$project_dir/prd.json" "$story_id"
+                    log "SUCCESS" "📝 Story $story_id marked as complete"
+                else
+                    log "WARN" "Story $story_id: no file changes (not marking complete)"
+                fi
             fi
             
             return 0
@@ -669,7 +686,7 @@ main_loop() {
             log "ERROR" "  or lack of progress."
             log "ERROR" ""
             log "ERROR" "  To reset and continue:"
-            log "ERROR" "    ./ralph/start.sh $project_name --reset"
+            log "ERROR" "    ./start.sh $project_name --reset"
             log "ERROR" ""
             log "ERROR" "═══════════════════════════════════════════════════════════"
             update_status "$project_dir" "$loop_count" "halted" ""
