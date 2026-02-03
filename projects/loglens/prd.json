@@ -68,7 +68,7 @@
       "acceptance": "Correctly identifies errors in test data; flags spikes",
       "verify": "",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
