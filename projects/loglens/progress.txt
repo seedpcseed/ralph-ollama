@@ -10,3 +10,93 @@ This file records learnings and patterns discovered during implementation.
 
 ---
 
+
+## 2026-02-03 05:06:22 - Stuck on story 1.2
+Verification command failing repeatedly (3 attempts, type: import_error):
+    loglens --help
+Latest output (truncated):
+    Common commands: (see '--help-commands' for more)
+    
+      setup.py build      will build the package underneath 'build/'
+      setup.py install    will install the package
+    
+    Global options:
+      --verbose (-v)      run verbosely (default)
+      --quiet (-q)        run quietly (turns verbosity off)
+      --dry-run (-n)      don't actually do anything
+      --help (-h)         show detailed help message
+      --no-user-cfg       ignore pydistutils.cfg in your home directory
+      --command-packages  list of packages that provide distutils commands
+    
+    Information display options (just display information, ignore any commands)
+      --help-commands     list all available commands
+      --name              print package name
+      --version (-V)      print package version
+      --fullname          print <package name>-<version>
+      --author            print the author's name
+      --author-email      print the author's email address
+
+Guidance: Import errors suggest missing modules or incorrect import paths.
+Check that:
+  - Required modules exist and are in the correct location
+  - Import paths match the actual file structure
+  - __init__.py files exist where needed
+
+## 2026-02-03 - Story 1.2
+```
+If I cannot complete the story, I'll explain what's blocking me and end with:
+
+```python
+# path/to/loglens/parsers/apache.py
+STATUS: INCOMPLETE
+REASON: Unable to implement Apache/Nginx parser due to a syntax error in the regular expression.
+NEXT_STEPS: Check for typos and try again.
+```
+
+## 2026-02-03 - Story 1.2
+
+I hope this update meets your requirements. Please let me know if you have any further questions or concerns.
+
+## 2026-02-03 - Story 1.2
+``` 
+If this task was incomplete, the status block would look like this:
+```
+STATUS: INCOMPLETE
+REASON: The regular expression used for parsing Apache/Nginx logs wasn't correct and couldn't handle all possible log formats.
+NEXT_STEPS: Revise the regular expression to correctly match common Apache/Nginx log formats and also handle potential edge cases or malformed lines.
+```
+
+## 2026-02-03 - Story 1.2
+- Regular expressions are a powerful tool for parsing textual data, but they can be complex and error-prone. It's important to thoroughly test regular expressions with sample data before using them in production code.
+- The `BaseParser` class provides a basic framework for creating new log parsers. By following this structure, we can easily add support for additional log formats in the future.
+
+## 2026-02-03 05:08:47 - Stuck on story 1.2
+Verification command failing repeatedly (3 attempts, type: import_error):
+    loglens --help
+Latest output (truncated):
+    Common commands: (see '--help-commands' for more)
+    
+      setup.py build      will build the package underneath 'build/'
+      setup.py install    will install the package
+    
+    Global options:
+      --verbose (-v)      run verbosely (default)
+      --quiet (-q)        run quietly (turns verbosity off)
+      --dry-run (-n)      don't actually do anything
+      --help (-h)         show detailed help message
+      --no-user-cfg       ignore pydistutils.cfg in your home directory
+      --command-packages  list of packages that provide distutils commands
+    
+    Information display options (just display information, ignore any commands)
+      --help-commands     list all available commands
+      --name              print package name
+      --version (-V)      print package version
+      --fullname          print <package name>-<version>
+      --author            print the author's name
+      --author-email      print the author's email address
+
+Guidance: Import errors suggest missing modules or incorrect import paths.
+Check that:
+  - Required modules exist and are in the correct location
+  - Import paths match the actual file structure
+  - __init__.py files exist where needed

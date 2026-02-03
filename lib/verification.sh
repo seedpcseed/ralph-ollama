@@ -171,6 +171,14 @@ run_story_verification() {
         fi
     fi
     
+    # Detect when CLI command exists but shows wrong output (e.g. setup.py help instead of CLI help)
+    if echo "$verify_output" | grep -qE "setup\.py|distutils|pydistutils"; then
+        failure_type="wrong_command"
+        VERIFY_FAILURE_TYPE="wrong_command"
+        echo "  ⚠️  Command exists but shows setup.py/distutils help instead of CLI"
+        echo "  This suggests the package entry point isn't configured correctly"
+    fi
+    
     # Fallback: when verify fails with "command not found" (e.g. app CLI before install),
     # try language-appropriate test command based on project detection
     if echo "$verify_output" | grep -q "command not found"; then

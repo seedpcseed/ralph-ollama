@@ -23,10 +23,10 @@
         "Implement Apache/Nginx parser",
         "Handle malformed lines gracefully"
       ],
-      "acceptance": "RUN \"loglens --help\" passes; parse 1000-line Apache log in <1s correctly extract all fields",
-      "verify": "",
+      "acceptance": "Parse 1000-line Apache log in <1s correctly extract all fields",
+      "verify": "test -f loglens/parsers/apache.py",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {

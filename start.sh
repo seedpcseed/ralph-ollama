@@ -79,6 +79,16 @@ record_stuck_failure() {
                 echo ""
                 echo "Guidance: Command not found - the tool/script may not be installed or in PATH."
                 ;;
+            wrong_command)
+                echo ""
+                echo "⚠️  VERIFICATION COMMAND SHOWS WRONG OUTPUT"
+                echo "The command exists but shows setup.py/distutils help instead of CLI help."
+                echo "This suggests:"
+                echo "  - Package entry point isn't configured correctly in setup.py/pyproject.toml"
+                echo "  - Or the verify command is testing CLI before package is installed"
+                echo "ACTION: Either fix the entry point config OR change verify command to test implementation directly"
+                echo "Example: Use 'python -m loglens' or test the actual code, not 'loglens --help'"
+                ;;
             *)
                 echo ""
                 echo "Guidance: Investigate why this verification is failing and try a different approach instead of repeating the same steps."
