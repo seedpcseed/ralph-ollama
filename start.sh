@@ -4,7 +4,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Git repo and Aider run from ralph-ollama (same as convert.sh)
+REPO_ROOT="$SCRIPT_DIR"
 
 source "$SCRIPT_DIR/lib/utils.sh"
 source "$SCRIPT_DIR/lib/circuit_breaker.sh"
@@ -369,15 +370,6 @@ execute_aider() {
     # Change to repo root for Aider
     cd "$REPO_ROOT"
     
-    # Project files for Aider (repo-relative; exclude logs and state)
-    local aider_files=()
-    while IFS= read -r f; do
-        [[ -n "$f" ]] && aider_files+=("${f#$REPO_ROOT/}")
-    done < <(find "$project_dir" -type f \
-        ! -path '*/logs/*' ! -name '*.log' ! -name '.ralph_*' ! -name 'progress.txt' \
-        ! -name 'status.json' ! -name '.call_count' ! -name '.last_reset' \
-        ! -name '.circuit_breaker*' ! -name '.last_analysis.json' 2>/dev/null | head -50)
-    
     # Retry loop for timeout handling
     while true; do
         timeout_attempt=$((timeout_attempt + 1))
@@ -391,28 +383,27 @@ execute_aider() {
             log "INFO" "⏳ Starting Aider with model: $current_model (timeout: ${AGENT_TIMEOUT_MINUTES}m)..."
         fi
         
-        # Build Aider command (include project files so the model can edit them)
-        local aider_cmd=(aider)
-        if [[ ${#aider_files[@]} -gt 0 ]]; then
-            aider_cmd+=("${aider_files[@]}")
-        fi
-        aider_cmd+=(
+        # Build Aider command
+        local aider_cmd=(
+            aider
             --model "$current_model"
             --yes
+            --no-stream
+            --no-show-model-warnings
             --message-file "$prompt_file"
         )
         
         if [ "$AIDER_AUTO_COMMITS" = true ]; then
             aider_cmd+=(--auto-commits)
         fi
-        # Do NOT add --commit: Aider runs --commit before --message-file and then exits without running the model.
+        # Do NOT add --commit: Aider runs it before --message-file and exits without running the model.
         
         if [ "$AIDER_NO_PRETTY" = true ]; then
             aider_cmd+=(--no-pretty)
         fi
         
         # Execute Aider
-        if $TIMEOUT_CMD ${timeout_seconds}s "${aider_cmd[@]}" > "$output_file" 2>&1; then
+        if PYTHONUNBUFFERED=1 $TIMEOUT_CMD ${timeout_seconds}s "${aider_cmd[@]}" > "$output_file" 2>&1; then
             log "SUCCESS" "✅ Aider execution completed"
             
             # Check for project completion token
@@ -438,7 +429,7 @@ execute_aider() {
             # Log analysis
             log_analysis_summary "$project_dir"
             
-            # Mark story complete only if analysis succeeded and we got file edits (or explicit completion)
+            # Mark story complete only when we got file edits (avoid completing with no progress)
             if [[ $analysis_result -eq 0 ]]; then
                 if [[ "${files_modified:-0}" -gt 0 ]]; then
                     mark_story_complete "$project_dir/prd.json" "$story_id"
@@ -544,15 +535,19 @@ setup_tmux() {
 }
 
 # Validate that current branch matches prd.json branchName
+# $1 = project_dir, $2 = git_dir (where Aider runs; default: current dir)
 validate_branch() {
     local project_dir=$1
+    local git_dir="${2:-.}"
     local prd_file="$project_dir/prd.json"
     
-    local current_branch=$(git branch --show-current 2>/dev/null)
-    local expected_branch=$(get_branch_name "$prd_file")
+    local current_branch
+    current_branch=$(cd "$git_dir" && git branch --show-current 2>/dev/null)
+    local expected_branch
+    expected_branch=$(get_branch_name "$prd_file")
     
     if [[ -z "$current_branch" ]]; then
-        log "WARN" "Not in a git repository or detached HEAD"
+        log "WARN" "Not in a git repository or detached HEAD (in $git_dir)"
         return 0
     fi
     
@@ -567,13 +562,14 @@ validate_branch() {
         log "ERROR" "  BRANCH MISMATCH DETECTED"
         log "ERROR" "═══════════════════════════════════════════════════════════"
         log "ERROR" ""
-        log "ERROR" "  Current branch:   $current_branch"
+        log "ERROR" "  Working directory: $git_dir"
+        log "ERROR" "  Current branch:    $current_branch"
         log "ERROR" "  Expected branch:  $expected_branch"
         log "ERROR" ""
-        log "ERROR" "  The prd.json requires work to be done on: $expected_branch"
+        log "ERROR" "  The prd.json requires work on branch: $expected_branch"
         log "ERROR" ""
-        log "ERROR" "  Please switch to the correct branch:"
-        log "ERROR" "    git checkout $expected_branch"
+        log "ERROR" "  Switch to the correct branch in that directory:"
+        log "ERROR" "    cd $git_dir && git checkout $expected_branch"
         log "ERROR" ""
         log "ERROR" "═══════════════════════════════════════════════════════════"
         exit 1
@@ -583,20 +579,25 @@ validate_branch() {
 }
 
 # Confirm current branch before starting
+# $1 = project_dir, $2 = git_dir (where Aider runs; default: current dir)
 confirm_branch() {
     local project_dir=$1
+    local git_dir="${2:-.}"
     local prd_file="$project_dir/prd.json"
     
-    local current_branch=$(git branch --show-current 2>/dev/null)
-    local expected_branch=$(get_branch_name "$prd_file")
+    local current_branch
+    current_branch=$(cd "$git_dir" && git branch --show-current 2>/dev/null)
+    local expected_branch
+    expected_branch=$(get_branch_name "$prd_file")
 
     if [[ -z "$current_branch" ]]; then
-        log "WARN" "Not in a git repository or detached HEAD"
+        log "WARN" "Not in a git repository or detached HEAD (in $git_dir)"
         return 0
     fi
 
     echo ""
     echo "═══════════════════════════════════════════════════════════"
+    echo "  Working directory: $git_dir"
     echo "  Branch: $current_branch"
     if [[ -n "$expected_branch" ]]; then
         echo "  ⚠️  IMPORTANT: You can ONLY push to this branch!"
@@ -642,11 +643,11 @@ main_loop() {
     fi
     log "INFO" "Complete token: $COMPLETE_TOKEN"
     
-    # Validate branch matches prd.json branchName
-    validate_branch "$project_dir"
+    # Validate branch matches prd.json branchName (check repo where Aider will run)
+    validate_branch "$project_dir" "$REPO_ROOT"
     
     # Confirm current branch before starting
-    confirm_branch "$project_dir"
+    confirm_branch "$project_dir" "$REPO_ROOT"
     
     # Show initial status
     local total=$(count_total_stories "$project_dir/prd.json")

@@ -305,6 +305,8 @@ generate_prompt() {
     local story_text=$(echo "$story_json" | jq -r '.story')
     local steps=$(echo "$story_json" | jq -r '.steps | join("\n")')
     local acceptance=$(echo "$story_json" | jq -r '.acceptance')
+    local project_name
+    project_name=$(basename "$project_dir")
     
     # Read progress for context
     local progress=""
@@ -316,6 +318,20 @@ generate_prompt() {
     local prd_content=""
     if [ -f "$project_dir/prd.md" ]; then
         prd_content=$(head -100 "$project_dir/prd.md")
+    fi
+    
+    # Detect Rust project so we can remind the model to create/update Cargo.toml
+    local rust_note=""
+    if find "$project_dir" -maxdepth 2 -name "*.rs" 2>/dev/null | read -r; then
+        rust_note="
+## Rust project layout (required)
+This is a Rust project. You MUST have projects/$project_name/Cargo.toml at the crate root with [package] and [[bin]] name=\"$project_name\", and source under projects/$project_name/src/. If you add or edit .rs files, ensure Cargo.toml exists and is valid so \`cargo build\` works. Create or update Cargo.toml in the same response when creating the first Rust source file.
+"
+    elif grep -qi "rust\|cargo\|\.rs" "$project_dir/requirements.md" 2>/dev/null || echo "$prd_content" | grep -qi "rust\|cargo"; then
+        rust_note="
+## Rust project layout (required)
+This project uses Rust. When you create any .rs file you MUST also create or update projects/$project_name/Cargo.toml so the crate builds. Include [package] name=\"$project_name\" and [[bin]] path=\"src/main.rs\". Create both Cargo.toml and the source file(s) in this task.
+"
     fi
     
     cat <<EOF
@@ -335,15 +351,29 @@ $prd_content
 
 ## Recent Progress
 $progress
+$rust_note
+## How to edit files (required)
+You are inside Aider. To create or edit a file you MUST use this exact format:
+- Line 1: file path only, e.g. projects/$project_name/README.md
+- Line 2: exactly \`\`\` (three backticks, no space after)
+- Next lines: full file contents
+- Last line: exactly \`\`\`
+No blank line between the path and the \`\`\`. Example for a new file:
+
+projects/$project_name/README.md
+\`\`\`
+# Editio
+Rust-based academic typesetting.
+\`\`\`
+
+You must output at least one file in this format for this task. Do not only describe or show code in \`\`\`rust blocks—use the path-plus-backticks format above so Aider applies the edit.
 
 ## Instructions
-1. Implement this story completely
-2. Follow the steps provided
-3. Ensure acceptance criteria are met
-4. Write clean, tested code
-5. When complete, respond with "Task complete" or "Story complete"
+1. You MUST output at least one file using the path + \`\`\` format above. Do not respond with only an outline, description, or "I will...". Output the actual file contents now.
+2. If the codebase is empty, create at least one new file (e.g. projects/$project_name/README.md or the first source file the story needs).
+3. When done, reply with "Task complete" or "Story complete".
 
-Begin implementation now.
+Begin implementation now. Output your first file immediately.
 EOF
 }
 
