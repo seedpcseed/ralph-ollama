@@ -18,7 +18,7 @@ analyze_ollama_response() {
     # Extract learnings if present (truncate to avoid "Argument list too long" when passing to jq)
     local learnings=""
     if echo "$response" | grep -q "LEARNINGS:"; then
-        learnings=$(echo "$response" | sed -n '/LEARNINGS:/,$p' | tail -n +2 | head -c 16384)
+        learnings=$(echo "$response" | sed -n '/LEARNINGS:/,$p' | tail -n +2 | head -c 4096)
     fi
     
     # Determine completion status
@@ -41,18 +41,37 @@ analyze_ollama_response() {
         fi
     fi
     
-    # Return JSON analysis
-    jq -n \
-        --arg status "$status" \
-        --arg complete "$complete" \
-        --arg learnings "$learnings" \
-        --arg story_id "$story_id" \
-        '{
-            story_id: $story_id,
-            status: $status,
-            complete: ($complete == "true"),
-            learnings: $learnings
-        }'
+    # Return JSON analysis (pass learnings via file to avoid "Argument list too long")
+    local learnings_file=""
+    if [ -n "$learnings" ]; then
+        learnings_file=$(mktemp)
+        printf '%s' "$learnings" > "$learnings_file"
+    fi
+    if [ -n "$learnings_file" ]; then
+        jq -n \
+            --arg status "$status" \
+            --arg complete "$complete" \
+            --rawfile learnings "$learnings_file" \
+            --arg story_id "$story_id" \
+            '{
+                story_id: $story_id,
+                status: $status,
+                complete: ($complete == "true"),
+                learnings: $learnings
+            }'
+        rm -f "$learnings_file"
+    else
+        jq -n \
+            --arg status "$status" \
+            --arg complete "$complete" \
+            --arg story_id "$story_id" \
+            '{
+                story_id: $story_id,
+                status: $status,
+                complete: ($complete == "true"),
+                learnings: ""
+            }'
+    fi
 }
 
 # Analyze response content when no explicit status

@@ -60,18 +60,21 @@ apply_response_to_files() {
             in_block=0
             if [ -n "$block_content" ] || [ -n "$block_path" ]; then
                 local file_path=""
-                # Fence is a path if it contains / or has a file extension
+                # Fence is a path only if it looks like a real path (no spaces, not instructional text)
                 if [[ "$block_path" == */* ]] || [[ "$block_path" == *.* ]]; then
-                    file_path="$block_path"
+                    if [[ "$block_path" != *" "* ]] && [[ "$block_path" != *"Or put"* ]] && [[ "$block_path" != *"code block"* ]] && [[ "$block_path" != *"first line"* ]]; then
+                        file_path="$block_path"
+                    fi
                 fi
                 if [ -z "$file_path" ] && [ -n "$block_content" ]; then
                     local first_line=$(echo "$block_content" | head -1)
-                    if [[ "$first_line" =~ \#\ *([Ff]ile|[Pp]ath):\ *(.+) ]]; then
-                        file_path=$(echo "$first_line" | sed -E 's/^# *([Ff]ile|[Pp]ath): *//' | tr -d '\r')
+                    if [[ "$first_line" =~ \#\ *([Ff]ile|[Pp]ath):\ *([^[:space:]]+) ]]; then
+                        file_path="${BASH_REMATCH[2]}"
                         block_content=$(echo "$block_content" | tail -n +2)
                     fi
                 fi
-                if [ -n "$file_path" ] && [[ "$file_path" != *".."* ]]; then
+                # Reject paths with spaces or that look like instructions
+                if [ -n "$file_path" ] && [[ "$file_path" != *" "* ]] && [[ "$file_path" != *".."* ]]; then
                     file_path=$(echo "$file_path" | sed 's|^\./||')
                     local full_path="$project_dir/$file_path"
                     local dir_path=$(dirname "$full_path")

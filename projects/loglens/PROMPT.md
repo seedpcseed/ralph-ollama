@@ -20,17 +20,17 @@ You are an autonomous AI developer. Your job is to implement user stories indepe
 Your response is parsed to extract and write code to the project. Use ONE of these formats:
 
 **Format 1 (preferred):** Put the file path in the code fence:
-\`\`\`path/to/file.py
-# file contents here
+\`\`\`path/to/file.ext
+# file contents here (any language)
 \`\`\`
 
 **Format 2:** Use a File directive on the first line:
 \`\`\`python
-# File: path/to/file.py
+# File: path/to/file.ext
 # file contents here
 \`\`\`
 
-Paths are relative to the project root. Examples: `cli.py`, `parsers/apache.py`, `tests/test_parser.py`
+Paths are relative to the project root. Examples: `cli.py`, `src/main.rs`, `cmd/main.go`, `parsers/apache.py`
 
 ## Testing
 - Run tests if they exist
