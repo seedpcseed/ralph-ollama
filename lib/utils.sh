@@ -1,301 +1,414 @@
 #!/bin/bash
-#
-# Ralph-Ollama Utilities
-#
 
-# Colors
+# Ralph Utils - Common utility functions
+# Sourced by other Ralph scripts
+
+# Colors for terminal output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Validate prd.json has expected structure (branchName, userStories array)
-# Returns 0 if valid, 1 if invalid
-validate_prd_json() {
-    local prd_file="$1"
-    if [ ! -f "$prd_file" ]; then
-        return 1
+# Log function with timestamps and colors
+log() {
+    local level=$1
+    local message=$2
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local color=""
+    
+    case $level in
+        "INFO")    color=$BLUE ;;
+        "WARN")    color=$YELLOW ;;
+        "ERROR")   color=$RED ;;
+        "SUCCESS") color=$GREEN ;;
+        "LOOP")    color=$PURPLE ;;
+        "DEBUG")   color=$CYAN ;;
+    esac
+    
+    echo -e "${color}[$timestamp] [$level] $message${NC}"
+    
+    # Also log to file if LOG_FILE is set
+    if [[ -n "$LOG_FILE" ]]; then
+        echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
     fi
-    jq -e '.userStories | type == "array"' "$prd_file" >/dev/null 2>&1
 }
 
-# Get next incomplete story from PRD
+# Get Ralph root directory
+get_ralph_root() {
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
+    # Go up one level from lib/ or stay if already at ralph/
+    if [[ "$(basename "$script_dir")" == "lib" ]]; then
+        echo "$(dirname "$script_dir")"
+    else
+        echo "$script_dir"
+    fi
+}
+
+# Get project directory
+get_project_dir() {
+    local project_name=$1
+    local ralph_root=$(get_ralph_root)
+    echo "$ralph_root/projects/$project_name"
+}
+
+# Check if project exists
+project_exists() {
+    local project_name=$1
+    local project_dir=$(get_project_dir "$project_name")
+    [[ -d "$project_dir" ]]
+}
+
+# Get ISO timestamp
+get_iso_timestamp() {
+    date -u '+%Y-%m-%dT%H:%M:%SZ'
+}
+
+# Get time until next hour (for rate limit reset)
+get_seconds_until_next_hour() {
+    local current_minute=$(date +%M)
+    local current_second=$(date +%S)
+    echo $(((60 - current_minute - 1) * 60 + (60 - current_second)))
+}
+
+# Format seconds as HH:MM:SS
+format_duration() {
+    local seconds=$1
+    local hours=$((seconds / 3600))
+    local minutes=$(((seconds % 3600) / 60))
+    local secs=$((seconds % 60))
+    printf "%02d:%02d:%02d" $hours $minutes $secs
+}
+
+# Check if a command exists
+command_exists() {
+    command -v "$1" &> /dev/null
+}
+
+# Read JSON value using jq
+json_get() {
+    local file=$1
+    local path=$2
+    jq -r "$path" "$file" 2>/dev/null
+}
+
+# Update JSON value using jq
+json_set() {
+    local file=$1
+    local path=$2
+    local value=$3
+    local tmp_file=$(mktemp)
+    jq "$path = $value" "$file" > "$tmp_file" && mv "$tmp_file" "$file"
+}
+
+# Count incomplete stories in prd.json (supports both old array and new object format)
+count_incomplete_stories() {
+    local prd_file=$1
+    # Handle new format with userStories wrapper or old array format
+    jq 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | length' "$prd_file" 2>/dev/null || echo "0"
+}
+
+# Count complete stories in prd.json
+count_complete_stories() {
+    local prd_file=$1
+    jq 'if type == "object" then .userStories else . end | [.[] | select(.passes == true)] | length' "$prd_file" 2>/dev/null || echo "0"
+}
+
+# Count total stories in prd.json
+count_total_stories() {
+    local prd_file=$1
+    jq 'if type == "object" then .userStories else . end | length' "$prd_file" 2>/dev/null || echo "0"
+}
+
+# Get next incomplete story from prd.json (sorted by priority, then id)
 get_next_story() {
-    local prd_file="$1"
-    
-    if [ ! -f "$prd_file" ]; then
-        echo "ERROR"
-        return 1
-    fi
-    
-    # Validate structure before querying
-    if ! validate_prd_json "$prd_file"; then
-        echo "ERROR"
-        return 1
-    fi
-    
-    # Get first story where passes=false, sorted by priority
-    local next_story
-    next_story=$(jq -r '
-        .userStories 
-        | map(select(.passes == false))
-        | sort_by(.priority)
-        | .[0] // empty
-    ' "$prd_file" 2>/dev/null) || { echo "ERROR"; return 1; }
-    
-    if [ -z "$next_story" ] || [ "$next_story" = "null" ]; then
-        echo "COMPLETE"
-        return 0
-    fi
-    
-    echo "$next_story"
+    local prd_file=$1
+    jq -c 'if type == "object" then .userStories else . end | [.[] | select(.passes == false)] | sort_by(.priority // 999, .id) | first' "$prd_file" 2>/dev/null
 }
 
-# Mark a story as complete
+# Mark story as complete in prd.json
 mark_story_complete() {
-    local prd_file="$1"
-    local story_id="$2"
-    
-    # Update the story's passes field to true
+    local prd_file=$1
+    local story_id=$2
+    local tmp_file=$(mktemp)
     jq --arg id "$story_id" '
-        .userStories |= map(
-            if .id == $id then
-                .passes = true
-            else
-                .
-            end
-        )
-    ' "$prd_file" > "${prd_file}.tmp" && mv "${prd_file}.tmp" "$prd_file"
-}
-
-# Count completed stories
-count_completed_stories() {
-    local prd_file="$1"
-    jq '[.userStories[] | select(.passes == true)] | length' "$prd_file"
-}
-
-# Update status file
-update_status() {
-    local status_file="$1"
-    local status="$2"
-    local loop_count="$3"
-    local completed_count="$4"
-    
-    jq -n \
-        --arg status "$status" \
-        --argjson loop "$loop_count" \
-        --argjson completed "$completed_count" \
-        --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        '{
-            status: $status,
-            loop_count: $loop,
-            completed_stories: $completed,
-            last_updated: $timestamp
-        }' > "$status_file"
-}
-
-# Show project status
-show_project_status() {
-    local project_dir="$1"
-    local status_file="$project_dir/status.json"
-    local prd_file="$project_dir/prd.json"
-    local cb_file="$project_dir/.circuit_breaker"
-    
-    echo "=================================================="
-    echo "Project Status"
-    echo "=================================================="
-    
-    if [ -f "$status_file" ]; then
-        echo "Status: $(jq -r '.status' "$status_file")"
-        echo "Loops: $(jq -r '.loop_count' "$status_file")"
-        echo "Completed: $(jq -r '.completed_stories' "$status_file")"
-        echo "Last update: $(jq -r '.last_updated' "$status_file")"
-    fi
-    
-    echo ""
-    
-    if [ -f "$prd_file" ]; then
-        local total=$(jq '[.userStories[]] | length' "$prd_file")
-        local complete=$(jq '[.userStories[] | select(.passes == true)] | length' "$prd_file")
-        local incomplete=$(jq '[.userStories[] | select(.passes == false)] | length' "$prd_file")
-        
-        echo "Stories: $complete/$total complete ($incomplete remaining)"
-        
-        if [ $incomplete -gt 0 ]; then
-            echo ""
-            echo "Next stories:"
-            jq -r '
-                .userStories 
-                | map(select(.passes == false))
-                | sort_by(.priority)
-                | .[0:3]
-                | .[]
-                | "  [\(.id)] \(.story)"
-            ' "$prd_file"
-        fi
-    fi
-    
-    echo ""
-    
-    if [ -f "$cb_file" ]; then
-        local cb_state=$(cat "$cb_file")
-        if [ "$cb_state" = "OPEN" ]; then
-            echo -e "${RED}Circuit Breaker: OPEN${NC}"
-            echo "Run with --reset to continue"
+        if type == "object" then
+            .userStories = [.userStories[] | if .id == $id then .passes = true else . end]
         else
-            echo -e "${GREEN}Circuit Breaker: CLOSED${NC}"
-        fi
+            map(if .id == $id then .passes = true else . end)
+        end
+    ' "$prd_file" > "$tmp_file" && mv "$tmp_file" "$prd_file"
+}
+
+# Get branch name from prd.json
+get_branch_name() {
+    local prd_file=$1
+    jq -r '.branchName // empty' "$prd_file" 2>/dev/null
+}
+
+# Update story notes in prd.json
+update_story_notes() {
+    local prd_file=$1
+    local story_id=$2
+    local notes=$3
+    local tmp_file=$(mktemp)
+    jq --arg id "$story_id" --arg notes "$notes" '
+        if type == "object" then
+            .userStories = [.userStories[] | if .id == $id then .notes = $notes else . end]
+        else
+            map(if .id == $id then .notes = $notes else . end)
+        end
+    ' "$prd_file" > "$tmp_file" && mv "$tmp_file" "$prd_file"
+}
+
+# Append to progress file (format matches X guide)
+append_progress() {
+    local progress_file=$1
+    local story_id=$2
+    local message=$3
+    local timestamp=$(get_iso_timestamp)
+    
+    cat >> "$progress_file" << EOF
+
+---
+## $(date '+%Y-%m-%d') - Story $story_id
+
+$message
+
+**Learnings:**
+- (Add any patterns discovered)
+- (Add any gotchas encountered)
+
+**Gotchas:**
+- (Things you've encountered)
+EOF
+}
+
+# Parse reset time from "You're out of extra usage · resets 3am (Asia/Makassar)" message
+# Returns: seconds to wait until reset time, or empty if can't parse
+# Assumes the script runs in the same timezone as reported by Claude
+parse_usage_reset_time() {
+    local output_file=$1
+    
+    # Look for the pattern: "resets Xam/pm"
+    local reset_time=$(grep -oE "resets [0-9]{1,2}(am|pm)" "$output_file" 2>/dev/null | grep -oE "[0-9]{1,2}(am|pm)" | head -1)
+    
+    if [[ -z "$reset_time" ]]; then
+        return 1
     fi
     
-    echo "=================================================="
-}
-
-# Extract project structure from PRD if available (Architecture section)
-get_project_structure() {
-    local prd_file="$1"
-    if [ -f "$prd_file" ]; then
-        # Capture from ### Architecture or ## Architecture until next ## or ###
-        sed -n '/^### Architecture/,/^## /p' "$prd_file" 2>/dev/null | head -35 || true
-        sed -n '/^## Architecture/,/^## /p' "$prd_file" 2>/dev/null | head -35 || true
+    # Convert 12-hour to 24-hour format
+    local hour=$(echo "$reset_time" | grep -oE "[0-9]+")
+    local ampm=$(echo "$reset_time" | grep -oE "(am|pm)")
+    
+    if [[ "$ampm" == "pm" ]] && [[ $hour -ne 12 ]]; then
+        hour=$((hour + 12))
+    elif [[ "$ampm" == "am" ]] && [[ $hour -eq 12 ]]; then
+        hour=0
     fi
+    
+    # Get current epoch time
+    local current_epoch=$(date +%s)
+    
+    # Calculate seconds until reset hour today
+    # Using date arithmetic for cross-platform compatibility
+    local today=$(date +%Y-%m-%d)
+    local reset_epoch
+    
+    # Try GNU date first (gdate on macOS, date on Linux)
+    if command -v gdate &>/dev/null; then
+        reset_epoch=$(gdate -d "${today} ${hour}:00:00" +%s 2>/dev/null)
+    else
+        # Try GNU date syntax (Linux)
+        reset_epoch=$(date -d "${today} ${hour}:00:00" +%s 2>/dev/null)
+    fi
+    
+    # Fallback for BSD date (macOS without coreutils)
+    if [[ -z "$reset_epoch" ]]; then
+        reset_epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "${today} ${hour}:00:00" +%s 2>/dev/null)
+    fi
+    
+    if [[ -z "$reset_epoch" ]]; then
+        return 1
+    fi
+    
+    # If reset time has already passed today, wait until tomorrow
+    if [[ $reset_epoch -le $current_epoch ]]; then
+        reset_epoch=$((reset_epoch + 86400))
+    fi
+    
+    # Calculate seconds to wait
+    local wait_seconds=$((reset_epoch - current_epoch))
+    
+    echo "$wait_seconds"
+    return 0
 }
 
-# Build prompt for Ollama
-build_ollama_prompt() {
+# Wait for Claude usage limit to reset with countdown
+# Usage: wait_for_usage_reset <output_file>
+wait_for_usage_reset() {
+    local output_file=$1
+    
+    local wait_seconds
+    # Use || true to prevent set -e from exiting if parsing fails
+    wait_seconds=$(parse_usage_reset_time "$output_file") || true
+    
+    if [[ -z "$wait_seconds" ]] || [[ $wait_seconds -le 0 ]]; then
+        # Fallback: wait 1 hour if we can't parse the time
+        log "WARN" "Could not parse reset time, defaulting to 1 hour wait"
+        wait_seconds=3600
+    fi
+    
+    # Extract reset info for logging
+    local reset_info=$(grep -oE "resets [0-9]{1,2}(am|pm) \([A-Za-z/_]+\)" "$output_file" 2>/dev/null | head -1)
+    
+    # Add 60 second buffer after reset time to be safe
+    wait_seconds=$((wait_seconds + 60))
+    
+    log "WARN" "🚫 Claude usage limit reached"
+    log "INFO" "⏰ Reset time: ${reset_info:-unknown}"
+    log "INFO" "💤 Waiting $(format_duration $wait_seconds) until reset (+60s buffer)..."
+    
+    # Countdown with periodic updates
+    while [[ $wait_seconds -gt 0 ]]; do
+        local remaining=$(format_duration $wait_seconds)
+        printf "\r${YELLOW}⏳ Time until reset: %s ${NC}" "$remaining"
+        
+        # Log every 10 minutes
+        if [[ $((wait_seconds % 600)) -eq 0 ]] && [[ $wait_seconds -gt 0 ]]; then
+            log "INFO" "Still waiting... $remaining remaining"
+        fi
+        
+        sleep 1
+        wait_seconds=$((wait_seconds - 1))
+    done
+    printf "\n"
+    
+    log "SUCCESS" "✅ Reset time reached! Resuming..."
+    return 0
+}
+
+# Check if output indicates Claude usage limit
+check_usage_limit() {
+    local output_file=$1
+    grep -qi "out of extra usage\|You're out of extra usage" "$output_file" 2>/dev/null
+}
+
+# Generate prompt for a specific story
+generate_prompt() {
     local project_dir="$1"
     local story_json="$2"
     
-    local prompt_template="$project_dir/PROMPT.md"
-    local progress_file="$project_dir/progress.txt"
-    local prd_file="$project_dir/prd.md"
-    
     local story_id=$(echo "$story_json" | jq -r '.id')
-    local story=$(echo "$story_json" | jq -r '.story')
+    local story_text=$(echo "$story_json" | jq -r '.story')
     local steps=$(echo "$story_json" | jq -r '.steps | join("\n")')
     local acceptance=$(echo "$story_json" | jq -r '.acceptance')
     
-    # P1: Codebase context - existing files and structure
-    local project_files=""
-    if [ -d "$project_dir" ]; then
-        project_files=$(find "$project_dir" -type f \( -name "*.py" -o -name "*.rs" -o -name "*.go" -o -name "*.sh" -o -name "*.md" -o -name "*.json" -o -name "*.toml" -o -name "Cargo.toml" -o -name "go.mod" -o -name "package.json" -o -name "*.txt" \) \
-            ! -path "*/logs/*" ! -path "*/.git/*" 2>/dev/null | sed "s|$project_dir/||" | sort | head -60)
+    # Read progress for context
+    local progress=""
+    if [ -f "$project_dir/progress.txt" ]; then
+        progress=$(tail -50 "$project_dir/progress.txt")
     fi
     
-    local project_structure
-    project_structure=$(get_project_structure "$prd_file")
-    
-    # Build the prompt
-    cat << EOF
-You are an autonomous AI developer working on implementing a user story.
-
-CURRENT PROJECT FILES (extend or modify these):
-$project_files
-
-EOF
-    if [ -n "$project_structure" ]; then
-        cat << EOF
-PROJECT STRUCTURE (from PRD - follow this layout):
-$project_structure
-
-EOF
+    # Read PRD for full context
+    local prd_content=""
+    if [ -f "$project_dir/prd.md" ]; then
+        prd_content=$(head -100 "$project_dir/prd.md")
     fi
-    cat << EOF
-CURRENT TASK:
-Story ID: $story_id
-Description: $story
+    
+    cat <<EOF
+# Implementation Task: Story $story_id
 
-IMPLEMENTATION STEPS:
+## Story
+$story_text
+
+## Steps
 $steps
 
-ACCEPTANCE CRITERIA:
+## Acceptance Criteria
 $acceptance
 
-EOF
+## Project Context
+$prd_content
 
-    # Add progress/learnings if available (limit size aggressively to avoid "argument list too long")
-    if [ -f "$progress_file" ]; then
-        PROGRESS_SIZE=$(wc -c < "$progress_file" 2>/dev/null || echo "0")
-        # Limit to last 1000 chars or last 15 lines (whichever is smaller) to keep prompt manageable
-        if [ "$PROGRESS_SIZE" -gt 1000 ]; then
-            PROGRESS_CONTENT=$(tail -n 15 "$progress_file" | tail -c 1000)
-            PROGRESS_CONTENT="(Showing last 15 lines, truncated for size)\n$PROGRESS_CONTENT"
+## Recent Progress
+$progress
+
+## Instructions
+1. Implement this story completely
+2. Follow the steps provided
+3. Ensure acceptance criteria are met
+4. Write clean, tested code
+5. When complete, respond with "Task complete" or "Story complete"
+
+Begin implementation now.
+EOF
+}
+
+# Check rate limit (simple implementation)
+check_rate_limit() {
+    local project_dir="$1"
+    local max_per_hour="$2"
+    local state_file="$project_dir/.ralph_rate_limit"
+    
+    # Simple rate limiting based on call count
+    local current_hour=$(date +%Y%m%d%H)
+    
+    if [ -f "$state_file" ]; then
+        local stored_hour=$(head -1 "$state_file")
+        local call_count=$(tail -1 "$state_file")
+        
+        if [ "$stored_hour" = "$current_hour" ]; then
+            if [ "$call_count" -ge "$max_per_hour" ]; then
+                log "WARN" "⏸️  Rate limit reached ($call_count/$max_per_hour calls this hour)"
+                log "INFO" "   Waiting for next hour..."
+                sleep 3600
+                echo "$current_hour" > "$state_file"
+                echo "0" >> "$state_file"
+            else
+                echo "$stored_hour" > "$state_file"
+                echo "$((call_count + 1))" >> "$state_file"
+            fi
         else
-            PROGRESS_CONTENT=$(cat "$progress_file")
+            # New hour
+            echo "$current_hour" > "$state_file"
+            echo "1" >> "$state_file"
         fi
-        cat << EOF
-PREVIOUS LEARNINGS (recent):
-$PROGRESS_CONTENT
-
-EOF
+    else
+        echo "$current_hour" > "$state_file"
+        echo "1" >> "$state_file"
     fi
+}
 
-    # Add template instructions if available
-    if [ -f "$prompt_template" ]; then
-        cat "$prompt_template"
+# Check dependencies
+check_dependencies() {
+    local missing=()
+    
+    if ! command_exists "aider"; then
+        missing+=("aider (Aider CLI)")
+    fi
+    
+    if ! command_exists "jq"; then
+        missing+=("jq (JSON processor)")
+    fi
+    
+    if ! command_exists "tmux"; then
+        missing+=("tmux (terminal multiplexer)")
+    fi
+    
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log "ERROR" "Missing dependencies:"
+        for dep in "${missing[@]}"; do
+            echo "  - $dep"
+        done
         echo ""
-    fi
-
-    cat << 'EOF'
-
-IMPORTANT INSTRUCTIONS:
-1. Implement the story according to the steps and acceptance criteria
-2. To create/update files, use code blocks with the file path in the fence:
-   ```path/to/file.ext
-   # file contents (any language: .py, .rs, .go, .js, etc.)
-   ```
-   Or put # File: path/to/file.ext on the first line of a code block.
-3. When you've completed the story, end your response with:
-   
-   STATUS: COMPLETE
-   LEARNINGS: [Any patterns, gotchas, or important notes for future iterations]
-
-4. If you cannot complete the story, explain what's blocking you and end with:
-   
-   STATUS: INCOMPLETE
-   REASON: [Why you couldn't complete it]
-   NEXT_STEPS: [What needs to happen next]
-
-5. Your code blocks will be written to the project - use the file path format above
-6. Document any important patterns or learnings for future tasks
-
-Begin your implementation now:
-EOF
-}
-
-# Check if prd.md is unchanged from template (project not set up)
-# Returns 0 if unchanged, 1 if customized or files missing
-is_prd_template_unchanged() {
-    local prd_file="$1"
-    local template_file="$2"
-    [ -f "$prd_file" ] && [ -f "$template_file" ] || return 1
-    cmp -s "$prd_file" "$template_file"
-}
-
-# Trim progress.txt if it gets too large (prevent "argument list too long" errors)
-trim_progress_file() {
-    local progress_file="$1"
-    local max_size="${2:-50000}"  # Default 50KB
-    
-    if [ ! -f "$progress_file" ]; then
-        return 0
+        echo "Install with:"
+        echo "  brew install jq tmux"
+        echo "  pip3 install aider-chat"
+        return 1
     fi
     
-    local size=$(wc -c < "$progress_file" 2>/dev/null || echo "0")
-    if [ "$size" -gt "$max_size" ]; then
-        # Keep header and last 50 lines
-        {
-            head -n 15 "$progress_file"
-            echo ""
-            echo "--- (File trimmed on $(date '+%Y-%m-%d %H:%M:%S') - was ${size} bytes) ---"
-            echo ""
-            tail -n 50 "$progress_file"
-        } > "${progress_file}.tmp" && mv "${progress_file}.tmp" "$progress_file"
-    fi
-}
-
-# Extract JSON safely
-extract_json() {
-    local file="$1"
-    local field="$2"
-    jq -r ".$field // empty" "$file" 2>/dev/null || echo ""
+    return 0
 }

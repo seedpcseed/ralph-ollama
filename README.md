@@ -1,175 +1,218 @@
-# Ralph-Ollama: Autonomous Development Loop with Local LLMs
+# Ralph - Autonomous AI Development Loop
 
-Ralph-Ollama is an autonomous development loop system that uses **Ollama** with local language models to iteratively implement features from a PRD (Product Requirements Document).
+Ralph is an autonomous development loop system that uses **Aider** with support for Claude API and local LLM models (via Ollama) to iteratively implement features from a PRD (Product Requirements Document).
 
-## Why Ralph-Ollama?
+## Key Features
 
-- ✅ **100% Local** - No API keys, no cloud services, complete privacy
-- ✅ **Zero Cost** - No API charges, run unlimited loops
-- ✅ **Model Choice** - Use any Ollama-compatible model
-- ✅ **No Rate Limits** - Only limited by your hardware
-- ✅ **Offline Capable** - Works without internet (after models are downloaded)
-
-## Prerequisites
-
-### 1. Install Ollama
-```bash
-# macOS/Linux
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Or download from https://ollama.com
-```
-
-### 2. Install Dependencies
-```bash
-# macOS
-brew install jq tmux coreutils
-
-# Ubuntu/Debian
-sudo apt-get install jq tmux coreutils
-
-# Arch
-sudo pacman -S jq tmux coreutils
-```
-
-### 3. Pull a Model
-```bash
-# Recommended models for coding:
-ollama pull codellama:latest        # 7B - Fast, good for simple tasks
-ollama pull deepseek-coder:latest   # 6.7B - Excellent for coding
-ollama pull qwen2.5-coder:latest    # 7B - Great code understanding
-
-# For more complex tasks:
-ollama pull codellama:13b           # 13B - Better reasoning
-ollama pull deepseek-coder:33b      # 33B - Best quality (requires more RAM)
-
-# General purpose models:
-ollama pull llama3.1:latest         # 8B - Good all-rounder
-ollama pull llama3.1:70b            # 70B - Highest quality (16GB+ RAM)
-```
+- ✅ **Aider Integration** - Uses Aider for AI-powered code editing
+- ✅ **Multiple Model Support** - Claude API, local Ollama models, or hybrid mode
+- ✅ **Free Local Option** - Use local models for cost-free development
+- ✅ **Full Feature Parity** - All original Ralph features included
 
 ## Quick Start
 
+To add Ralph to your existing project, copy the entire `ralph` directory into your repo:
+
 ```bash
-# 1. Make scripts executable
-chmod +x *.sh
+cp -r path/to/ralph your-project/
+```
+
+Or if you are starting from this repo, clone and copy:
+
+```bash
+git clone https://github.com/danielsinewe/ralph-cursor.git
+cp -r ralph-cursor your-project/ralph
+```
+
+
+```bash
+# 1. Run setup (one-time)
+./setup.sh
 
 # 2. Create a new project
 ./new.sh my-feature
 
 # 3. Edit your PRD
-nano ralph/projects/my-feature/prd.md
-# or
-code ralph/projects/my-feature/prd.md
+code projects/my-feature/prd.md
 
 # 4. Convert PRD to JSON tasks
 ./convert.sh my-feature
 
-# 5. Start the loop with monitoring
-./start.sh my-feature --monitor --model deepseek-coder:latest
+# 5. Start the loop (with tmux monitoring)
+# Claude mode (default):
+./start.sh my-feature --monitor
+
+# Local mode:
+RALPH_MODE=local ./start.sh my-feature --monitor
+
+# Hybrid mode:
+RALPH_MODE=hybrid ./start.sh my-feature --monitor
+```
+
+## Prerequisites
+
+Run the setup script to install dependencies:
+
+```bash
+./setup.sh
+```
+
+This will install:
+- **Aider** (`pip3 install aider-chat`)
+- **jq** (JSON processor)
+- **tmux** (optional, for monitoring)
+
+## Model Options
+
+Ralph supports three modes:
+
+### 1. Claude API Mode (Default)
+High-quality results using Anthropic's Claude API.
+
+```bash
+export ANTHROPIC_API_KEY='sk-ant-...'
+./start.sh my-feature
+```
+
+**Pros**: Best quality, latest Claude models  
+**Cons**: API costs, rate limits (100/hour default)
+
+### 2. Local Ollama Mode
+Free, privacy-preserving development with local models.
+
+```bash
+# Start Ollama server
+ollama serve
+
+# Pull a model
+ollama pull deepseek-coder:33b
+
+# Run Ralph with local model
+RALPH_MODE=local ./start.sh my-feature
+```
+
+**Pros**: Free, no rate limits, private, offline  
+**Cons**: Requires hardware (GPU recommended), quality varies
+
+### 3. Hybrid Mode
+Automatic: Claude for critical tasks (priority 1-5), local for others.
+
+```bash
+RALPH_MODE=hybrid ./start.sh my-feature
+```
+
+**Pros**: Balance of quality and cost  
+**Cons**: Requires both Claude API and Ollama setup
+
+## Recommended Local Models
+
+For best coding results with Ollama:
+
+- **DeepSeek Coder 33B** - Best quality (needs 24GB+ VRAM)
+- **Codestral 22B** - Good balance (Mistral-based)
+- **Qwen2.5 Coder 14B** - Recent, efficient
+- **DeepSeek Coder 6.7B** - For smaller hardware (16GB RAM)
+
+## Configuration
+
+Edit `config.sh` to customize settings:
+
+```bash
+# Model mode: claude, local, or hybrid
+MODE="${RALPH_MODE:-claude}"
+
+# Local model to use
+LOCAL_MODEL="deepseek-coder:33b"
+
+# Rate limiting
+MAX_CALLS_PER_HOUR=100
+AGENT_TIMEOUT_MINUTES=20
 ```
 
 ## Commands
 
-### Create New Project
+### `./ralph/new.sh <project-name>`
+Create a new project from template.
+
 ```bash
-./new.sh <project-name>
-```
-Creates a new project from templates.
-
-### Convert PRD to JSON
-```bash
-# Use default model (llama3.1:latest)
-./convert.sh my-feature
-
-# Use specific model
-./convert.sh my-feature deepseek-coder:33b
-
-# Set default conversion model
-CONVERT_MODEL=qwen2.5-coder:latest ./convert.sh my-feature
+./ralph/new.sh signals
+# Creates: ralph/projects/signals/
 ```
 
-### Start Ralph Loop
+### `./ralph/convert.sh <project-name>`
+Convert your PRD.md to actionable JSON tasks using Cursor Agent (or Claude).
+
 ```bash
-# Basic (output in terminal)
-./start.sh my-feature
+./ralph/convert.sh signals
+# Reads: ralph/projects/signals/prd.md
+# Creates: ralph/projects/signals/prd.json
+```
+
+### `./ralph/start.sh <project-name> [options]`
+Run the autonomous development loop.
+
+```bash
+# Without tmux (output directly in terminal)
+./ralph/start.sh signals
 
 # With tmux monitoring (recommended)
-./start.sh my-feature --monitor
-
-# Specify model
-./start.sh my-feature --model codellama:13b
-
-# Set call limit (default: 100/hour)
-./start.sh my-feature --calls 50
-
-# Set timeout (default: 20 minutes)
-./start.sh my-feature --timeout 30
+./ralph/start.sh signals --monitor
 
 # Check status
-./start.sh my-feature --status
+./ralph/start.sh signals --status
 
-# Reset circuit breaker
-./start.sh my-feature --reset
+# Reset circuit breaker if stuck
+./ralph/start.sh signals --reset
 ```
 
-### Monitor Progress
+Options:
+- `-m, --monitor` - Start with tmux session and live monitor
+- `-c, --calls NUM` - Max calls per hour (default: 100)
+- `-t, --timeout MIN` - Agent timeout in minutes (default: 20)
+- `--model MODE` - Model mode: claude, local, or hybrid (default: claude)
+- `-s, --status` - Show project status and exit
+- `-r, --reset` - Reset circuit breaker
+
+### `./ralph/monitor.sh <project-name>`
+Live status dashboard (auto-started with `--monitor`).
+
 ```bash
-./monitor.sh my-feature
+./ralph/monitor.sh signals
 ```
-Live dashboard showing progress, status, and recent activity.
-
-## Model Selection Guide
-
-### For Simple Projects
-- **codellama:latest** (7B) - Fast, low memory, good for straightforward tasks
-- **deepseek-coder:latest** (6.7B) - Excellent code quality, efficient
-
-### For Complex Projects
-- **codellama:13b** - Better reasoning, handles complex logic
-- **deepseek-coder:33b** - Best code quality, requires 16GB+ RAM
-- **qwen2.5-coder:latest** - Strong at understanding existing code
-
-### For PRD Conversion
-- **llama3.1:latest** (8B) - Good at understanding requirements
-- **llama3.1:70b** - Best comprehension for complex PRDs
-
-### Memory Requirements
-| Model Size | RAM Needed | Speed | Quality |
-|------------|-----------|-------|---------|
-| 7B | 8GB | Fast | Good |
-| 13B | 16GB | Medium | Better |
-| 33B | 32GB+ | Slow | Best |
-| 70B | 48GB+ | Very Slow | Excellent |
 
 ## Workflow
 
 ```
-┌─────────────────────────────────────────┐
-│ 1. Write PRD (prd.md)                   │
-│    Human requirements document          │
-├─────────────────────────────────────────┤
-│ 2. Convert to JSON (prd.json)           │
-│    Ollama breaks down into tasks        │
-├─────────────────────────────────────────┤
-│ 3. Ralph Loop                           │
-│    ┌───────────────────────────────┐   │
-│    │ Pick next incomplete story    │   │
-│    ↓                                │   │
-│    │ Build prompt with context     │   │
-│    ↓                                │   │
-│    │ Run Ollama model              │   │
-│    ↓                                │   │
-│    │ Analyze response              │   │
-│    ↓                                │   │
-│    │ If complete: mark done, commit│   │
-│    ↓                                │   │
-│    │ Loop until all stories done   │   │
-│    └───────────────────────────────┘   │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  1. Write PRD (prd.md)                                          │
+│     Human-readable requirements document                        │
+│                                                                 │
+│  2. Convert to JSON (prd.json)                                  │
+│     Cursor Agent (or Claude) breaks down PRD into tasks        │
+│                                                                 │
+│  3. Ralph Loop                                                  │
+│     ┌─────────────────────────────────────────────────────┐     │
+│     │  Pick next story where passes=false                 │     │
+│     │  ↓                                                  │     │
+│     │  Generate prompt with story + context               │     │
+│     │  ↓                                                  │     │
+│     │  Run Aider (Claude API or local Ollama)             │     │
+│     │  ↓                                                  │     │
+│     │  Analyze response (check for edits/commits)         │     │
+│     │  ↓                                                  │     │
+│     │  If story complete: mark passes=true, commit        │     │
+│     │  ↓                                                  │     │
+│     │  If all done: exit                                  │     │
+│     │  Else: loop back                                    │     │
+│     └─────────────────────────────────────────────────────┘     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## PRD JSON Format
+
+The `prd.json` file has this structure:
 
 ```json
 {
@@ -178,12 +221,13 @@ Live dashboard showing progress, status, and recent activity.
     {
       "id": "1.1",
       "category": "functional",
-      "story": "Short description",
+      "story": "Short description of what to build",
       "steps": [
         "Step 1: What to do",
-        "Step 2: How to verify"
+        "Step 2: Next action",
+        "Step 3: How to verify"
       ],
-      "acceptance": "Definition of done",
+      "acceptance": "Detailed acceptance criteria",
       "priority": 1,
       "passes": false,
       "notes": ""
@@ -192,185 +236,142 @@ Live dashboard showing progress, status, and recent activity.
 }
 ```
 
-### Priority Guide
-- **1-10**: MVP features (highest priority)
-- **11-20**: Phase 2 features
-- **21+**: Phase 3 / nice-to-have
+### Fields
 
-## Status Markers
+| Field | Description |
+|-------|-------------|
+| `branchName` | Git branch Ralph will create/use for this feature |
+| `id` | Story identifier (phase.sequence, e.g., "1.1", "2.3") |
+| `category` | One of: `technical`, `functional`, `ui` |
+| `story` | One-sentence description of what to build |
+| `steps` | Actionable steps to complete the story |
+| `acceptance` | Definition of "done" |
+| `priority` | **Lower = do first** (1-10 MVP, 11-20 Phase 2, 21+ Phase 3) |
+| `passes` | Set to `true` when story is complete |
+| `notes` | Ralph fills this with learnings during implementation |
 
-Models must end their responses with:
+## tmux Controls
 
-**Success:**
-```
-STATUS: COMPLETE
-LEARNINGS: Document any patterns or gotchas for future iterations
-```
+When running with `--monitor`:
 
-**Incomplete:**
-```
-STATUS: INCOMPLETE
-REASON: Why it couldn't be completed
-NEXT_STEPS: What needs to happen next
-```
+| Keys | Action |
+|------|--------|
+| `Ctrl+B`, `D` | Detach (keeps running in background) |
+| `Ctrl+B`, `←/→` | Switch between panes |
+| `Ctrl+B`, `[` | Enter scroll mode (`q` to exit) |
+| `tmux ls` | List sessions |
+| `tmux attach -t ralph-<project>` | Reattach to session |
 
 ## Safety Features
 
-### Circuit Breaker
-Automatically stops the loop after 5 consecutive failures to prevent infinite loops.
+- **Rate Limiting**: Max 100 calls/hour (configurable, mainly for Claude Code)
+- **Circuit Breaker**: Auto-stops after repeated failures
+- **Exit Detection**: Stops when Agent signals completion
+- **Branch Isolation**: Each feature runs on its own git branch
 
-```bash
-# Check why it stopped
-./start.sh my-feature --status
+## Learnings System
 
-# Reset and continue
-./start.sh my-feature --reset
+Ralph has a two-tier learning system:
+
+| File | Purpose | Lifetime |
+|------|---------|----------|
+| `progress.txt` | Session memory for Ralph | Per-project |
+| `AGENTS.md` | Permanent docs for humans & future agents | Forever |
+
+### progress.txt Structure
+
+```markdown
+## Codebase Patterns
+- Migrations: Use IF NOT EXISTS
+- Types: Export from actions.ts
+
+## Key Files
+- db/schema.ts
+- app/auth/actions.ts
+---
+## 2024-01-15 - Story 1.1
+- What was implemented
+- **Learnings:** patterns discovered
 ```
 
-### Rate Limiting
-Default: 100 calls per hour (configurable). Unlike cloud APIs, this is just a safety limit.
+### AGENTS.md Updates
 
-### Timeouts
-Default: 20 minutes per task. Prevents hanging on complex tasks.
+Ralph updates `AGENTS.md` files in directories where it made changes:
+
+✅ **Good additions:**
+- "When modifying X, also update Y"
+- "This module uses pattern Z"
+- "Tests require dev server running"
+
+❌ **Don't add:**
+- Story-specific details
+- Temporary notes
 
 ## Project Structure
 
 ```
-ralph-ollama/
-├── start.sh          # Main loop
-├── new.sh            # Create projects
-├── convert.sh        # PRD converter
-├── monitor.sh        # Status dashboard
+ralph/
+├── new.sh          # Create new project
+├── convert.sh      # PRD → JSON converter
+├── start.sh        # Main loop
+├── monitor.sh      # Status dashboard
 ├── lib/
 │   ├── utils.sh
 │   ├── circuit_breaker.sh
 │   └── response_analyzer.sh
 ├── templates/
-│   ├── PROMPT.md
-│   ├── prd-template.md
-│   └── prd-schema.json
+│   ├── PROMPT.md        # Standard prompt
+│   ├── prd-template.md  # PRD template
+│   └── prd-schema.json  # JSON example
 └── projects/
     └── <your-projects>/
-        ├── prd.md
-        ├── prd.json
-        ├── progress.txt
-        ├── status.json
-        └── logs/
+        ├── prd.md         # Your PRD
+        ├── prd.json       # Generated tasks
+        ├── progress.txt   # Progress log
+        ├── status.json    # Current status
+        ├── PROMPT.md      # Standard prompt
+        └── logs/          # Execution logs
 ```
 
 ## Troubleshooting
 
-### Model Not Found
+### Circuit breaker opened
 ```bash
-# List installed models
-ollama list
-
-# Pull missing model
-ollama pull model-name
+./ralph/start.sh <project> --status  # Check what happened
+./ralph/start.sh <project> --reset   # Reset and continue
 ```
 
-### Out of Memory
-- Use a smaller model (7B instead of 33B)
-- Close other applications
-- Increase swap space
+### Rate limit hit
+Ralph automatically waits for the next hour. You can detach with `Ctrl+B, D` and come back later.
 
-### Circuit Breaker Opened
-```bash
-# Check what went wrong
-./start.sh my-feature --status
-tail -20 ralph/projects/my-feature/logs/loop_*.log
+### Agent not responding
+Check the logs in `ralph/projects/<project>/logs/` for details.
 
-# Fix the issue, then reset
-./start.sh my-feature --reset
-```
+### Switching Models
 
-### Slow Performance
-- Use a smaller model
-- Enable GPU acceleration (if available)
-- Reduce context size in prompts
-- Increase timeout: `--timeout 30`
+**Claude API is the default** - requires `ANTHROPIC_API_KEY` environment variable.
 
-### Model Not Following Instructions
-- Try a different model (deepseek-coder is usually good)
-- Simplify the task in your PRD
-- Check PROMPT.md template for clarity
-- Use a larger model for complex tasks
+To use local models:
 
-## Tips for Best Results
+1. Install Ollama:
+   ```bash
+   # macOS/Linux
+   curl -fsSL https://ollama.ai/install.sh | sh
+   ```
 
-1. **Start Small**: Begin with simple, well-defined tasks
-2. **Good PRDs**: Be specific and clear in your requirements
-3. **Right Model**: Match model size to task complexity
-4. **Monitor Early**: Use `--monitor` to catch issues quickly
-5. **Iterate**: Refine your PRD based on what works
-6. **Learnings**: Review progress.txt to understand patterns
+2. Start Ollama server:
+   ```bash
+   ollama serve
+   ```
 
-## Comparing to Claude Code / Cursor Agent
+3. Pull a model:
+   ```bash
+   ollama pull deepseek-coder:33b
+   ```
 
-| Feature | Ralph-Ollama | Claude Code | Cursor Agent |
-|---------|--------------|-------------|--------------|
-| **Cost** | Free | Paid API | Cursor Pro |
-| **Privacy** | 100% local | Cloud | Cloud |
-| **Rate Limits** | None | 100/hour | None |
-| **Model Choice** | Any Ollama | Claude only | Claude only |
-| **Offline** | Yes | No | No |
-| **Quality** | Model-dependent | Excellent | Excellent |
-| **Speed** | Hardware-dependent | Fast | Fast |
+4. Run with local mode:
+   ```bash
+   RALPH_MODE=local ./start.sh my-feature
+   ```
 
-## Advanced Usage
-
-### Multiple Projects
-```bash
-./start.sh project-a --model codellama:13b &
-./start.sh project-b --model deepseek-coder:latest &
-```
-
-### Custom Models
-```bash
-# Use a custom quantized model
-ollama pull mymodel:Q4_K_M
-./start.sh my-feature --model mymodel:Q4_K_M
-```
-
-### CI/CD Integration
-```bash
-# Non-interactive mode (no tmux)
-./start.sh my-feature --model codellama:latest 2>&1 | tee build.log
-```
-
-## Model Recommendations by Task
-
-### Web Development
-- **Frontend**: deepseek-coder:latest, codellama:13b
-- **Backend**: qwen2.5-coder:latest, deepseek-coder:33b
-- **Full Stack**: codellama:13b, llama3.1:latest
-
-### Data Science / ML
-- **Data Analysis**: codellama:13b
-- **Model Training**: deepseek-coder:33b
-- **Visualization**: codellama:latest
-
-### DevOps / Infrastructure
-- **Scripts**: codellama:latest
-- **Kubernetes**: qwen2.5-coder:latest
-- **Terraform**: deepseek-coder:latest
-
-## Contributing
-
-Found a bug or want to add features? PRs welcome!
-
-## License
-
-MIT - Use freely, modify as needed
-
-## Credits
-
-Based on the Ralph Wiggum technique by Geoffrey Huntley. Adapted for Ollama by the community.
-
-## Resources
-
-- [Ollama Documentation](https://ollama.com)
-- [Original Ralph Technique](https://github.com/snwfdhmp/awesome-ralph)
-- [DeepSeek Coder](https://ollama.com/library/deepseek-coder)
-- [Code Llama](https://ollama.com/library/codellama)
-# ralph-ollama
+Or edit `config.sh` to set `MODE="local"` as default.

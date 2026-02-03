@@ -1,65 +1,120 @@
 {
-  "branchName": "ralph/example-feature",
+  "branchName": "ralph/feature-name",
   "userStories": [
     {
       "id": "1.1",
       "category": "technical",
-      "story": "Set up project structure and dependencies",
+      "story": "Create database migration for feature_items table",
       "steps": [
-        "Step 1: Initialize project with package manager",
-        "Step 2: Install required dependencies",
-        "Step 3: Create basic folder structure",
-        "Step 4: Verify installation with test command"
+        "Create migration file in packages/db/supabase/migrations/",
+        "Add foreign key constraints to teams and users tables"
       ],
-      "acceptance": "Project initializes without errors, all dependencies install correctly, and basic structure is in place",
+      "acceptance": "feature_items table exists in database with all columns, proper constraints, indexes, and RLS policies. Migration runs successfully. Team members can only access their own team's data.",
       "priority": 1,
       "passes": false,
       "notes": ""
     },
     {
-      "id": "1.2",
-      "category": "functional",
-      "story": "Implement core business logic",
+      "id": "1.4",
+      "category": "ui",
+      "story": "Create feature items list page with empty state",
       "steps": [
-        "Step 1: Create main logic file",
-        "Step 2: Implement core algorithm",
-        "Step 3: Add error handling",
-        "Step 4: Write unit tests",
-        "Step 5: Verify tests pass"
+        "Create apps/web/src/app/app/[teamSlug]/feature/page.tsx",
+        "Create apps/web/src/app/app/[teamSlug]/feature/layout.tsx",
+        "Implement page that fetches items using tRPC",
+        "Show loading skeleton while fetching",
+        "Show empty state with call-to-action when no items",
+        "Display list of items when data exists",
+        "Add 'New Item' button in header"
       ],
-      "acceptance": "Core logic works correctly, handles edge cases, and all tests pass",
-      "priority": 2,
+      "acceptance": "Page renders at /app/[teamSlug]/feature. Shows loading state, then either empty state or list of items. New Item button is visible and styled correctly.",
+      "priority": 4,
       "passes": false,
       "notes": ""
     },
     {
-      "id": "1.3",
+      "id": "1.5",
       "category": "ui",
-      "story": "Build user interface components",
+      "story": "Create item card component for list display",
       "steps": [
-        "Step 1: Create component files",
-        "Step 2: Implement layout and styling",
-        "Step 3: Connect to business logic",
-        "Step 4: Add user interactions",
-        "Step 5: Test in browser"
+        "Create apps/web/src/app/app/[teamSlug]/feature/_components/item-card.tsx",
+        "Display item name, status, and key metadata",
+        "Add status indicator with appropriate colors",
+        "Add click handler to navigate to detail view",
+        "Add action menu with edit/delete options",
+        "Follow existing card component patterns in codebase"
       ],
-      "acceptance": "UI renders correctly, user interactions work, and connects properly to backend",
-      "priority": 3,
+      "acceptance": "ItemCard component renders item data correctly. Status is color-coded. Click navigates to detail. Action menu shows edit and delete options.",
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "1.6",
+      "category": "functional",
+      "story": "Implement create item form with validation",
+      "steps": [
+        "Create form component using react-hook-form and zod",
+        "Add name field with required validation",
+        "Add config fields based on item type",
+        "Wire form submission to tRPC create mutation",
+        "Handle loading state during submission",
+        "Handle success: close form, show toast, refresh list",
+        "Handle error: show error message in form"
+      ],
+      "acceptance": "Form validates inputs before submission. Creates item via tRPC on submit. Shows loading state during creation. Displays success/error feedback. List refreshes after successful creation.",
+      "priority": 6,
       "passes": false,
       "notes": ""
     },
     {
       "id": "2.1",
-      "category": "functional",
-      "story": "Add advanced feature X",
+      "category": "ui",
+      "story": "Create item detail page with full information",
       "steps": [
-        "Step 1: Research implementation approach",
-        "Step 2: Implement feature",
-        "Step 3: Test functionality",
-        "Step 4: Document usage"
+        "Create apps/web/src/app/app/[teamSlug]/feature/[id]/page.tsx",
+        "Fetch item data using tRPC get procedure",
+        "Display all item properties in organized layout",
+        "Show item history/activity if applicable",
+        "Add edit and delete action buttons",
+        "Handle 404 for non-existent items"
       ],
-      "acceptance": "Feature works as specified and is documented",
-      "priority": 11,
+      "acceptance": "Detail page shows at /app/[teamSlug]/feature/[id]. Displays all item data. Edit and delete buttons work. 404 shown for invalid IDs.",
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.2",
+      "category": "functional",
+      "story": "Implement edit functionality with optimistic updates",
+      "steps": [
+        "Create edit form reusing create form components",
+        "Pre-populate form with existing item data",
+        "Wire form to tRPC update mutation",
+        "Implement optimistic update for better UX",
+        "Handle update success with toast notification",
+        "Handle update error with rollback and error message"
+      ],
+      "acceptance": "Edit form shows with current values. Updates are optimistic (UI updates before server confirms). Success shows toast. Error rolls back changes and shows message.",
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "2.3",
+      "category": "functional",
+      "story": "Implement delete with confirmation dialog",
+      "steps": [
+        "Create confirmation dialog component",
+        "Show dialog on delete action click",
+        "Wire confirm button to tRPC delete mutation",
+        "Handle loading state in dialog",
+        "Handle success: close dialog, show toast, redirect to list",
+        "Handle error: show error in dialog"
+      ],
+      "acceptance": "Delete action shows confirmation dialog. Confirming deletes item and redirects to list. Cancel closes dialog without action. Error shows in dialog.",
+      "priority": 9,
       "passes": false,
       "notes": ""
     }
