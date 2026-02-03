@@ -53,7 +53,7 @@
       "acceptance": "RUN \"python -c 'from parsers.models import LogEntry; print(LogEntry.__dataclass_fields__)'\" and verify that all expected fields are present.",
       "verify": "python -c 'from parsers.models import LogEntry; print(LogEntry.__dataclass_fields__)'",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
