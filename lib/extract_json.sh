@@ -14,9 +14,90 @@ extract_json_from_output() {
     
     # Try multiple extraction strategies
     local extracted_json=""
-    
-    # Strategy 1: Use Python to extract JSON (more reliable for brace matching)
+
+    # Strategy 0: Reconstruct from Aider unified diff (when rate limit prevents apply)
     if command -v python3 >/dev/null 2>&1; then
+        extracted_json=$(python3 - "$output_file" << 'PYDIFF'
+import json, re, sys
+def try_diff(content):
+    lines = content.split("\n")
+    # Collect from first prd.json diff hunk (largest is usually the first full attempt)
+    out, in_diff, skip_until_atat = [], False, False
+    for line in lines:
+        if "prd.json" in line and line.strip().endswith("prd.json"):
+            in_diff = True
+            skip_until_atat = True
+            continue
+        if in_diff and skip_until_atat:
+            if "@@" in line and line.strip().startswith("@@"):
+                skip_until_atat = False
+            continue
+        if in_diff and "@@" in line and line.strip().startswith("@@"):
+            continue
+        if in_diff:
+            if line.startswith("+ "):
+                out.append(line[2:].rstrip())
+            elif line.startswith(" ") and len(line) >= 1:
+                out.append(line[1:].rstrip())
+            elif out and not (line.startswith(" ") or line.startswith("+")):
+                break
+    if not out:
+        return None
+    text = "\n".join(out)
+    # Strip Aider progress lines (e.g. "    5 /   7 lines [====] 71%")
+    text = re.sub(r'\n\s*\d+\s*/\s*\d+\s+lines\s+\[[^\]]*\].*$', '', text, flags=re.M)
+    start = text.find('"userStories"')
+    start = text.rfind("{", 0, start) if start != -1 else text.find("{")
+    if start == -1:
+        return None
+    depth, end = 0, start
+    for i, c in enumerate(text[start:], start):
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+        if depth == 0:
+            end = i + 1
+            break
+    if end <= start:
+        return None
+    s = text[start:end]
+    s = re.sub(r'//.*', '', s, flags=re.M)
+    s = re.sub(r',\s*}', '}', s)
+    s = re.sub(r',\s*]', ']', s)
+    try:
+        d = json.loads(s)
+        if "userStories" in d and isinstance(d["userStories"], list) and len(d["userStories"]) > 0:
+            return d
+    except Exception:
+        pass
+    # If truncated (e.g. rate limit), try to close after last complete story
+    for pattern in [r'\n    \},\s*\n', r'\n  \},\s*\n']:
+        last_m = None
+        for m in re.finditer(pattern, s):
+            last_m = m
+        if last_m:
+            # Include the "    }" that ends the last story
+            end = last_m.start() + last_m.group().rfind("}") + 1
+            closed = s[:end] + '\n  ]\n}'
+            try:
+                d = json.loads(closed)
+                if "userStories" in d and len(d["userStories"]) > 0:
+                    return d
+            except Exception:
+                pass
+    return None
+try:
+    with open(sys.argv[1]) as f: data = try_diff(f.read())
+    if data: print(json.dumps(data)); sys.exit(0)
+except Exception: pass
+sys.exit(1)
+PYDIFF
+2>/dev/null || echo "")
+    fi
+
+    # Strategy 1: Use Python to extract JSON (brace matching from raw content)
+    if [[ -z "$extracted_json" ]] && command -v python3 >/dev/null 2>&1; then
         extracted_json=$(python3 - "$output_file" << 'PYEOF'
 import json
 import re

@@ -16,8 +16,8 @@ CLAUDE_MODEL="claude-sonnet-4-5"
 # Optional: different models for convert vs start (when unset, both use LOCAL_MODEL)
 # Convert = PRD → prd.json + requirements.md (can use smaller/faster model if context fits)
 # Start   = implementation loop (often benefits from larger model)
-LOCAL_CONVERT_MODEL="deepseek-coder:33b"
-LOCAL_START_MODEL="deepseek-coder:33b"  # 120B model too slow/hangs; using 33B for now
+LOCAL_CONVERT_MODEL="codellama:latest"
+LOCAL_START_MODEL="glm-4.7-flash:latest"  # 120B model too slow/hangs; using 33B for now
 
 # API Keys (only needed for claude mode)
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
@@ -29,6 +29,9 @@ AIDER_NO_PRETTY=true
 # Rate limiting (mainly for Claude API)
 MAX_CALLS_PER_HOUR=100
 AGENT_TIMEOUT_MINUTES=20
+
+# Ollama/litellm: default connection timeout is 600s; increase for long conversions
+# export LITELLM_REQUEST_TIMEOUT=1200
 
 # Circuit breaker
 MAX_CONSECUTIVE_FAILURES=3

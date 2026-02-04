@@ -2,6 +2,8 @@
 
 Ralph is an autonomous development loop system that uses **Aider** with support for Claude API and local LLM models (via Ollama) to iteratively implement features from a PRD (Product Requirements Document).
 
+**Documentation:** Planning, architecture, and design docs live in [docs/](docs/). See [docs/README.md](docs/README.md) for the index. [CLAUDE.md](CLAUDE.md) at repo root is the AI/editor guidance file.
+
 ## Key Features
 
 - ✅ **Aider Integration** - Uses Aider for AI-powered code editing
