@@ -1,8 +1,4 @@
-pub enum Node   {
-    Headline(String),
-    Paragraph(String),
-    CodeBlock(String),
-    Table(Vec<Vec<String>>),  // Add this line to handle tables
-    Image(String, Option<HashMap<String, String>>),  // Add this line for images
-    Link(String, String)  // Add this line for links
+pub enum Node {
+    // ... existing variants ...
+    List(Vec<Node>),  // Add this line to handle lists
 }
