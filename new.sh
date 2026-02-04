@@ -84,6 +84,26 @@ Created: $(date '+%Y-%m-%d %H:%M:%S')
 
 EOF
     
+    # Create .aiderignore to exclude project metadata from Aider's context
+    # Note: Aider uses git repo context, so this documents what should be excluded
+    # The prompt also explicitly warns models not to edit prd.json
+    cat > "$project_dir/.aiderignore" << EOF
+# Ralph project metadata - exclude from Aider context
+# These files contain task definitions and progress tracking, not code
+prd.json
+requirements.md
+progress.txt
+status.json
+PROMPT.md
+logs/
+*.log
+.circuit_breaker*
+.call_count
+.last_reset
+.last_analysis.json
+.ralph_current_prompt.md
+EOF
+    
     # Create status.json
     cat > "$project_dir/status.json" << EOF
 {

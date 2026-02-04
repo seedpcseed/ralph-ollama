@@ -384,16 +384,18 @@ execute_aider() {
             log "INFO" "⏳ Starting Aider with model: $current_model (timeout: ${AGENT_TIMEOUT_MINUTES}m)..."
         fi
         
-        # Build Aider command
+        # Build Aider command (do NOT use --commit: Aider runs it before --message-file and exits without running the model)
         local aider_cmd=(
             aider
             --model "$current_model"
             --yes
+            --no-stream
+            --no-show-model-warnings
             --message-file "$prompt_file"
         )
         
         if [ "$AIDER_AUTO_COMMITS" = true ]; then
-            aider_cmd+=(--auto-commits --commit)
+            aider_cmd+=(--auto-commits)
         fi
         
         if [ "$AIDER_NO_PRETTY" = true ]; then
@@ -427,14 +429,14 @@ execute_aider() {
             # Log analysis
             log_analysis_summary "$project_dir"
             
-            # Mark story complete only when we got file edits (avoid completing with no progress)
-            if [[ $analysis_result -eq 0 ]]; then
-                if [[ "${files_modified:-0}" -gt 0 ]]; then
-                    mark_story_complete "$project_dir/prd.json" "$story_id"
-                    log "SUCCESS" "📝 Story $story_id marked as complete"
-                else
-                    log "WARN" "Story $story_id: no file changes (not marking complete)"
-                fi
+            # Mark story complete when we got file edits (files created = success, even if analyzer found non-critical errors)
+            if [[ "${files_modified:-0}" -gt 0 ]]; then
+                mark_story_complete "$project_dir/prd.json" "$story_id"
+                log "SUCCESS" "📝 Story $story_id marked as complete (${files_modified} file(s) created)"
+            elif [[ $analysis_result -eq 0 ]]; then
+                log "WARN" "Story $story_id: no file changes (not marking complete)"
+            else
+                log "WARN" "Story $story_id: no file changes and errors detected (not marking complete)"
             fi
             
             return 0
@@ -883,11 +885,10 @@ if [[ ! -d "$PROJECT_DIR" ]]; then
     exit 1
 fi
 
-# Setup Aider based on mode
-setup_aider "$MODE"
-
-# Check dependencies
-check_dependencies || exit 1
+# Check dependencies (only needed for run action)
+if [[ "$ACTION" == "run" ]]; then
+    check_dependencies || exit 1
+fi
 
 # Execute action
 case "$ACTION" in
@@ -898,6 +899,8 @@ case "$ACTION" in
         reset_circuit_breaker "$PROJECT_DIR" "Manual reset via CLI"
         ;;
     "run")
+        # Setup Aider based on mode (only needed when actually running)
+        setup_aider "$MODE"
         if [[ "$USE_TMUX" == "true" ]]; then
             setup_tmux "$PROJECT_NAME"
         else

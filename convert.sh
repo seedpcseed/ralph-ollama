@@ -263,27 +263,99 @@ create_conversion_prompt() {
     local project_name=$1
     local project_dir=$2
 
-    cat << PROMPTEOF
+    # Use quoted heredoc to prevent command execution, then expand variables with sed
+    cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 # PRD to Tasks Conversion
 
 You are running inside Aider. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them. You MUST use your edit capability to change the files. Do not say you cannot access files. Do not reply with only examples in code blocks; apply the changes by editing the files.
 
 ## Your task
-1. Read projects/$project_name/prd.md (it is in the chat) to understand the requirements.
-2. Edit projects/$project_name/prd.json: replace its entire contents with a JSON object that has "branchName": "ralph/$project_name" and "userStories": [ ... ] — an array of story objects. Extract user stories from the PRD; create at least one story per major section. Do not leave userStories empty.
+1. Read projects/$project_name/prd.md (it is in the chat) to understand ALL requirements.
+2. Edit projects/$project_name/prd.json: replace its entire contents with a JSON object that has "branchName": "ralph/$project_name" and "userStories": [ ... ] — an array of story objects.
+
+**Story generation strategy:**
+- Break down each major feature from the PRD into 3-10 granular stories
+- Each story should be completable in 1-2 iterations (not require multiple refinement passes)
+- Create stories in dependency order (infrastructure → core → features → polish)
+- Include verification commands in acceptance criteria or verify field
+- Aim for 15-30 stories total (not 5-10 high-level ones)
+
+**Example breakdown for "Implement markdown parser":**
+- Story 1.1: "Add pulldown-cmark dependency to Cargo.toml" (verify: grep -q pulldown Cargo.toml)
+- Story 1.2: "Create AST node enum with variants" (verify: cargo build --lib)
+- Story 1.3: "Implement parse_markdown() function" (verify: cargo test parser)
+- Story 1.4: "Add tests for CommonMark features" (verify: cargo test parser_commonmark)
+- Story 1.5: "Add tests for GFM extensions" (verify: cargo test parser_gfm)
+
 3. Edit projects/$project_name/requirements.md: replace or expand with technical specifications taken from the PRD (architecture, data models, API, UI, performance, security).
 
 ## Story object shape (for each item in userStories)
-- id: e.g. "1.1", "1.2"
+- id: e.g. "1.1", "1.2", "1.3" (sequential, can have sub-stories like "1.2.1")
 - category: "technical" | "functional" | "ui"
-- story: one sentence, action verb
-- steps: array of short strings
-- acceptance: testable criteria
-- priority: 1-10 (lower first)
+- story: one sentence, action verb, specific and granular
+- steps: array of 2-5 concrete, actionable steps
+- acceptance: testable criteria with verification command (see below)
+- priority: 1-10 (lower first, dependencies before dependents)
 - passes: false
 - notes: ""
+- verify: (optional) command to verify completion, e.g. "cargo test parser" or "grep -q function_name file.rs"
 
-Categories: technical = DB/API/backend/schemas; functional = business logic; ui = frontend/pages/styling. Order by dependency (infra before features).
+Categories: technical = DB/API/backend/schemas/infrastructure; functional = business logic/features; ui = frontend/pages/styling. Order by dependency (infra before features).
+
+## CRITICAL: Story Granularity Rules
+
+**Break down large features into small, verifiable stories.** Each story should be completable in 1-2 iterations (not require multiple passes).
+
+**BAD (too broad):**
+- "Implement markdown parser" → This is 5-10 stories!
+- "Design two-pass layout engine" → Too vague, needs breakdown
+- "Create CLI interface" → Multiple components
+
+**GOOD (granular and verifiable):**
+- "Add pulldown-cmark dependency to Cargo.toml" → Verifiable: grep -q pulldown Cargo.toml
+- "Create AST node enum with Headline, Paragraph, CodeBlock variants" → Verifiable: cargo build --lib
+- "Implement parse_markdown() function returning Vec<Node>" → Verifiable: cargo test parser
+- "Create CLI Args struct with clap" → Verifiable: cargo build --bin editio
+
+**Breakdown strategy:**
+1. **Dependencies first**: Add library → Create types → Implement functions → Add tests
+2. **One concept per story**: Don't combine "add dependency AND implement parser" - split them
+3. **Each story should create 1-3 files max**: If more, break it down
+4. **Verifiable completion**: Each story must have a way to verify it's done (build, test, grep, etc.)
+
+## Acceptance Criteria Format
+
+**Include verification commands in acceptance criteria.** Use one of these formats:
+
+**Format 1: RUN command in acceptance**
+```
+"acceptance": "RUN 'cargo test parser' must pass. The parser handles headings, paragraphs, and code blocks."
+```
+
+**Format 2: Separate verify field**
+```
+"acceptance": "The parser handles headings, paragraphs, and code blocks.",
+"verify": "cargo test parser"
+```
+
+**Format 3: File existence check**
+```
+"acceptance": "Cargo.toml includes pulldown-cmark dependency.",
+"verify": "grep -q pulldown-cmark Cargo.toml"
+```
+
+**Verification examples by language:**
+- **Rust**: cargo build, cargo test --lib parser, cargo check
+- **Python**: pytest tests/test_parser.py, python -m mypy parser.py
+- **Node**: npm test, node -e "require('./parser')"
+- **Go**: go test ./parser, go build
+- **File checks**: grep -q 'function_name' file.rs, test -f path/to/file
+
+**If a story legitimately needs TODOs for future work, mark it with lower priority and note it in acceptance:**
+```
+"acceptance": "Basic structure created. TODO items acceptable for future enhancement.",
+"priority": 8
+```
 
 ## Edit format (required)
 You are using Aider's "whole" edit format. To edit a file you MUST use this exact format:
@@ -309,7 +381,6 @@ PROMPTEOF
 # Create verification prompt
 create_verification_prompt() {
     local project_dir=$1
-
     cat << PROMPTEOF
 # PRD to JSON Verification
 
@@ -328,14 +399,18 @@ You are verifying that a generated prd.json comprehensively covers all requireme
 
 ### 3. Compare and verify:
 - Does prd.json cover ALL features mentioned in the PRD?
+- Are stories granular enough? (Each should be 1-2 iterations, not require multiple passes)
+- Do stories have verifiable acceptance criteria? (RUN commands, verify fields, or file checks)
 - Are there any edge cases, error handling, or UX details in the PRD that are missing from the stories?
 - Does requirements.md capture all technical specifications from the PRD?
 
 ### 4. If anything is missing or incomplete:
-- ADD new user stories to cover missing features
-- UPDATE existing stories if their scope is incomplete
+- ADD new user stories to cover missing features (break down large ones into smaller, verifiable tasks)
+- SPLIT stories that are too broad (if a story has 5+ steps or multiple components, break it down)
+- UPDATE existing stories if their scope is incomplete or lacks verification
+- ADD verify fields or RUN commands to stories that don't have them
 - UPDATE requirements.md if technical details are missing
-- Ensure all additions follow the same format and guidelines.
+- Ensure all additions follow the same format and guidelines (granular, verifiable, 1-2 iterations each).
 PROMPTEOF
 }
 
@@ -354,7 +429,8 @@ is_requirements_placeholder() {
 # Prompt for filling only requirements.md from the PRD (used when Phase 1 didn't populate it)
 create_requirements_fill_prompt() {
     local project_name=$1
-    cat << PROMPTEOF
+    # Use quoted heredoc to prevent command execution, then expand variables with sed
+    cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 You are running inside Aider. The files prd.md and requirements.md are in this chat. You MUST edit requirements.md.
 
 TASK: Replace the contents of projects/$project_name/requirements.md with technical specifications extracted from the PRD. Include: architecture, data models, APIs, UI/UX constraints, performance and security requirements, tech stack, and any other technical details from the PRD. Write in clear markdown sections.
@@ -418,6 +494,31 @@ main() {
     log "INFO" "Converting PRD to tasks for project: $project_name"
     log "INFO" "Aider will edit prd.json and requirements.md directly..."
     log "INFO" "Using model: $AIDER_MODEL"
+
+    # Clean up Git state: remove deleted files from tracking to avoid Aider warnings
+    # This prevents "Repo-map can't include" warnings for files deleted from filesystem but still in Git
+    # Aider reads from HEAD, so we need to commit deletions for Aider to see the updated state
+    cd "$REPO_ROOT"
+    local deleted_files
+    deleted_files=$(git ls-files --deleted "projects/$project_name/" 2>/dev/null || true)
+    local staged_deletions
+    staged_deletions=$(git diff --cached --name-only --diff-filter=D "projects/$project_name/" 2>/dev/null || true)
+    
+    # Handle files deleted from working tree but not yet staged
+    if [[ -n "$deleted_files" ]]; then
+        log "INFO" "Staging deletions for files removed from filesystem..."
+        echo "$deleted_files" | while IFS= read -r file; do
+            if [[ -n "$file" ]]; then
+                git rm "$file" >/dev/null 2>&1 || true
+            fi
+        done
+    fi
+    
+    # Commit staged deletions so Aider sees updated state (Aider reads from HEAD)
+    if [[ -n "$staged_deletions" ]] || [[ -n "$deleted_files" ]]; then
+        log "INFO" "Committing file deletions to clean up Git state for Aider..."
+        git commit -m "chore($project_name): remove deleted files from Git tracking" >/dev/null 2>&1 || true
+    fi
 
     # Create log directory
     local timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
@@ -522,7 +623,7 @@ main() {
                 my @stories;
                 while (m/- id:\s*"([^"]+)"\s*\n(.*?)(?=- id:\s*"|\z)/gs) {
                     my ($id, $block) = ($1, $2);
-                    my %s = (id => $id, category => "technical", story => "", steps => [], acceptance => "", priority => 999, passes => $false, notes => "");
+                    my %s = (id => $id, category => "technical", story => "", steps => [], acceptance => "", priority => 999, passes => $false, notes => "", verify => "");
                     $block =~ s/\n\s*\n/\n/g;
                     $s{category} = $1 if $block =~ /- category:\s*"([^"]*)"/;
                     $s{story} = $1 if $block =~ /- story:\s*"([^"]*)"/s;
@@ -537,6 +638,15 @@ main() {
                     $s{priority} = int($1) if $block =~ /- priority:\s*(\d+)/;
                     $s{passes} = ($block =~ /- passes:\s*true/i) ? $true : $false;
                     $s{notes} = $1 if $block =~ /- notes:\s*"([^"]*)"/;
+                    $s{verify} = $1 if $block =~ /- verify:\s*"([^"]*)"/;
+                    # Also extract RUN commands from acceptance if verify is empty (handle both single and double quotes)
+                    if (!$s{verify}) {
+                        if ($s{acceptance} =~ /RUN\s+["]([^"\n]+)["]/) {
+                            $s{verify} = $1;
+                        } elsif ($s{acceptance} =~ /RUN\s+\x27([^\x27\n]+)\x27/) {
+                            $s{verify} = $1;
+                        }
+                    }
                     push @stories, \%s;
                 }
                 if (@stories) {
@@ -563,11 +673,11 @@ main() {
         exit 1
     fi
 
-    # Normalize prd.json: pretty-print and consistent field order (id, category, story, steps, acceptance, priority, passes, notes)
+    # Normalize prd.json: pretty-print and consistent field order (id, category, story, steps, acceptance, priority, passes, notes, verify)
     if jq -e '.userStories | length > 0' "$json_file" >/dev/null 2>&1; then
         jq '{
             branchName,
-            userStories: [.userStories[] | {id, category, story, steps, acceptance, priority, passes, notes}]
+            userStories: [.userStories[] | {id, category, story, steps, acceptance, priority, passes, notes} + (if .verify and .verify != "" then {verify} else {} end)]
         }' "$json_file" > "${json_file}.tmp" 2>/dev/null && mv "${json_file}.tmp" "$json_file"
     fi
 

@@ -338,28 +338,46 @@ $prd_content
 ## Recent Progress
 $progress
 
-## How to edit files (required)
+## How to edit files (REQUIRED - you MUST follow this format)
 You are inside Aider. To create or edit a file you MUST use this exact format:
 - Line 1: file path only, e.g. projects/$project_name/README.md
 - Line 2: exactly \`\`\` (three backticks, no space after)
 - Next lines: full file contents
 - Last line: exactly \`\`\`
-No blank line between the path and the \`\`\`. Example for a new file:
+No blank line between the path and the \`\`\`. 
 
-projects/$project_name/README.md
+CRITICAL: Do NOT edit projects/$project_name/prd.json - it contains task definitions, not code.
+
+Example for creating a Rust crate (Cargo.toml):
+
+projects/$project_name/Cargo.toml
 \`\`\`
-# Editio
-Rust-based academic typesetting.
+[package]
+name = "editio-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
 \`\`\`
 
-You must output at least one file in this format for this task. Do not only describe or show code in \`\`\`rust blocks—use the path-plus-backticks format above so Aider applies the edit.
+Example for creating a Rust source file:
+
+projects/$project_name/src/lib.rs
+\`\`\`
+pub fn hello() {
+    println!("Hello, world!");
+}
+\`\`\`
+
+You MUST output at least one file in this format. Do not describe code or show examples in \`\`\`rust blocks—you must use the path-plus-backticks format above so Aider applies the edit.
 
 ## Instructions
-1. Implement this story completely by creating or editing files (see format above).
-2. Follow the steps and meet acceptance criteria.
-3. When done, respond with "Task complete" or "Story complete".
+1. Create the actual files needed for this story (see format above). For Rust crates, create Cargo.toml and src/lib.rs or src/main.rs.
+2. Do NOT edit prd.json - it is a task definition file, not code.
+3. Follow the steps and meet acceptance criteria.
+4. When done, respond with "Task complete" or "Story complete".
 
-Begin implementation now.
+Begin implementation now. Output files using the format above.
 EOF
 }
 
