@@ -538,27 +538,66 @@ main_loop() {
         timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
         local output_file="$project_dir/logs/loop-v2_${timestamp}_story_${story_id}.log"
         
-        # Invoke Cursor Agent (no fallback)
-        log "INFO" "Invoking Cursor Agent..."
+        # Invoke agent (Aider for local models, Cursor Agent for API models)
+        log "INFO" "Invoking agent..."
         local agent_success=false
         local files_modified=0
         
-        # Check if Cursor Agent is available
-        if ! check_cursor_agent 2>/dev/null; then
-            log "ERROR" "Cursor Agent not available. Install from: curl https://cursor.com/install -fsS | bash"
-            log "ERROR" "Or ensure 'agent' command is in PATH"
-            update_story_status "$project_dir/prd.json" "$story_id" "failed"
-            record_loop_result "$project_dir" "$loop_count" 0 true 0 "Cursor Agent not available" 2>/dev/null || true
-            continue
-        fi
-        
-        if invoke_cursor_agent_file "$prompt_file" 2>&1 | tee "$output_file"; then
-            agent_success=true
-            # Count modified files (simplified - would need to parse agent output)
-            files_modified=$(git -C "$project_dir" diff --name-only 2>/dev/null | wc -l || echo "0")
+        # For local models, use Aider (which supports Ollama)
+        if [[ "$current_model" == ollama/* ]]; then
+            log "INFO" "Using Aider for local model: $current_model"
+            
+            # Check if Aider is available
+            if ! command -v aider >/dev/null 2>&1; then
+                log "ERROR" "Aider not available. Install with: pip install aider-chat"
+                update_story_status "$project_dir/prd.json" "$story_id" "failed"
+                record_loop_result "$project_dir" "$loop_count" 0 true 0 "Aider not available" 2>/dev/null || true
+                continue
+            fi
+            
+            # Build Aider command
+            local aider_cmd=(
+                aider
+                --model "$current_model"
+                --yes
+                --no-stream
+                --no-show-model-warnings
+                --message-file "$prompt_file"
+            )
+            
+            if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
+                aider_cmd+=(--auto-commits)
+            fi
+            
+            # Run Aider
+            if "${aider_cmd[@]}" 2>&1 | tee "$output_file"; then
+                agent_success=true
+                files_modified=$(git -C "$project_dir" diff --name-only 2>/dev/null | wc -l || echo "0")
+            else
+                log "ERROR" "Aider execution failed. Check log: $output_file"
+                agent_success=false
+            fi
         else
-            log "ERROR" "Cursor Agent execution failed. Check log: $output_file"
-            agent_success=false
+            # For API models (Claude), use Cursor Agent
+            log "INFO" "Using Cursor Agent for API model"
+            
+            # Check if Cursor Agent is available
+            if ! check_cursor_agent 2>/dev/null; then
+                log "ERROR" "Cursor Agent not available. Install from: curl https://cursor.com/install -fsS | bash"
+                log "ERROR" "Or ensure 'agent' command is in PATH"
+                update_story_status "$project_dir/prd.json" "$story_id" "failed"
+                record_loop_result "$project_dir" "$loop_count" 0 true 0 "Cursor Agent not available" 2>/dev/null || true
+                continue
+            fi
+            
+            if invoke_cursor_agent_file "$prompt_file" 2>&1 | tee "$output_file"; then
+                agent_success=true
+                # Count modified files (simplified - would need to parse agent output)
+                files_modified=$(git -C "$project_dir" diff --name-only 2>/dev/null | wc -l || echo "0")
+            else
+                log "ERROR" "Cursor Agent execution failed. Check log: $output_file"
+                agent_success=false
+            fi
         fi
         
         rm -f "$prompt_file"
