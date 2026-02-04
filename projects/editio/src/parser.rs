@@ -1,15 +1,15 @@
 use pulldown_cmark::{Parser, Event};
-// ... other imports ...
+//  ... other imports ...
 
 pub fn parse(markdown: &str) -> Vec<Node> {
     let parser = Parser::new(markdown);
-    // ... existing code ...
+    //  ... existing code ...
     
     for event in parser {
         match event {
-            // ... existing matches ...
+            //  ... existing matches ...
             
-            Event::List(_start, _type) => {  // Add this block to handle list events
+            Event::List(_start, _type) => {   // Add this block to handle list events
                 let mut items = vec![];
                 loop {
                     match parser.next() {
@@ -17,8 +17,8 @@ pub fn parse(markdown: &str) -> Vec<Node> {
                         Some(event) => {
                             if let Event::Text(text) = event {
                                 items.push(Node::Paragraph(String::from_utf8(text.fragment).unwrap()));
-                            }
-                        },
+                             }
+                         },
                     }
                 }
                 nodes.push(Node::List(items));
@@ -26,5 +26,5 @@ pub fn parse(markdown: &str) -> Vec<Node> {
         }
     }
     
-    // ... existing code ...
+    //  ... existing code ...
 }
