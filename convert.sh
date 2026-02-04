@@ -274,18 +274,38 @@ You are running inside Aider. The files prd.md, prd.json and requirements.md are
 2. Edit projects/$project_name/prd.json: replace its entire contents with a JSON object that has "branchName": "ralph/$project_name" and "userStories": [ ... ] — an array of story objects.
 
 **Story generation strategy:**
-- Break down each major feature from the PRD into 3-10 granular stories
+- **CRITICAL**: Each P0 feature in the PRD should become 5-15 granular stories (NOT 1-3 stories!)
 - Each story should be completable in 1-2 iterations (not require multiple refinement passes)
 - Create stories in dependency order (infrastructure → core → features → polish)
 - Include verification commands in acceptance criteria or verify field
-- Aim for 15-30 stories total (not 5-10 high-level ones)
+- **For a complex PRD with 10+ P0 features, expect 50-150+ stories total** (not 15-30!)
 
-**Example breakdown for "Implement markdown parser":**
-- Story 1.1: "Add pulldown-cmark dependency to Cargo.toml" (verify: grep -q pulldown Cargo.toml)
-- Story 1.2: "Create AST node enum with variants" (verify: cargo build --lib)
-- Story 1.3: "Implement parse_markdown() function" (verify: cargo test parser)
-- Story 1.4: "Add tests for CommonMark features" (verify: cargo test parser_commonmark)
-- Story 1.5: "Add tests for GFM extensions" (verify: cargo test parser_gfm)
+**Example breakdown for "Markdown Parsing" feature (this ONE feature needs 15+ stories):**
+- Story 1.1: "Add pulldown-cmark dependency to Cargo.toml" (verify: grep -q pulldown-cmark Cargo.toml)
+- Story 1.2: "Create AST Node enum with Headline variant" (verify: grep -q 'Headline' src/ast.rs && cargo build --lib)
+- Story 1.3: "Add Paragraph variant to AST Node enum" (verify: grep -q 'Paragraph' src/ast.rs && cargo build --lib)
+- Story 1.4: "Add CodeBlock variant to AST Node enum" (verify: grep -q 'CodeBlock' src/ast.rs && cargo build --lib)
+- Story 1.5: "Add Table variant to AST Node enum" (verify: grep -q 'Table' src/ast.rs && cargo build --lib)
+- Story 1.6: "Add Image variant with YAML attributes support" (verify: grep -q 'Image' src/ast.rs && cargo build --lib)
+- Story 1.7: "Implement parse_headings() for # headings" (verify: cargo test test_parse_headings)
+- Story 1.8: "Implement parse_paragraphs() for text blocks" (verify: cargo test test_parse_paragraphs)
+- Story 1.9: "Implement parse_code_blocks() for ``` blocks" (verify: cargo test test_parse_code_blocks)
+- Story 1.10: "Implement parse_tables() for markdown tables" (verify: cargo test test_parse_tables)
+- Story 1.11: "Implement parse_images() with YAML attribute parsing" (verify: cargo test test_parse_images_with_attrs)
+- Story 1.12: "Implement parse_links() for [text](url) syntax" (verify: cargo test test_parse_links)
+- Story 1.13: "Implement parse_lists() for ordered and unordered lists" (verify: cargo test test_parse_lists)
+- Story 1.14: "Add CommonMark compliance tests" (verify: cargo test commonmark_compliance)
+- Story 1.15: "Add GFM extension tests (strikethrough, tables, task lists)" (verify: cargo test gfm_extensions)
+
+**Another example: "CLI Interface" feature (needs 8+ stories):**
+- Story 10.1: "Add clap dependency to Cargo.toml" (verify: grep -q clap Cargo.toml)
+- Story 10.2: "Create Args struct with clap derive" (verify: grep -q 'struct Args' src/cli.rs && cargo build --lib)
+- Story 10.3: "Add 'compile' subcommand with file argument" (verify: cargo build --bin editio && ./target/debug/editio compile --help | grep -q compile)
+- Story 10.4: "Add -o/--output flag to compile command" (verify: ./target/debug/editio compile --help | grep -q output)
+- Story 10.5: "Implement compile command handler" (verify: cargo test test_compile_command)
+- Story 10.6: "Add 'check' subcommand" (verify: ./target/debug/editio check --help | grep -q check)
+- Story 10.7: "Implement check command handler" (verify: cargo test test_check_command)
+- Story 10.8: "Add error handling and user-friendly messages" (verify: cargo test test_cli_errors)
 
 3. Edit projects/$project_name/requirements.md: replace or expand with technical specifications taken from the PRD (architecture, data models, API, UI, performance, security).
 
@@ -306,22 +326,31 @@ Categories: technical = DB/API/backend/schemas/infrastructure; functional = busi
 
 **Break down large features into small, verifiable stories.** Each story should be completable in 1-2 iterations (not require multiple passes).
 
-**BAD (too broad):**
-- "Implement markdown parser" → This is 5-10 stories!
-- "Design two-pass layout engine" → Too vague, needs breakdown
-- "Create CLI interface" → Multiple components
+**BAD (too broad - these are MULTIPLE stories each):**
+- "Implement markdown parser" → This is 15-20 stories! Break it down!
+- "Design two-pass layout engine" → This is 20+ stories! Break it down!
+- "Create CLI interface" → This is 8-10 stories! Break it down!
+- "Implement parse_markdown() function" → Still too broad! Break into parse_headings(), parse_paragraphs(), etc.
+- "Add tests for CommonMark features" → Too broad! One test file per feature!
 
-**GOOD (granular and verifiable):**
-- "Add pulldown-cmark dependency to Cargo.toml" → Verifiable: grep -q pulldown Cargo.toml
-- "Create AST node enum with Headline, Paragraph, CodeBlock variants" → Verifiable: cargo build --lib
-- "Implement parse_markdown() function returning Vec<Node>" → Verifiable: cargo test parser
-- "Create CLI Args struct with clap" → Verifiable: cargo build --bin editio
+**GOOD (granular and verifiable - ONE concept per story):**
+- "Add pulldown-cmark dependency to Cargo.toml" → Verifiable: grep -q pulldown-cmark Cargo.toml
+- "Create AST Node enum with Headline variant" → Verifiable: grep -q 'Headline' src/ast.rs && cargo build --lib
+- "Implement parse_headings() function for # syntax" → Verifiable: cargo test test_parse_headings
+- "Add test for heading levels 1-6" → Verifiable: cargo test test_heading_levels
+- "Create CLI Args struct with clap derive" → Verifiable: grep -q 'struct Args' src/cli.rs && cargo build --lib
+- "Add 'compile' subcommand to CLI" → Verifiable: cargo build --bin editio && ./target/debug/editio compile --help
 
 **Breakdown strategy:**
 1. **Dependencies first**: Add library → Create types → Implement functions → Add tests
-2. **One concept per story**: Don't combine "add dependency AND implement parser" - split them
-3. **Each story should create 1-3 files max**: If more, break it down
-4. **Verifiable completion**: Each story must have a way to verify it's done (build, test, grep, etc.)
+2. **One concept per story**: Don't combine multiple concepts - split them aggressively
+   - "Implement parser" → Split into parse_headings(), parse_paragraphs(), parse_code_blocks(), etc.
+   - "Add tests" → Split into one test file/function per feature
+   - "Create CLI" → Split into Args struct, compile command, check command, error handling, etc.
+3. **Each story should create/modify 1-2 files max**: If more, break it down
+4. **Each story should implement ONE function/type/test**: Not multiple things
+5. **Verifiable completion**: Each story must have a way to verify it's done (build, test, grep, etc.)
+6. **Count your stories**: If you have fewer than 50 stories for a complex PRD, you're not granular enough!
 
 ## Acceptance Criteria Format
 
@@ -398,11 +427,15 @@ You are verifying that a generated prd.json comprehensively covers all requireme
 ### 2. Read the generated prd.json and requirements.md.
 
 ### 3. Compare and verify:
-- Does prd.json cover ALL features mentioned in the PRD?
+- Does prd.json cover ALL features mentioned in the PRD? (Check every P0 feature!)
 - Are stories granular enough? (Each should be 1-2 iterations, not require multiple passes)
+  - **CRITICAL**: Each P0 feature should be broken into 5-15 stories, not 1-3!
+  - If a story says "Implement X" where X is a major feature, it needs to be split further
+  - If a story has 5+ steps, it's too broad - break it down
 - Do stories have verifiable acceptance criteria? (RUN commands, verify fields, or file checks)
 - Are there any edge cases, error handling, or UX details in the PRD that are missing from the stories?
 - Does requirements.md capture all technical specifications from the PRD?
+- **Story count check**: For a PRD with 10+ P0 features, you should have 50-150+ stories. If you have fewer than 30, you're not granular enough!
 
 ### 4. If anything is missing or incomplete:
 - ADD new user stories to cover missing features (break down large ones into smaller, verifiable tasks)
@@ -671,6 +704,13 @@ main() {
         log "ERROR" "prd.json has no stories - conversion failed"
         log "INFO" "Check the log file: $(get_relative_path "$convert_log")"
         exit 1
+    fi
+    
+    # Warn if story count seems too low for a complex PRD
+    if [[ "$story_count" -lt 30 ]]; then
+        log "WARN" "Only $story_count stories generated - this may be too few for a complex PRD"
+        log "WARN" "Expected 50-150+ stories for a PRD with multiple P0 features"
+        log "WARN" "Consider re-running convert.sh or manually reviewing prd.json for missing breakdowns"
     fi
 
     # Normalize prd.json: pretty-print and consistent field order (id, category, story, steps, acceptance, priority, passes, notes, verify)
