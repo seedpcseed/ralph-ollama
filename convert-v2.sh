@@ -130,7 +130,7 @@ create_conversion_prompt_v2() {
     cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 # PRD to Tasks Conversion (v2.0 Format)
 
-You are running inside Cursor Agent. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them. You MUST use your edit capability to change the files. Do not say you cannot access files. Do not reply with only examples in code blocks; apply the changes by editing the files.
+You are running inside Aider. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them through Aider's file editing capabilities. You MUST use Aider's edit commands to change the files. Do not say you cannot access files—Aider gives you full file access. Do not reply with only examples or instructions—actually edit the files using Aider.
 
 ## Your task
 1. Read projects/$project_name/prd.md (it is in the chat) to understand ALL requirements.
