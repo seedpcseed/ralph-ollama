@@ -1,10 +1,8 @@
-extern crate pulldown_cmark;
-use pulldown_cmark::{html, Parser};
+extern crate printpdf;
+use printpdf::{Color, Document, Fixed, Image};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-
-mod layout_engine;
 
 pub fn markdown_to_html(markdown: &str) -> String {
     let parser = Parser::new(&markdown);
