@@ -130,7 +130,21 @@ create_conversion_prompt_v2() {
     cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 # PRD to Tasks Conversion (v2.0 Format)
 
-You are running inside Aider. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them through Aider's file editing capabilities. You MUST use Aider's edit commands to change the files. Do not say you cannot access files—Aider gives you full file access. Do not reply with only examples or instructions—actually edit the files using Aider.
+You are running inside Aider. Aider has already added these files to the chat: prd.md, prd.json, and requirements.md. 
+
+**CRITICAL: You MUST edit these files NOW. Do NOT:**
+- Say "I don't have access" - Aider gives you access
+- Give instructions - actually edit the files
+- Provide examples - provide the actual file content
+- Explain how to edit - just edit
+
+**You MUST provide file edits in Aider's format:**
+1. Write the file path (e.g., projects/editio/prd.json)
+2. Write three backticks ```
+3. Write the COMPLETE file content
+4. Write three backticks ```
+
+**DO THIS NOW - Edit prd.json and requirements.md with actual content, not instructions.**
 
 ## Your task
 1. Read projects/$project_name/prd.md (it is in the chat) to understand ALL requirements.
@@ -251,27 +265,58 @@ Categories: technical = DB/API/backend/schemas/infrastructure; functional = busi
 - **Go**: go test ./parser, go build
 - **File checks**: grep -q 'function_name' file.rs, test -f path/to/file
 
-## Edit format (required)
-You are using Aider's edit format. You MUST edit the files directly using Aider's file editing capabilities.
+## Edit format (required) - PROVIDE ACTUAL FILE CONTENT
 
-**CRITICAL INSTRUCTIONS:**
-1. You have access to the files: projects/$project_name/prd.md, projects/$project_name/prd.json, and projects/$project_name/requirements.md
-2. You MUST edit these files using Aider's edit commands
-3. Do NOT just provide instructions or examples - actually EDIT the files
-4. For prd.json: Replace the entire contents with the v2.0 format JSON
-5. For requirements.md: Replace the entire contents with technical specifications from the PRD
+You MUST provide the complete file content in Aider's format. Here's the EXACT format:
 
-**Aider Edit Format:**
-When Aider asks what you want to do, respond with clear edit commands like:
-- "Edit projects/$project_name/prd.json: Replace entire file with [your JSON]"
-- "Edit projects/$project_name/requirements.md: Replace entire file with [your markdown]"
+**For prd.json:**
+```
+projects/$project_name/prd.json
+```
+{
+  "version": "2.0",
+  "branchName": "ralph/$project_name",
+  "createdAt": "2026-02-04T08:00:00Z",
+  "updatedAt": "2026-02-04T08:00:00Z",
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Add pulldown-cmark dependency to Cargo.toml",
+      "steps": ["Open Cargo.toml", "Add pulldown-cmark = \"0.9\" to [dependencies]"],
+      "acceptance": "Cargo.toml includes pulldown-cmark dependency.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": [],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q pulldown-cmark Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T08:00:00Z",
+      "updatedAt": "2026-02-04T08:00:00Z"
+    }
+    // ... MORE STORIES HERE - generate 50-150+ stories based on PRD
+  ]
+}
+```
 
-**DO NOT:**
-- Say "I don't have access to files" - you do through Aider
-- Provide examples without editing - actually make the edits
-- Skip editing - the files must be modified
+**CRITICAL:**
+- Provide the COMPLETE JSON with ALL stories (50-150+ stories)
+- Do NOT use "..." or "rest of code" - provide FULL content
+- Do NOT give instructions - provide the actual file content
+- Do NOT say you can't access files - just provide the content
 
-Apply both file edits now.
+**Now provide the complete prd.json file content above, then provide requirements.md content.**
 PROMPTEOF
 }
 
