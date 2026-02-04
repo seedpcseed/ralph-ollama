@@ -1,0 +1,21 @@
+[workspace]
+members = [
+    "crates/editio",
+    "crates/editio-core",
+    "crates/editio-ast",
+    "crates/editio-parser",
+    "crates/editio-layout",
+    "crates/editio-render",
+    "crates/editio-pdf",
+    "crates/editio-bib",
+    "crates/editio-math",
+]
+
+[workspace.dependencies]
+pulldown-cmark = "0.9"
+printpdf = "0.7"
+serde-yaml = "0.9"
+clap = "4.5"
+serde = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
