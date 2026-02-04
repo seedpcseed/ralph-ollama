@@ -655,9 +655,28 @@ $(echo "$story_json" | jq -r '.story')
 Fix the errors and ensure verification passes.
 EOF
                     
-                    # Invoke agent to fix
-                    if invoke_cursor_agent_file "$fix_prompt" 2>&1 | tee -a "$output_file"; then
-                        log "INFO" "Fix attempt completed"
+                    # Invoke agent to fix (use same logic as main invocation)
+                    if [[ "$current_model" == ollama/* ]]; then
+                        # Use Aider for local models
+                        local aider_cmd=(
+                            aider
+                            --model "$current_model"
+                            --yes
+                            --no-stream
+                            --no-show-model-warnings
+                            --message-file "$fix_prompt"
+                        )
+                        if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
+                            aider_cmd+=(--auto-commits)
+                        fi
+                        if "${aider_cmd[@]}" 2>&1 | tee -a "$output_file"; then
+                            log "INFO" "Fix attempt completed"
+                        fi
+                    else
+                        # Use Cursor Agent for API models
+                        if invoke_cursor_agent_file "$fix_prompt" 2>&1 | tee -a "$output_file"; then
+                            log "INFO" "Fix attempt completed"
+                        fi
                     fi
                     rm -f "$fix_prompt"
                 fi
