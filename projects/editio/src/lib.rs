@@ -4,6 +4,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+mod layout_engine;
+
 pub fn markdown_to_html(markdown: &str) -> String {
     let parser = Parser::new(&markdown);
     let mut html_output = String::new();
