@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "crates/editio",
     "crates/editio-core",
@@ -9,7 +10,6 @@ members = [
     "crates/editio-pdf",
     "crates/editio-bib",
     "crates/editio-math",
-    "crates/editio-plugin",
 ]
 
 [workspace.package]
