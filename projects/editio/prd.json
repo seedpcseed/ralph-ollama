@@ -1,16 +1,148 @@
 {
-    "branchName": "ralph/editio",
-    "userStories": [
-        {"id":"1.1","category":"infrastructure","story":"Add pulldown-cmark dependency to Cargo.toml","steps":["Open Cargo.toml"],"acceptance":"Cargo.toml includes pulldown-cmark dependency.","verify":"grep -q 'pulldown-cmark' Cargo.toml","priority":10,"passes":false,"notes":""},
-        {"id":"1.2","category":"infrastructure","story":"Create AST node enum with variants","steps":["Open lib/editio_ast/src/lib.rs"],"acceptance":"AST node enum is created.","verify":"grep -q 'pub enum Node' lib/editio_ast/src/lib.rs","priority":9,"passes":false,"notes":""},
-        {"id":"1.3","category":"infrastructure","story":"Implement parse_markdown() function","steps":["Open editio-parser/src/lib.rs"],"acceptance":"parse_markdown() function is implemented.","verify":"cargo test editio_parser","priority":8,"passes":false,"notes":""},
-        {"id":"1.4","category":"infrastructure","story":"Add tests for CommonMark features","steps":["Open editio-parser/tests/commonmark.rs"],"acceptance":"Tests are added.","verify":"cargo test editio_parser --test commonmark","priority":7,"passes":false,"notes":""},
-        {"id":"1.5","category":"infrastructure","story":"Add tests for GFM extensions","steps":["Open editio-parser/tests/gfm.rs"],"acceptance":"Tests are added.","verify":"cargo test editio_parser --test gfm","priority":6,"passes":false,"notes":""},
-        {"id":"2.1","category":"technical","story":"Design two-pass layout engine","steps":["Open editio-layout/src/lib.rs"],"acceptance":"Two-pass layout engine is designed.","verify":"cargo test editio_layout","priority":5,"passes":false,"notes":""},
-        {"id":"2.2","category":"technical","story":"Implement CSS float algorithm","steps":["Open editio-layout/src/lib.rs"],"acceptance":"CSS float algorithm is implemented.","verify":"cargo test editio_layout --test css_float","priority":4,"passes":false,"notes":""},
-        {"id":"2.3","category":"technical","story":"Implement text wrapping around figures","steps":["Open editio-layout/src/lib.rs"],"acceptance":"Text wrapping around figures is implemented.","verify":"cargo test editio_layout --test text_wrapping","priority":3,"passes":false,"notes":""},
-        {"id":"2.4","category":"technical","story":"Implement text wrapping around lists","steps":["Open editio-layout/src/lib.rs"],"acceptance":"Text wrapping around lists is implemented.","verify":"cargo test editio_layout --test list_wrapping","priority":2,"passes":false,"notes":""},
-        {"id":"3.1","category":"technical","story":"Create CLI Args struct with clap","steps":["Open editio-cli/src/lib.rs"],"acceptance":"CLI Args struct is created.","verify":"cargo test editio_cli --test args","priority":1,"passes":false,"notes":""},
-        {"id":"3.2","category":"technical","story":"Implement compile() function","steps":["Open editio-cli/src/lib.rs"],"acceptance":"compile() function is implemented.","verify":"cargo test editio_cli --test compile","priority":1,"passes":false,"notes":""}
-    ]
+  "branchName": "ralph/editio",
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "infrastructure",
+      "story": "Add pulldown-cmark dependency to Cargo.toml",
+      "steps": [
+        "Open Cargo.toml"
+      ],
+      "acceptance": "Cargo.toml includes pulldown-cmark dependency.",
+      "priority": 10,
+      "passes": false,
+      "notes": "",
+      "verify": "grep -q 'pulldown-cmark' Cargo.toml"
+    },
+    {
+      "id": "1.2",
+      "category": "infrastructure",
+      "story": "Create AST node enum with variants",
+      "steps": [
+        "Open lib/editio_ast/src/lib.rs"
+      ],
+      "acceptance": "AST node enum is created.",
+      "priority": 9,
+      "passes": false,
+      "notes": "",
+      "verify": "grep -q 'pub enum Node' lib/editio_ast/src/lib.rs"
+    },
+    {
+      "id": "1.3",
+      "category": "infrastructure",
+      "story": "Implement parse_markdown() function",
+      "steps": [
+        "Open editio-parser/src/lib.rs"
+      ],
+      "acceptance": "parse_markdown() function is implemented.",
+      "priority": 8,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_parser"
+    },
+    {
+      "id": "1.4",
+      "category": "infrastructure",
+      "story": "Add tests for CommonMark features",
+      "steps": [
+        "Open editio-parser/tests/commonmark.rs"
+      ],
+      "acceptance": "Tests are added.",
+      "priority": 7,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_parser --test commonmark"
+    },
+    {
+      "id": "1.5",
+      "category": "infrastructure",
+      "story": "Add tests for GFM extensions",
+      "steps": [
+        "Open editio-parser/tests/gfm.rs"
+      ],
+      "acceptance": "Tests are added.",
+      "priority": 6,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_parser --test gfm"
+    },
+    {
+      "id": "2.1",
+      "category": "technical",
+      "story": "Design two-pass layout engine",
+      "steps": [
+        "Open editio-layout/src/lib.rs"
+      ],
+      "acceptance": "Two-pass layout engine is designed.",
+      "priority": 5,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_layout"
+    },
+    {
+      "id": "2.2",
+      "category": "technical",
+      "story": "Implement CSS float algorithm",
+      "steps": [
+        "Open editio-layout/src/lib.rs"
+      ],
+      "acceptance": "CSS float algorithm is implemented.",
+      "priority": 4,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_layout --test css_float"
+    },
+    {
+      "id": "2.3",
+      "category": "technical",
+      "story": "Implement text wrapping around figures",
+      "steps": [
+        "Open editio-layout/src/lib.rs"
+      ],
+      "acceptance": "Text wrapping around figures is implemented.",
+      "priority": 3,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_layout --test text_wrapping"
+    },
+    {
+      "id": "2.4",
+      "category": "technical",
+      "story": "Implement text wrapping around lists",
+      "steps": [
+        "Open editio-layout/src/lib.rs"
+      ],
+      "acceptance": "Text wrapping around lists is implemented.",
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_layout --test list_wrapping"
+    },
+    {
+      "id": "3.1",
+      "category": "technical",
+      "story": "Create CLI Args struct with clap",
+      "steps": [
+        "Open editio-cli/src/lib.rs"
+      ],
+      "acceptance": "CLI Args struct is created.",
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_cli --test args"
+    },
+    {
+      "id": "3.2",
+      "category": "technical",
+      "story": "Implement compile() function",
+      "steps": [
+        "Open editio-cli/src/lib.rs"
+      ],
+      "acceptance": "compile() function is implemented.",
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "verify": "cargo test editio_cli --test compile"
+    }
+  ]
 }
