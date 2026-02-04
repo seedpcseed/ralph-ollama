@@ -78,6 +78,9 @@ setup_model() {
             local convert_model="${LOCAL_CONVERT_MODEL:-${LOCAL_MODEL:-deepseek-coder:33b}}"
             AIDER_MODEL="ollama/$convert_model"
             log "INFO" "Using local model: $convert_model (will use Aider, not Cursor Agent)"
+            log "WARN" "Local models may struggle to generate 50-150+ stories in one response"
+            log "WARN" "Consider using --model claude for better conversion quality"
+            log "WARN" "You can use local models for implementation (start-v2.sh) after conversion"
             
             # Check if model is available
             if ! ollama list 2>/dev/null | grep -q "$convert_model"; then
@@ -296,27 +299,30 @@ Provide the complete prd.json content as valid JSON. You can wrap it in markdown
 }
 ```
 
-**CRITICAL REQUIREMENTS:**
-- Generate 50-150+ stories covering ALL features in the PRD
-- Each P0 feature should become 5-15 granular stories
-- **DO NOT use "..." or "more stories here" - generate ALL stories NOW**
-- **DO NOT skip stories - generate the complete list**
-- Provide COMPLETE JSON with ALL stories - we will extract and write it to the file
-- Also provide requirements.md content (markdown format)
+**CRITICAL REQUIREMENTS - YOU MUST GENERATE ALL STORIES:**
 
-**You MUST generate stories for ALL features mentioned in the PRD:**
-- Markdown parsing (15+ stories)
-- CLI interface (8+ stories)
-- Layout engine (20+ stories)
-- PDF generation (10+ stories)
-- Cross-references (8+ stories)
-- Bibliography (8+ stories)
-- Math rendering (8+ stories)
-- Templates (5+ stories)
-- Plugins (5+ stories)
-- And any other features in the PRD
+The PRD has 11 P0 features. You MUST generate stories for EACH feature:
 
-**Generate ALL stories now - do not leave placeholders.**
+1. **Markdown Parsing** (15+ stories): pulldown-cmark dependency, AST Node enum variants (Headline, Paragraph, CodeBlock, Table, Image, Link, List), parse functions for each, CommonMark tests, GFM tests
+2. **Two-Pass Layout Engine** (20+ stories): Layout struct, first pass (measure), second pass (place), float algorithm, text wrapping, list wrapping, figure placement
+3. **PDF Output** (10+ stories): printpdf dependency, PDF document creation, page setup, content rendering, font handling
+4. **Cross-References** (8+ stories): Reference struct, label tracking, reference resolution, figure references, table references, equation references, section references
+5. **Academic Extensions** (8+ stories): Theorem environment, Proof environment, Algorithm listing, Pseudocode listing, Code listing with captions
+6. **Math Typesetting** (8+ stories): Inline math parsing, display math parsing, LaTeX syntax support, pdflatex subprocess, basic symbols, fractions, superscripts/subscripts
+7. **Bibliography System** (8+ stories): BibTeX parser, citation parsing, citation styles (APA, MLA, Chicago, IEEE), author-year format, numeric format, bibliography generation
+8. **Figure Support** (8+ stories): Image parsing with YAML attributes, figure numbering, captions, cross-referencing, text wrapping integration
+9. **Table Support** (8+ stories): Table parsing, table numbering, captions, cross-referencing, column alignment
+10. **Document Formatting** (10+ stories): YAML front matter parsing, page settings, margins, page size, font size, headers/footers, page numbering, section formatting
+11. **CLI Interface** (8+ stories): clap dependency, Args struct, compile command, check command, file argument, output flag, error handling
+
+**TOTAL: Generate 50-150+ stories covering ALL features above.**
+
+**DO NOT:**
+- Use "..." or "more stories here" - generate ALL stories
+- Skip features - every P0 feature needs stories
+- Give examples - provide the complete list
+
+**Generate the complete JSON with ALL stories now.**
 PROMPTEOF
 }
 
