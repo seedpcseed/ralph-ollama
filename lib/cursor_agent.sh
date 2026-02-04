@@ -37,6 +37,9 @@ invoke_cursor_agent() {
     shift
     local files=("$@")
     
+    local output
+    local exit_code
+    
     # Try agent command first (this is the Cursor Agent CLI)
     if command -v agent >/dev/null 2>&1; then
         log "INFO" "Using Cursor Agent CLI (agent command)"
@@ -45,22 +48,45 @@ invoke_cursor_agent() {
         # Note: --force flag may not exist, so we don't use it
         if [[ ${#files[@]} -gt 0 ]]; then
             # Pass files as arguments after the prompt
-            agent -p "$prompt" "${files[@]}" 2>&1
+            output=$(agent -p "$prompt" "${files[@]}" 2>&1)
+            exit_code=$?
         else
-            agent -p "$prompt" 2>&1
+            output=$(agent -p "$prompt" 2>&1)
+            exit_code=$?
         fi
-        return $?
+        
+        # Check for API usage limit errors
+        if echo "$output" | grep -qi "usage limit\|hit your usage limit"; then
+            log "ERROR" "Cursor Agent API usage limit reached"
+            echo "$output" >&2
+            return 1
+        fi
+        
+        # Output the result
+        echo "$output"
+        return $exit_code
     fi
     
     # Fallback: Try cursor with agent subcommand (if exists)
     if cursor agent --help >/dev/null 2>&1; then
         log "INFO" "Using 'cursor agent' command"
         if [[ ${#files[@]} -gt 0 ]]; then
-            cursor agent -p "$prompt" "${files[@]}" 2>&1
+            output=$(cursor agent -p "$prompt" "${files[@]}" 2>&1)
+            exit_code=$?
         else
-            cursor agent -p "$prompt" 2>&1
+            output=$(cursor agent -p "$prompt" 2>&1)
+            exit_code=$?
         fi
-        return $?
+        
+        # Check for API usage limit errors
+        if echo "$output" | grep -qi "usage limit\|hit your usage limit"; then
+            log "ERROR" "Cursor Agent API usage limit reached"
+            echo "$output" >&2
+            return 1
+        fi
+        
+        echo "$output"
+        return $exit_code
     fi
     
     # If no agent command, log warning and return error

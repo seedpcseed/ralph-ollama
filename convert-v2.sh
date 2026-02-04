@@ -338,10 +338,26 @@ invoke_agent() {
     
     # Invoke Cursor Agent
     log "INFO" "Using Cursor Agent"
-    if invoke_cursor_agent_file "$prompt_file" "${files[@]}" > "$output_file" 2>&1; then
+    local agent_output
+    agent_output=$(invoke_cursor_agent_file "$prompt_file" "${files[@]}" 2>&1)
+    local agent_exit_code=$?
+    
+    # Write output to log file
+    echo "$agent_output" > "$output_file"
+    
+    # Check for API usage limit
+    if echo "$agent_output" | grep -qi "usage limit\|hit your usage limit"; then
+        log "ERROR" "Cursor Agent API usage limit reached"
+        log "ERROR" "Your usage limits will reset when your monthly cycle ends"
+        log "ERROR" "Consider: 1) Waiting for limit reset, 2) Using a different API key, 3) Setting a Spend Limit"
+        return 1
+    fi
+    
+    if [[ $agent_exit_code -eq 0 ]]; then
         return 0
     else
-        log "ERROR" "Cursor Agent execution failed. Check log: $output_file"
+        log "ERROR" "Cursor Agent execution failed (exit code: $agent_exit_code)"
+        log "ERROR" "Check log: $output_file"
         return 1
     fi
 }
