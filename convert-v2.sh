@@ -76,7 +76,22 @@ setup_model() {
             fi
             local convert_model="${LOCAL_CONVERT_MODEL:-${LOCAL_MODEL:-deepseek-coder:33b}}"
             AIDER_MODEL="ollama/$convert_model"
-            log "INFO" "Using local model: $convert_model"
+            log "INFO" "Using local model: $convert_model (will use Aider, not Cursor Agent)"
+            
+            # Check if model is available
+            if ! ollama list 2>/dev/null | grep -q "$convert_model"; then
+                log "WARN" "Model '$convert_model' is not available locally"
+                log "INFO" "Pulling model (this may take several minutes)..."
+                if ollama pull "$convert_model" 2>&1; then
+                    log "SUCCESS" "Model '$convert_model' pulled successfully"
+                else
+                    log "ERROR" "Failed to pull model '$convert_model'"
+                    log "INFO" "Try manually: ollama pull $convert_model"
+                    exit 1
+                fi
+            else
+                log "INFO" "Model '$convert_model' is available"
+            fi
             ;;
         hybrid)
             AIDER_MODEL="hybrid"
@@ -321,13 +336,50 @@ is_requirements_placeholder() {
     return 1
 }
 
-# Invoke Cursor Agent (no fallback)
+# Invoke agent (Cursor Agent for API models, Aider for local models)
 invoke_agent() {
     local prompt_file=$1
     local output_file=$2
     local model=$3
     shift 3
     local files=("$@")
+    
+    # For local models, use Aider (which supports Ollama)
+    if [[ "$model" == ollama/* ]] || [[ "$model" == "hybrid" && "$MODE" == "local" ]]; then
+        log "INFO" "Using Aider for local model: $model"
+        
+        # Check if Aider is available
+        if ! command -v aider >/dev/null 2>&1; then
+            log "ERROR" "Aider not available. Install with: pip install aider-chat"
+            return 1
+        fi
+        
+        # Build Aider command
+        local aider_cmd=(
+            aider
+            "${files[@]}"
+            --model "$model"
+            --yes
+            --no-stream
+            --no-show-model-warnings
+            --message-file "$prompt_file"
+        )
+        
+        if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
+            aider_cmd+=(--auto-commits)
+        fi
+        
+        # Run Aider and capture output
+        if "${aider_cmd[@]}" > "$output_file" 2>&1; then
+            return 0
+        else
+            log "ERROR" "Aider execution failed. Check log: $output_file"
+            return 1
+        fi
+    fi
+    
+    # For API models (Claude), use Cursor Agent
+    log "INFO" "Using Cursor Agent for API model"
     
     # Check if Cursor Agent is available
     if ! check_cursor_agent 2>/dev/null; then
@@ -337,7 +389,6 @@ invoke_agent() {
     fi
     
     # Invoke Cursor Agent
-    log "INFO" "Using Cursor Agent"
     local agent_output
     agent_output=$(invoke_cursor_agent_file "$prompt_file" "${files[@]}" 2>&1)
     local agent_exit_code=$?
