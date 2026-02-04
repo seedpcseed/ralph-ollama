@@ -494,7 +494,7 @@ main_loop() {
         fi
         
         # Check circuit breaker
-        if check_circuit_breaker "$project_dir" 2>/dev/null; then
+        if should_halt_execution "$project_dir" 2>/dev/null; then
             log "ERROR" "Circuit breaker is open. Too many failures."
             log "INFO" "Reset with: ./start-v2.sh $project_name --reset"
             exit 1
