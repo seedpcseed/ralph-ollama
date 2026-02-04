@@ -52,8 +52,9 @@ setup_aider() {
             log "INFO" "Using Claude Sonnet 4.5 via API"
             ;;
         local)
-            AIDER_MODEL="ollama/$LOCAL_MODEL"
-            log "INFO" "Using local model: $LOCAL_MODEL"
+            local start_model="${LOCAL_START_MODEL:-$LOCAL_MODEL}"
+            AIDER_MODEL="ollama/$start_model"
+            log "INFO" "Using local model for start loop: $start_model"
             
             # Check if Ollama is running, start if not
             if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
@@ -87,14 +88,14 @@ setup_aider() {
             fi
             
             # Check if model is available
-            if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
-                log "WARN" "Model '$LOCAL_MODEL' is not available locally"
+            if ! ollama list 2>/dev/null | grep -q "$start_model"; then
+                log "WARN" "Model '$start_model' is not available locally"
                 log "INFO" "Pulling model (this may take several minutes)..."
-                if ollama pull "$LOCAL_MODEL" 2>&1 | tee /tmp/ollama_pull.log; then
-                    log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                if ollama pull "$start_model" 2>&1 | tee /tmp/ollama_pull.log; then
+                    log "SUCCESS" "Model '$start_model' pulled successfully"
                     rm -f /tmp/ollama_pull.log
                 else
-                    log "ERROR" "Failed to pull model '$LOCAL_MODEL'"
+                    log "ERROR" "Failed to pull model '$start_model'"
                     if grep -q "connection reset\|max retries exceeded" /tmp/ollama_pull.log 2>/dev/null; then
                         log "ERROR" "Network/firewall blocking Cloudflare R2 storage"
                         log "INFO" ""
@@ -107,12 +108,12 @@ setup_aider() {
                         exit 1
                     else
                         log "WARN" "Pull failed for unknown reason"
-                        log "INFO" "Try manually: ollama pull $LOCAL_MODEL"
+                        log "INFO" "Try manually: ollama pull $start_model"
                         rm -f /tmp/ollama_pull.log
                     fi
                 fi
             else
-                log "INFO" "Model '$LOCAL_MODEL' is available"
+                log "INFO" "Model '$start_model' is available"
             fi
             ;;
         hybrid)
@@ -356,7 +357,7 @@ execute_aider() {
             current_model="anthropic/claude-sonnet-4-5"
             log "INFO" "   Using Claude (high priority)"
         else
-            current_model="ollama/$LOCAL_MODEL"
+            current_model="ollama/${LOCAL_START_MODEL:-$LOCAL_MODEL}"
             log "INFO" "   Using local model (lower priority)"
         fi
     fi
@@ -383,7 +384,7 @@ execute_aider() {
             log "INFO" "⏳ Starting Aider with model: $current_model (timeout: ${AGENT_TIMEOUT_MINUTES}m)..."
         fi
         
-        # Build Aider command
+        # Build Aider command (do NOT use --commit: Aider runs it before --message-file and exits without running the model)
         local aider_cmd=(
             aider
             --model "$current_model"
@@ -396,14 +397,13 @@ execute_aider() {
         if [ "$AIDER_AUTO_COMMITS" = true ]; then
             aider_cmd+=(--auto-commits)
         fi
-        # Do NOT add --commit: Aider runs it before --message-file and exits without running the model.
         
         if [ "$AIDER_NO_PRETTY" = true ]; then
             aider_cmd+=(--no-pretty)
         fi
         
         # Execute Aider
-        if PYTHONUNBUFFERED=1 $TIMEOUT_CMD ${timeout_seconds}s "${aider_cmd[@]}" > "$output_file" 2>&1; then
+        if $TIMEOUT_CMD ${timeout_seconds}s "${aider_cmd[@]}" > "$output_file" 2>&1; then
             log "SUCCESS" "✅ Aider execution completed"
             
             # Check for project completion token
@@ -429,14 +429,14 @@ execute_aider() {
             # Log analysis
             log_analysis_summary "$project_dir"
             
-            # Mark story complete only when we got file edits (avoid completing with no progress)
-            if [[ $analysis_result -eq 0 ]]; then
-                if [[ "${files_modified:-0}" -gt 0 ]]; then
-                    mark_story_complete "$project_dir/prd.json" "$story_id"
-                    log "SUCCESS" "📝 Story $story_id marked as complete"
-                else
-                    log "WARN" "Story $story_id: no file changes (not marking complete)"
-                fi
+            # Mark story complete when we got file edits (files created = success, even if analyzer found non-critical errors)
+            if [[ "${files_modified:-0}" -gt 0 ]]; then
+                mark_story_complete "$project_dir/prd.json" "$story_id"
+                log "SUCCESS" "📝 Story $story_id marked as complete (${files_modified} file(s) created)"
+            elif [[ $analysis_result -eq 0 ]]; then
+                log "WARN" "Story $story_id: no file changes (not marking complete)"
+            else
+                log "WARN" "Story $story_id: no file changes and errors detected (not marking complete)"
             fi
             
             return 0
@@ -885,11 +885,10 @@ if [[ ! -d "$PROJECT_DIR" ]]; then
     exit 1
 fi
 
-# Setup Aider based on mode
-setup_aider "$MODE"
-
-# Check dependencies
-check_dependencies || exit 1
+# Check dependencies (only needed for run action)
+if [[ "$ACTION" == "run" ]]; then
+    check_dependencies || exit 1
+fi
 
 # Execute action
 case "$ACTION" in
@@ -900,6 +899,8 @@ case "$ACTION" in
         reset_circuit_breaker "$PROJECT_DIR" "Manual reset via CLI"
         ;;
     "run")
+        # Setup Aider based on mode (only needed when actually running)
+        setup_aider "$MODE"
         if [[ "$USE_TMUX" == "true" ]]; then
             setup_tmux "$PROJECT_NAME"
         else

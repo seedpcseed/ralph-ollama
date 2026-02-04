@@ -12,7 +12,8 @@
       "acceptance": "feature_items table exists in database with all columns, proper constraints, indexes, and RLS policies. Migration runs successfully. Team members can only access their own team's data.",
       "priority": 1,
       "passes": false,
-      "notes": ""
+      "notes": "",
+      "verify": "psql -c '\\d feature_items' | grep -q feature_items"
     },
     {
       "id": "1.4",

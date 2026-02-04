@@ -16,6 +16,11 @@ build/
 projects/*/logs/
 projects/*/.circuit_breaker*
 projects/*/status.json
+projects/*/.aiderignore
+projects/*/.ralph_current_prompt.md
+projects/*/.call_count
+projects/*/.last_reset
+projects/*/.last_analysis.json
 
 # IDE / OS
 .idea/

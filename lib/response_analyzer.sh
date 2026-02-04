@@ -44,10 +44,10 @@ analyze_response() {
         has_commit=true
     fi
     
-    # Check for error signals (ignore Aider internals: summarization/shutdown messages)
-    local content_for_errors
-    content_for_errors=$(echo "$output_content" | grep -vi "Summarization failed\|cannot schedule new futures\|unexpectedly failed for all models" || true)
-    if echo "$content_for_errors" | grep -qi "error\|failed\|cannot\|unable to"; then
+    # Check for error signals (ignore Aider internal messages)
+    # Filter out known non-critical Aider messages that don't indicate actual errors
+    local error_check_content=$(echo "$output_content" | grep -vi "summarization failed\|summarizer unexpectedly failed\|cannot schedule new futures after shutdown")
+    if echo "$error_check_content" | grep -qi "error\|failed\|cannot\|unable to"; then
         has_errors=true
     fi
     
