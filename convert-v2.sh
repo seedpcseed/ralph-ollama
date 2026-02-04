@@ -9,6 +9,7 @@ REPO_ROOT="$SCRIPT_DIR"
 
 # Source libraries (optional - convert-v2.sh is self-contained)
 source "$SCRIPT_DIR/lib/cursor_agent.sh" 2>/dev/null || true
+source "$SCRIPT_DIR/lib/claude_cli.sh" 2>/dev/null || true
 source "$SCRIPT_DIR/config.sh" 2>/dev/null || true
 
 # Load config defaults if config.sh doesn't exist
@@ -344,41 +345,62 @@ invoke_agent() {
     shift 3
     local files=("$@")
     
-    # For local models, use Aider (which supports Ollama)
-    # NOTE: Aider had issues in v1.0, but v2.0's verification loop addresses them:
-    # - v1.0 problem: No verification → v2.0 fix: We verify (compile + test)
-    # - v1.0 problem: No iterative refinement → v2.0 fix: Up to 5 attempts with error feedback
-    # - v1.0 problem: Poor context → v2.0 fix: Better prompts and file context
+    # For local models, use Claude CLI with Ollama (better than Aider!)
+    # Claude CLI supports local Ollama models via 'ollama launch claude'
+    # This is better than Aider because:
+    # - Native Anthropic tool (better quality)
+    # - Better tool calling support
+    # - Native Ollama integration
     if [[ "$model" == ollama/* ]] || [[ "$model" == "hybrid" && "$MODE" == "local" ]]; then
-        log "INFO" "Using Aider for local model: $model"
-        log "INFO" "Note: v2.0 verification loop will catch and fix any issues Aider might introduce"
+        log "INFO" "Using Claude CLI for local model: $model"
         
-        # Check if Aider is available
-        if ! command -v aider >/dev/null 2>&1; then
-            log "ERROR" "Aider not available. Install with: pip install aider-chat"
-            return 1
+        # Source Claude CLI library
+        source "$SCRIPT_DIR/lib/claude_cli.sh" 2>/dev/null || true
+        
+        # Check if Claude CLI is available
+        if ! check_claude_cli 2>/dev/null; then
+            log "WARN" "Claude CLI not available, falling back to Aider"
+            # Fallback to Aider
+            if ! command -v aider >/dev/null 2>&1; then
+                log "ERROR" "Neither Claude CLI nor Aider available"
+                return 1
+            fi
+            
+            log "INFO" "Using Aider fallback for local model: $model"
+            local aider_cmd=(
+                aider
+                "${files[@]}"
+                --model "$model"
+                --yes
+                --no-stream
+                --no-show-model-warnings
+                --message-file "$prompt_file"
+            )
+            
+            if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
+                aider_cmd+=(--auto-commits)
+            fi
+            
+            if "${aider_cmd[@]}" > "$output_file" 2>&1; then
+                return 0
+            else
+                log "ERROR" "Aider execution failed. Check log: $output_file"
+                return 1
+            fi
         fi
         
-        # Build Aider command
-        local aider_cmd=(
-            aider
-            "${files[@]}"
-            --model "$model"
-            --yes
-            --no-stream
-            --no-show-model-warnings
-            --message-file "$prompt_file"
-        )
+        # Use Claude CLI
+        local claude_output
+        claude_output=$(invoke_claude_cli_file "$prompt_file" "${files[@]}" 2>&1)
+        local claude_exit_code=$?
         
-        if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
-            aider_cmd+=(--auto-commits)
-        fi
+        # Write output to log file
+        echo "$claude_output" > "$output_file"
         
-        # Run Aider and capture output
-        if "${aider_cmd[@]}" > "$output_file" 2>&1; then
+        if [[ $claude_exit_code -eq 0 ]]; then
             return 0
         else
-            log "ERROR" "Aider execution failed. Check log: $output_file"
+            log "ERROR" "Claude CLI execution failed. Check log: $output_file"
             return 1
         fi
     fi

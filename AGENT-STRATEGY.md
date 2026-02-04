@@ -8,9 +8,13 @@
 - **Limitation**: Requires API access, has usage limits
 
 ### For Local Models (Ollama)
-- **Tool**: Aider (`aider` command)
-- **Why**: Only tool that supports Ollama models directly
-- **Concern**: Aider had issues in v1.0 (no verification, poor context)
+- **Tool**: Claude CLI (`claude` command) with Ollama integration
+- **Why**: 
+  - Native Anthropic tool (better quality than Aider)
+  - Supports local Ollama models via `ollama launch claude`
+  - Better tool calling support
+  - Native Ollama integration (Ollama v0.14.0+)
+- **Fallback**: Aider if Claude CLI not available
 
 ## Why Aider is Acceptable in v2.0
 
