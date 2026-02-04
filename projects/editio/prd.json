@@ -1,16 +1,16 @@
 {
   "version": "2.0",
   "branchName": "ralph/editio",
-  "createdAt": "2026-02-04T14:56:17Z",
-  "updatedAt": "2026-02-04T15:24:37Z",
+  "createdAt": "2026-02-04T16:00:00Z",
+  "updatedAt": "2026-02-04T16:00:00Z",
   "userStories": [
     {
       "id": "1.1",
       "category": "technical",
       "story": "Add pulldown-cmark dependency to Cargo.toml",
       "steps": [
-        "Open Cargo.toml",
-        "Add pulldown-cmark = \"0.9\" to [dependencies]"
+        "Open Cargo.toml in the workspace root",
+        "Add pulldown-cmark = \"0.9\" to [dependencies] section"
       ],
       "acceptance": "Cargo.toml includes pulldown-cmark dependency.",
       "priority": 1,
@@ -21,7 +21,7 @@
       "dependsOn": [],
       "blocks": [],
       "verify": {
-        "command": "grep -q puldown-cmark Cargo.toml",
+        "command": "grep -q pulldown-cmark Cargo.toml",
         "lastRun": null,
         "lastResult": "not_run",
         "expectedResult": "pass"
@@ -30,8 +30,2647 @@
       "tests": [],
       "errors": [],
       "notes": "",
-      "createdAt": "2026-02-04T14:56:17Z",
-      "updatedAt": "2026-02-04T15:24:37Z"
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.2",
+      "category": "technical",
+      "story": "Create editio-ast crate structure",
+      "steps": [
+        "Run cargo new --lib editio-ast",
+        "Add editio-ast to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-ast crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-ast && test -f editio-ast/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.3",
+      "category": "technical",
+      "story": "Define Node enum with Document variant",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Define pub enum Node { Document(Vec<Node>) }"
+      ],
+      "acceptance": "Node enum with Document variant is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.2"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'enum Node' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.4",
+      "category": "technical",
+      "story": "Add Heading variant to Node enum",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Add pub enum Node { ..., Heading { level: u8, content: Vec<Inline> }, ... }"
+      ],
+      "acceptance": "Node enum includes Heading variant.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.3"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'Heading' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.5",
+      "category": "technical",
+      "story": "Add Paragraph variant to Node enum",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Add pub enum Node { ..., Paragraph(Vec<Inline>), ... }"
+      ],
+      "acceptance": "Node enum includes Paragraph variant.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.4"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'Paragraph' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.6",
+      "category": "technical",
+      "story": "Add CodeBlock variant to Node enum",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Add pub enum Node { ..., CodeBlock { language: Option<String>, content: String }, ... }"
+      ],
+      "acceptance": "Node enum includes CodeBlock variant.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.5"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'CodeBlock' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.7",
+      "category": "technical",
+      "story": "Add Table variant to Node enum",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Add pub enum Node { ..., Table { headers: Vec<Vec<Inline>>, rows: Vec<Vec<Vec<Inline>>> }, ... }"
+      ],
+      "acceptance": "Node enum includes Table variant.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.6"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'Table' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.8",
+      "category": "technical",
+      "story": "Add Image variant to Node enum",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Add pub enum Node { ..., Image { src: String, caption: Option<String>, attrs: Attributes }, ... }"
+      ],
+      "acceptance": "Node enum includes Image variant.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.7"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'Image' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.9",
+      "category": "technical",
+      "story": "Add Inline enum for inline content",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Define pub enum Inline { Text(String), Link(String, String), Emphasis(String), ... }"
+      ],
+      "acceptance": "Inline enum is defined for inline content.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.8"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'enum Inline' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.10",
+      "category": "technical",
+      "story": "Add Attributes struct for YAML attributes",
+      "steps": [
+        "Open src/lib.rs in editio-ast",
+        "Define pub struct Attributes { pub float: Option<FloatPosition>, pub width: Option<Dimension>, ... }"
+      ],
+      "acceptance": "Attributes struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.9"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Attributes' editio-ast/src/lib.rs && cargo build --lib -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.11",
+      "category": "technical",
+      "story": "Create editio-parser crate structure",
+      "steps": [
+        "Run cargo new --lib editio-parser",
+        "Add editio-parser to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-parser crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-parser && test -f editio-parser/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.12",
+      "category": "technical",
+      "story": "Implement parse_markdown() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement pub fn parse_markdown(input: &str) -> Result<Node, ParseError>"
+      ],
+      "acceptance": "parse_markdown function is implemented and compiles.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.11"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.13",
+      "category": "technical",
+      "story": "Implement parse_headings() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement parse_headings(events: &[Event]) -> Vec<Node>"
+      ],
+      "acceptance": "parse_headings function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_parse_headings -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.14",
+      "category": "technical",
+      "story": "Implement parse_paragraphs() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement parse_paragraphs(events: &[Event]) -> Vec<Node>"
+      ],
+      "acceptance": "parse_paragraphs function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_parse_paragraphs -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.15",
+      "category": "technical",
+      "story": "Implement parse_code_blocks() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement parse_code_blocks(events: &[Event]) -> Vec<Node>"
+      ],
+      "acceptance": "parse_code_blocks function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_parse_code_blocks -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.16",
+      "category": "technical",
+      "story": "Implement parse_tables() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement parse_tables(events: &[Event]) -> Vec<Node>"
+      ],
+      "acceptance": "parse_tables function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_parse_tables -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.17",
+      "category": "technical",
+      "story": "Implement parse_images() function",
+      "steps": [
+        "Open src/lib.rs in editio-parser",
+        "Implement parse_images(events: &[Event]) -> Vec<Node>"
+      ],
+      "acceptance": "parse_images function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_parse_images -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.18",
+      "category": "technical",
+      "story": "Add CommonMark compliance tests",
+      "steps": [
+        "Create tests/commonmark_tests.rs",
+        "Add test cases for standard markdown syntax"
+      ],
+      "acceptance": "CommonMark compliance tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test commonmark_compliance -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "1.19",
+      "category": "technical",
+      "story": "Add GFM extension tests",
+      "steps": [
+        "Create tests/gfm_tests.rs",
+        "Add test cases for GitHub Flavored Markdown features"
+      ],
+      "acceptance": "GFM extension tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.18"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test gfm_extensions -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.1",
+      "category": "technical",
+      "story": "Create editio-layout crate structure",
+      "steps": [
+        "Run cargo new --lib editio-layout",
+        "Add editio-layout to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-layout crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-layout && test -f editio-layout/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.2",
+      "category": "technical",
+      "story": "Define LayoutMetadata struct",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Define pub struct LayoutMetadata { pub page_size: PageSize, pub margins: Margins, ... }"
+      ],
+      "acceptance": "LayoutMetadata struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct LayoutMetadata' editio-layout/src/lib.rs && cargo build --lib -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.3",
+      "category": "technical",
+      "story": "Define Float struct",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Define pub struct Float { pub node: Node, pub position: FloatPosition, pub width: Dimension, ... }"
+      ],
+      "acceptance": "Float struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.2"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Float' editio-layout/src/lib.rs && cargo build --lib -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.4",
+      "category": "technical",
+      "story": "Define WrapZone struct",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Define pub struct WrapZone { pub x: f64, pub y: f64, pub width: f64, pub height: f64 }"
+      ],
+      "acceptance": "WrapZone struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.3"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct WrapZone' editio-layout/src/lib.rs && cargo build --lib -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.5",
+      "category": "technical",
+      "story": "Implement calculate_layout() function",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement pub fn calculate_layout(ast: &Node, metadata: &DocumentMetadata) -> Result<LayoutMetadata, LayoutError>"
+      ],
+      "acceptance": "calculate_layout function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.2", "2.3", "2.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.6",
+      "category": "technical",
+      "story": "Implement first pass (measure content)",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement first pass logic to measure text width and content height"
+      ],
+      "acceptance": "First pass logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_first_pass -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.7",
+      "category": "technical",
+      "story": "Implement second pass (place floats)",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement second pass logic to place floats on pages"
+      ],
+      "acceptance": "Second pass logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_second_pass -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.8",
+      "category": "technical",
+      "story": "Implement CSS-style float algorithm",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement float placement algorithm similar to CSS float behavior"
+      ],
+      "acceptance": "CSS-style float algorithm is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_float_algorithm -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.9",
+      "category": "technical",
+      "story": "Implement text wrapping logic",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement logic to wrap text around floats using WrapZones"
+      ],
+      "acceptance": "Text wrapping logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.8"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_text_wrapping -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.10",
+      "category": "technical",
+      "story": "Implement list wrapping logic",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Implement logic to wrap lists around figures (critical differentiator)"
+      ],
+      "acceptance": "List wrapping logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.9"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_list_wrapping -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.11",
+      "category": "technical",
+      "story": "Optimize float placement",
+      "steps": [
+        "Open src/lib.rs in editio-layout",
+        "Refactor float placement to minimize page breaks"
+      ],
+      "acceptance": "Float placement is optimized.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.10"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_float_optimization -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "2.12",
+      "category": "technical",
+      "story": "Add layout engine tests",
+      "steps": [
+        "Create tests/layout_tests.rs",
+        "Add comprehensive tests for layout engine"
+      ],
+      "acceptance": "Layout engine tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.11"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.1",
+      "category": "technical",
+      "story": "Create editio-pdf crate structure",
+      "steps": [
+        "Run cargo new --lib editio-pdf",
+        "Add editio-pdf to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-pdf crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["2.1"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-pdf && test -f editio-pdf/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.2",
+      "category": "technical",
+      "story": "Add printpdf dependency",
+      "steps": [
+        "Open Cargo.toml in editio-pdf",
+        "Add printpdf = \"0.6\" to [dependencies]"
+      ],
+      "acceptance": "printpdf dependency is added.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q printpdf editio-pdf/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.3",
+      "category": "technical",
+      "story": "Implement render_pdf() function",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement pub fn render_pdf(layout: &LayoutMetadata, content: &[Node]) -> Result<Vec<u8>, RenderError>"
+      ],
+      "acceptance": "render_pdf function is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.4",
+      "category": "technical",
+      "story": "Implement page setup",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement page setup logic using LayoutMetadata"
+      ],
+      "acceptance": "Page setup logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_page_setup -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.5",
+      "category": "technical",
+      "story": "Implement text rendering with wrap zones",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement text rendering logic respecting WrapZones"
+      ],
+      "acceptance": "Text rendering logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_text_rendering -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.6",
+      "category": "technical",
+      "story": "Implement figure placement",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement figure placement logic using Float positions"
+      ],
+      "acceptance": "Figure placement logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_figure_placement -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.7",
+      "category": "technical",
+      "story": "Implement font embedding",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement font embedding logic for standard fonts"
+      ],
+      "acceptance": "Font embedding logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_font_embedding -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.8",
+      "category": "technical",
+      "story": "Implement headers/footers",
+      "steps": [
+        "Open src/lib.rs in editio-pdf",
+        "Implement header and footer rendering logic"
+      ],
+      "acceptance": "Headers/footers are rendered correctly.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_headers_footers -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "3.9",
+      "category": "technical",
+      "story": "Add PDF rendering tests",
+      "steps": [
+        "Create tests/pdf_tests.rs",
+        "Add tests for PDF generation"
+      ],
+      "acceptance": "PDF rendering tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.8"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.1",
+      "category": "technical",
+      "story": "Create editio-ref crate structure",
+      "steps": [
+        "Run cargo new --lib editio-ref",
+        "Add editio-ref to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-ref crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-ref && test -f editio-ref/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.2",
+      "category": "technical",
+      "story": "Define Label struct",
+      "steps": [
+        "Open src/lib.rs in editio-ref",
+        "Define pub struct Label { pub id: String, pub node: Node, pub type: LabelType }"
+      ],
+      "acceptance": "Label struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Label' editio-ref/src/lib.rs && cargo build --lib -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.3",
+      "category": "technical",
+      "story": "Define Reference struct",
+      "steps": [
+        "Open src/lib.rs in editio-ref",
+        "Define pub struct Reference { pub id: String, pub type: LabelType }"
+      ],
+      "acceptance": "Reference struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.2"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Reference' editio-ref/src/lib.rs && cargo build --lib -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.4",
+      "category": "technical",
+      "story": "Implement label tracking system",
+      "steps": [
+        "Open src/lib.rs in editio-ref",
+        "Implement label tracking logic to collect all labels"
+      ],
+      "acceptance": "Label tracking system is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_label_tracking -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.5",
+      "category": "technical",
+      "story": "Implement reference syntax parsing",
+      "steps": [
+        "Open src/lib.rs in editio-ref",
+        "Implement parsing for reference syntax like @fig:1"
+      ],
+      "acceptance": "Reference syntax parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_ref_parsing -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.6",
+      "category": "technical",
+      "story": "Implement reference resolution",
+      "steps": [
+        "Open src/lib.rs in editio-ref",
+        "Implement logic to resolve references to labels"
+      ],
+      "acceptance": "Reference resolution logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_ref_resolution -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.7",
+      "category": "technical",
+      "story": "Add figure reference tests",
+      "steps": [
+        "Create tests/ref_tests.rs",
+        "Add tests for figure references"
+      ],
+      "acceptance": "Figure reference tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_fig_ref -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "4.8",
+      "category": "technical",
+      "story": "Add table reference tests",
+      "steps": [
+        "Create tests/ref_tests.rs",
+        "Add tests for table references"
+      ],
+      "acceptance": "Table reference tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["4.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_tab_ref -p editio-ref",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.1",
+      "category": "technical",
+      "story": "Create editio-academic crate structure",
+      "steps": [
+        "Run cargo new --lib editio-academic",
+        "Add editio-academic to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-academic crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-academic && test -f editio-academic/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.2",
+      "category": "technical",
+      "story": "Define Theorem struct",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Define pub struct Theorem { pub title: String, pub content: Vec<Inline> }"
+      ],
+      "acceptance": "Theorem struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Theorem' editio-academic/src/lib.rs && cargo build --lib -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.3",
+      "category": "technical",
+      "story": "Define Proof struct",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Define pub struct Proof { pub content: Vec<Inline> }"
+      ],
+      "acceptance": "Proof struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.2"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Proof' editio-academic/src/lib.rs && cargo build --lib -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.4",
+      "category": "technical",
+      "story": "Define Algorithm struct",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Define pub struct Algorithm { pub title: String, pub steps: Vec<String> }"
+      ],
+      "acceptance": "Algorithm struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.3"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct Algorithm' editio-academic/src/lib.rs && cargo build --lib -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.5",
+      "category": "technical",
+      "story": "Implement theorem environment parsing",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Implement parsing for theorem environments"
+      ],
+      "acceptance": "Theorem environment parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_theorem_parsing -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.6",
+      "category": "technical",
+      "story": "Implement proof environment parsing",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Implement parsing for proof environments"
+      ],
+      "acceptance": "Proof environment parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_proof_parsing -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.7",
+      "category": "technical",
+      "story": "Implement algorithm listing parsing",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Implement parsing for algorithm listings"
+      ],
+      "acceptance": "Algorithm listing parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_algo_parsing -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "5.8",
+      "category": "technical",
+      "story": "Implement code listing parsing",
+      "steps": [
+        "Open src/lib.rs in editio-academic",
+        "Implement parsing for code listings with captions"
+      ],
+      "acceptance": "Code listing parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["5.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_code_parsing -p editio-academic",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.1",
+      "category": "technical",
+      "story": "Create editio-math crate structure",
+      "steps": [
+        "Run cargo new --lib editio-math",
+        "Add editio-math to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-math crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-math && test -f editio-math/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.2",
+      "category": "technical",
+      "story": "Implement math preprocessor",
+      "steps": [
+        "Open src/lib.rs in editio-math",
+        "Implement preprocessor to extract math content"
+      ],
+      "acceptance": "Math preprocessor is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.1"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.3",
+      "category": "technical",
+      "story": "Implement inline math parsing",
+      "steps": [
+        "Open src/lib.rs in editio-math",
+        "Implement parsing for inline math like $x^2$"
+      ],
+      "acceptance": "Inline math parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_inline_math -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.4",
+      "category": "technical",
+      "story": "Implement display math parsing",
+      "steps": [
+        "Open src/lib.rs in editio-math",
+        "Implement parsing for display math like $$x^2$$"
+      ],
+      "acceptance": "Display math parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_display_math -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.5",
+      "category": "technical",
+      "story": "Implement LaTeX syntax support",
+      "steps": [
+        "Open src/lib.rs in editio-math",
+        "Implement support for LaTeX syntax like \frac, \sum"
+      ],
+      "acceptance": "LaTeX syntax support is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_latex_syntax -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.6",
+      "category": "technical",
+      "story": "Add pdflatex dependency",
+      "steps": [
+        "Open Cargo.toml in editio-math",
+        "Add pdflatex dependency for rendering"
+      ],
+      "acceptance": "pdflatex dependency is added.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.5"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q pdflatex editio-math/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.7",
+      "category": "technical",
+      "story": "Implement pdflatex subprocess",
+      "steps": [
+        "Open src/lib.rs in editio-math",
+        "Implement subprocess to run pdflatex on math content"
+      ],
+      "acceptance": "pdflatex subprocess is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "6.8",
+      "category": "technical",
+      "story": "Add math rendering tests",
+      "steps": [
+        "Create tests/math_tests.rs",
+        "Add tests for math rendering"
+      ],
+      "acceptance": "Math rendering tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["6.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.1",
+      "category": "technical",
+      "story": "Create editio-bib crate structure",
+      "steps": [
+        "Run cargo new --lib editio-bib",
+        "Add editio-bib to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-bib crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-bib && test -f editio-bib/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.2",
+      "category": "technical",
+      "story": "Add BibTeX parser dependency",
+      "steps": [
+        "Open Cargo.toml in editio-bib",
+        "Add biblatex dependency for parsing"
+      ],
+      "acceptance": "BibTeX parser dependency is added.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q biblatex editio-bib/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.3",
+      "category": "technical",
+      "story": "Implement BibTeX parser",
+      "steps": [
+        "Open src/lib.rs in editio-bib",
+        "Implement parser to read .bib files"
+      ],
+      "acceptance": "BibTeX parser is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.4",
+      "category": "technical",
+      "story": "Implement citation parsing",
+      "steps": [
+        "Open src/lib.rs in editio-bib",
+        "Implement parsing for citations like [@smith2023]"
+      ],
+      "acceptance": "Citation parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_citation_parsing -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.5",
+      "category": "technical",
+      "story": "Define CitationStyle enum",
+      "steps": [
+        "Open src/lib.rs in editio-bib",
+        "Define pub enum CitationStyle { APA, MLA, Chicago, IEEE }"
+      ],
+      "acceptance": "CitationStyle enum is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.4"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'enum CitationStyle' editio-bib/src/lib.rs && cargo build --lib -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.6",
+      "category": "technical",
+      "story": "Implement APA style formatting",
+      "steps": [
+        "Open src/lib.rs in editio-bib",
+        "Implement APA citation formatting"
+      ],
+      "acceptance": "APA style formatting is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_apa_style -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.7",
+      "category": "technical",
+      "story": "Implement numeric style formatting",
+      "steps": [
+        "Open src/lib.rs in editio-bib",
+        "Implement numeric citation formatting"
+      ],
+      "acceptance": "Numeric style formatting is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_numeric_style -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "7.8",
+      "category": "technical",
+      "story": "Add bibliography tests",
+      "steps": [
+        "Create tests/bib_tests.rs",
+        "Add tests for bibliography generation"
+      ],
+      "acceptance": "Bibliography tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["7.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.1",
+      "category": "technical",
+      "story": "Create editio-figure crate structure",
+      "steps": [
+        "Run cargo new --lib editio-figure",
+        "Add editio-figure to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-figure crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-figure && test -f editio-figure/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.2",
+      "category": "technical",
+      "story": "Implement image parsing with YAML",
+      "steps": [
+        "Open src/lib.rs in editio-figure",
+        "Implement parsing for images with YAML attributes"
+      ],
+      "acceptance": "Image parsing with YAML is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["8.1"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-figure",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.3",
+      "category": "technical",
+      "story": "Implement figure numbering logic",
+      "steps": [
+        "Open src/lib.rs in editio-figure",
+        "Implement logic to number figures sequentially"
+      ],
+      "acceptance": "Figure numbering logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["8.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_figure_numbering -p editio-figure",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.4",
+      "category": "technical",
+      "story": "Implement caption rendering",
+      "steps": [
+        "Open src/lib.rs in editio-figure",
+        "Implement caption rendering logic"
+      ],
+      "acceptance": "Caption rendering is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["8.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_caption_rendering -p editio-figure",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.5",
+      "category": "technical",
+      "story": "Add figure cross-reference tests",
+      "steps": [
+        "Create tests/figure_tests.rs",
+        "Add tests for figure cross-references"
+      ],
+      "acceptance": "Figure cross-reference tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["8.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_fig_ref -p editio-figure",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "8.6",
+      "category": "technical",
+      "story": "Add image loading tests",
+      "steps": [
+        "Create tests/figure_tests.rs",
+        "Add tests for image loading"
+      ],
+      "acceptance": "Image loading tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["8.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_image_load -p editio-figure",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.1",
+      "category": "technical",
+      "story": "Create editio-table crate structure",
+      "steps": [
+        "Run cargo new --lib editio-table",
+        "Add editio-table to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-table crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-table && test -f editio-table/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.2",
+      "category": "technical",
+      "story": "Implement table parsing",
+      "steps": [
+        "Open src/lib.rs in editio-table",
+        "Implement parsing for markdown tables"
+      ],
+      "acceptance": "Table parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["9.1"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build --lib -p editio-table",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.3",
+      "category": "technical",
+      "story": "Implement table numbering logic",
+      "steps": [
+        "Open src/lib.rs in editio-table",
+        "Implement logic to number tables sequentially"
+      ],
+      "acceptance": "Table numbering logic is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["9.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_table_numbering -p editio-table",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.4",
+      "category": "technical",
+      "story": "Implement caption rendering",
+      "steps": [
+        "Open src/lib.rs in editio-table",
+        "Implement caption rendering logic"
+      ],
+      "acceptance": "Caption rendering is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["9.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_caption_rendering -p editio-table",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.5",
+      "category": "technical",
+      "story": "Add table cross-reference tests",
+      "steps": [
+        "Create tests/table_tests.rs",
+        "Add tests for table cross-references"
+      ],
+      "acceptance": "Table cross-reference tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["9.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_tab_ref -p editio-table",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "9.6",
+      "category": "technical",
+      "story": "Add column alignment tests",
+      "steps": [
+        "Create tests/table_tests.rs",
+        "Add tests for column alignment"
+      ],
+      "acceptance": "Column alignment tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["9.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_col_align -p editio-table",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.1",
+      "category": "technical",
+      "story": "Create editio-format crate structure",
+      "steps": [
+        "Run cargo new --lib editio-format",
+        "Add editio-format to workspace members in Cargo.toml"
+      ],
+      "acceptance": "editio-format crate directory and Cargo.toml exist.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.12"],
+      "blocks": [],
+      "verify": {
+        "command": "test -d editio-format && test -f editio-format/Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.2",
+      "category": "technical",
+      "story": "Define DocumentMetadata struct",
+      "steps": [
+        "Open src/lib.rs in editio-format",
+        "Define pub struct DocumentMetadata { pub title: String, pub author: String, ... }"
+      ],
+      "acceptance": "DocumentMetadata struct is defined.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.1"],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q 'struct DocumentMetadata' editio-format/src/lib.rs && cargo build --lib -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.3",
+      "category": "technical",
+      "story": "Implement YAML front matter parsing",
+      "steps": [
+        "Open src/lib.rs in editio-format",
+        "Implement parsing for YAML front matter"
+      ],
+      "acceptance": "YAML front matter parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.2"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_yaml_parsing -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.4",
+      "category": "technical",
+      "story": "Implement page size parsing",
+      "steps": [
+        "Open src/lib.rs in editio-format",
+        "Implement parsing for page size (A4, Letter)"
+      ],
+      "acceptance": "Page size parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.3"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_page_size -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.5",
+      "category": "technical",
+      "story": "Implement margins parsing",
+      "steps": [
+        "Open src/lib.rs in editio-format",
+        "Implement parsing for margins"
+      ],
+      "acceptance": "Margins parsing is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.4"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_margins -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.6",
+      "category": "technical",
+      "story": "Implement headers/footers rendering",
+      "steps": [
+        "Open src/lib.rs in editio-format",
+        "Implement header and footer rendering logic"
+      ],
+      "acceptance": "Headers/footers rendering is implemented.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.5"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test test_headers_footers -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "10.7",
+      "category": "technical",
+      "story": "Add format tests",
+      "steps": [
+        "Create tests/format_tests.rs",
+        "Add tests for document formatting"
+      ],
+      "acceptance": "Format tests pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["10.6"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo test -p editio-format",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
+    },
+    {
+      "id": "11.1",
+      "category": "technical",
+      "story": "Create main crate structure",
+      "steps": [
+        "Create main crate",
+        "Add dependencies to Cargo.toml"
+      ],
+      "acceptance": "Main crate structure is created.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["3.9", "7.8", "8.6", "9.6", "10.7"],
+      "blocks": [],
+      "verify": {
+        "command": "cargo build",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:00:00Z",
+      "updatedAt": "2026-02-04T16:00:00Z"
     }
   ]
 }
