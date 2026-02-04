@@ -1,0 +1,6 @@
+[workspace]
+members = ["crates/core", "crates/utils"]
+
+[workspace.dependencies]
+# Example workspace-level dependency
+serde = "1.0"
