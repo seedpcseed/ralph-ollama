@@ -26,22 +26,28 @@ invoke_claude_cli() {
         return 1
     fi
     
-    # Build Claude CLI command
-    # -p, --print: Non-interactive mode for automation
-    local claude_cmd=(
-        claude
-        -p
-        "$prompt"
-    )
+    # Build enhanced prompt with file contents (since --file requires session token)
+    local enhanced_prompt="$prompt"
     
-    # Add files if provided
+    # Include file contents in prompt if provided
     if [[ ${#files[@]} -gt 0 ]]; then
+        enhanced_prompt+="\n\n## Files:\n"
         for file in "${files[@]}"; do
             if [[ -f "$file" ]]; then
-                claude_cmd+=(--file "$file")
+                enhanced_prompt+="\n### File: $file\n\`\`\`\n$(cat "$file")\n\`\`\`\n"
             fi
         done
     fi
+    
+    # Build Claude CLI command
+    # -p, --print: Non-interactive mode for automation
+    # Note: We don't use --file because it requires CLAUDE_CODE_SESSION_ACCESS_TOKEN
+    # Instead, we include file contents directly in the prompt
+    local claude_cmd=(
+        claude
+        -p
+        "$enhanced_prompt"
+    )
     
     # Execute and capture output
     local output
