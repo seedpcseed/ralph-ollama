@@ -114,7 +114,7 @@ create_conversion_prompt_v2() {
     cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 # PRD to Tasks Conversion (v2.0 Format)
 
-You are running inside Cursor Agent (or Aider). The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them. You MUST use your edit capability to change the files. Do not say you cannot access files. Do not reply with only examples in code blocks; apply the changes by editing the files.
+You are running inside Cursor Agent. The files prd.md, prd.json and requirements.md are already in this chat—you have full access to them. You MUST use your edit capability to change the files. Do not say you cannot access files. Do not reply with only examples in code blocks; apply the changes by editing the files.
 
 ## Your task
 1. Read projects/$project_name/prd.md (it is in the chat) to understand ALL requirements.
@@ -236,7 +236,7 @@ Categories: technical = DB/API/backend/schemas/infrastructure; functional = busi
 - **File checks**: grep -q 'function_name' file.rs, test -f path/to/file
 
 ## Edit format (required)
-You are using Cursor Agent's (or Aider's) edit format. To edit a file you MUST use this exact format:
+You are using Cursor Agent's edit format. To edit a file you MUST use this exact format:
 - One line with ONLY the file path (no blank line after it).
 - The very next line must be exactly \`\`\` (triple backticks, no word after them).
 - Then the complete file contents.
@@ -301,7 +301,7 @@ PROMPTEOF
 create_requirements_fill_prompt() {
     local project_name=$1
     cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
-You are running inside Cursor Agent (or Aider). The files prd.md and requirements.md are in this chat. You MUST edit requirements.md.
+You are running inside Cursor Agent. The files prd.md and requirements.md are in this chat. You MUST edit requirements.md.
 
 TASK: Replace the contents of projects/$project_name/requirements.md with technical specifications extracted from the PRD. Include: architecture, data models, APIs, UI/UX constraints, performance and security requirements, tech stack, and any other technical details from the PRD. Write in clear markdown sections.
 
@@ -321,7 +321,7 @@ is_requirements_placeholder() {
     return 1
 }
 
-# Invoke Cursor Agent or Aider fallback
+# Invoke Cursor Agent (no fallback)
 invoke_agent() {
     local prompt_file=$1
     local output_file=$2
@@ -329,34 +329,21 @@ invoke_agent() {
     shift 3
     local files=("$@")
     
-    # Try Cursor Agent first
-    if check_cursor_agent 2>/dev/null; then
-        log "INFO" "Using Cursor Agent"
-        if invoke_cursor_agent_file "$prompt_file" "${files[@]}" > "$output_file" 2>&1; then
-            return 0
-        else
-            log "WARN" "Cursor Agent failed, falling back to Aider"
-        fi
+    # Check if Cursor Agent is available
+    if ! check_cursor_agent 2>/dev/null; then
+        log "ERROR" "Cursor Agent not available. Install from: curl https://cursor.com/install -fsS | bash"
+        log "ERROR" "Or ensure 'agent' command is in PATH"
+        return 1
     fi
     
-    # Fallback to Aider
-    log "INFO" "Using Aider (fallback)"
-    local aider_cmd=(
-        aider
-        "${files[@]}"
-        --model "$model"
-        --yes
-        --no-stream
-        --no-show-model-warnings
-        --message-file "$prompt_file"
-    )
-    
-    if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
-        aider_cmd+=(--auto-commits)
+    # Invoke Cursor Agent
+    log "INFO" "Using Cursor Agent"
+    if invoke_cursor_agent_file "$prompt_file" "${files[@]}" > "$output_file" 2>&1; then
+        return 0
+    else
+        log "ERROR" "Cursor Agent execution failed. Check log: $output_file"
+        return 1
     fi
-    
-    "${aider_cmd[@]}" > "$output_file" 2>&1
-    return $?
 }
 
 # Normalize prd.json v2.0 format

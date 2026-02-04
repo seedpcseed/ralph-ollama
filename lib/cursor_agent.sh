@@ -40,13 +40,14 @@ invoke_cursor_agent() {
     # Try agent command first (this is the Cursor Agent CLI)
     if command -v agent >/dev/null 2>&1; then
         log "INFO" "Using Cursor Agent CLI (agent command)"
-        # Headless mode with print output and force flag for file modifications
+        # Headless mode with print output
         # -p, --print: Non-interactive mode for automation
-        # --force: Allow file modifications in scripts
+        # Note: --force flag may not exist, so we don't use it
         if [[ ${#files[@]} -gt 0 ]]; then
-            agent -p --force "$prompt" "${files[@]}"
+            # Pass files as arguments after the prompt
+            agent -p "$prompt" "${files[@]}" 2>&1
         else
-            agent -p --force "$prompt"
+            agent -p "$prompt" 2>&1
         fi
         return $?
     fi
@@ -55,15 +56,15 @@ invoke_cursor_agent() {
     if cursor agent --help >/dev/null 2>&1; then
         log "INFO" "Using 'cursor agent' command"
         if [[ ${#files[@]} -gt 0 ]]; then
-            cursor agent -p --force "$prompt" "${files[@]}"
+            cursor agent -p "$prompt" "${files[@]}" 2>&1
         else
-            cursor agent -p --force "$prompt"
+            cursor agent -p "$prompt" 2>&1
         fi
         return $?
     fi
     
     # If no agent command, log warning and return error
-    log "ERROR" "Cursor Agent not available. Consider using Aider or local models instead."
+    log "ERROR" "Cursor Agent not available. Install from: curl https://cursor.com/install -fsS | bash"
     return 1
 }
 

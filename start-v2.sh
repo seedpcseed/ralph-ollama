@@ -156,7 +156,7 @@ $(echo "$relevant_files" | sed 's/^/- /')
 4. If verification fails, fix errors and retry
 5. Only mark complete when verification passes
 
-Use Cursor Agent's (or Aider's) edit format for file changes.
+Use Cursor Agent's edit format for file changes.
 PROMPTEOF
 }
 
@@ -538,35 +538,27 @@ main_loop() {
         timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
         local output_file="$project_dir/logs/loop-v2_${timestamp}_story_${story_id}.log"
         
-        # Invoke agent (Cursor Agent or Aider fallback)
-        log "INFO" "Invoking agent..."
+        # Invoke Cursor Agent (no fallback)
+        log "INFO" "Invoking Cursor Agent..."
         local agent_success=false
         local files_modified=0
+        
+        # Check if Cursor Agent is available
+        if ! check_cursor_agent 2>/dev/null; then
+            log "ERROR" "Cursor Agent not available. Install from: curl https://cursor.com/install -fsS | bash"
+            log "ERROR" "Or ensure 'agent' command is in PATH"
+            update_story_status "$project_dir/prd.json" "$story_id" "failed"
+            record_loop_result "$project_dir" "$loop_count" 0 true 0 "Cursor Agent not available" 2>/dev/null || true
+            continue
+        fi
         
         if invoke_cursor_agent_file "$prompt_file" 2>&1 | tee "$output_file"; then
             agent_success=true
             # Count modified files (simplified - would need to parse agent output)
             files_modified=$(git -C "$project_dir" diff --name-only 2>/dev/null | wc -l || echo "0")
         else
-            # Fallback to Aider
-            log "WARN" "Cursor Agent failed, trying Aider..."
-            local aider_cmd=(
-                aider
-                --model "$current_model"
-                --yes
-                --no-stream
-                --no-show-model-warnings
-                --message-file "$prompt_file"
-            )
-            
-            if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
-                aider_cmd+=(--auto-commits)
-            fi
-            
-            if "${aider_cmd[@]}" 2>&1 | tee "$output_file"; then
-                agent_success=true
-                files_modified=$(git -C "$project_dir" diff --name-only 2>/dev/null | wc -l || echo "0")
-            fi
+            log "ERROR" "Cursor Agent execution failed. Check log: $output_file"
+            agent_success=false
         fi
         
         rm -f "$prompt_file"
