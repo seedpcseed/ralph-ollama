@@ -2,27 +2,23 @@ pub mod bibliography;
 
 // ... other code ...
 
-pub struct Figure {
-    // TODO: Implement figure structure here
+pub struct Document {
+    // TODO: Implement document structure here
 }
 
-pub struct Table {
-    // TODO: Implement table structure here
-}
-
-impl Editio  {
-    pub fn new() -> Self {
-        // ... other initialization ...
-        
-        let bib = bibliography::Bibliography::new();
-
-        Self {
-            // ... other fields ...
-            figures: Vec::new(),
-            tables: Vec::new(),
-            bibliography: bib,
-        }
+impl Document  {
+    pub fn new()  -> Self  {
+        // TODO: Initialize document
+        unimplemented!();
     }
 
-    // ... other methods ...
+    pub fn parse_frontmatter(&self, yaml: &str)  {
+        // TODO: Implement YAML front matter parser
+        unimplemented!();
+    }
+
+    pub fn apply_page_settings(&self, settings: &str)  {
+        // TODO: Apply page settings (margins, page size, font size)
+        unimplemented!();
+    }
 }
