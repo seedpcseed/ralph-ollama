@@ -1,134 +1,134 @@
 {
-  "branchName": "ralph/editio",
-  "userStories": [
-    {
-      "id": "1.1",
-      "category": "technical",
-      "story": "Create the core library for orchestrating everything",
-      "steps": [
-        "Create a new Rust crate named `editio-core`"
-      ],
-      "acceptance": "The `editio-core` crate is created and contains all necessary functions.",
-      "priority": 1,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.2",
-      "category": "technical",
-      "story": "Implement a markdown parser using `pulldown-cmark`",
-      "steps": [
-        "Integrate `pulldown-cmark` into the project",
-        "Create an AST builder"
-      ],
-      "acceptance": "The markdown parser can parse CommonMark and GitHub Flavored Markdown.",
-      "priority": 2,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.3",
-      "category": "technical",
-      "story": "Design a two-pass layout engine with CSS-style float algorithm",
-      "steps": [
-        "Implement the layout calculation pass",
-        "Implement the wrap zone calculations"
-      ],
-      "acceptance": "The layout engine can calculate text flow and figure wrapping.",
-      "priority": 3,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.4",
-      "category": "technical",
-      "story": "Implement PDF generation using `printpdf`",
-      "steps": [
-        "Integrate `printpdf` into the project",
-        "Create a PDF writer"
-      ],
-      "acceptance": "The PDF generator can render AST with layout data.",
-      "priority": 4,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.5",
-      "category": "technical",
-      "story": "Implement basic math support using LaTeX syntax and `pdflatex`",
-      "steps": [
-        "Parse LaTeX math syntax",
-        "Shell out to `pdflatex` for math"
-      ],
-      "acceptance": "Math can be parsed, rendered in PDF, and cross-referenced.",
-      "priority": 5,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.6",
-      "category": "technical",
-      "story": "Implement a bibliography system using BibTeX parsing",
-      "steps": [
-        "Create a BibTeX parser",
-        "Implement citation processing"
-      ],
-      "acceptance": "Bibliographies can be parsed and resolved.",
-      "priority": 6,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.7",
-      "category": "technical",
-      "story": "Implement figure and table support with automatic numbering",
-      "steps": [
-        "Parse YAML-style syntax for figures and tables",
-        "Create a layout representation"
-      ],
-      "acceptance": "Figures and tables can be parsed, rendered in PDF, and cross-referenced.",
-      "priority": 7,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.8",
-      "category": "technical",
-      "story": "Implement basic document formatting with YAML front matter parsing",
-      "steps": [
-        "Parse YAML front matter",
-        "Apply margins and page size"
-      ],
-      "acceptance": "Document metadata can be parsed, and formatting applied.",
-      "priority": 8,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.9",
-      "category": "technical",
-      "story": "Design the plugin system API crate",
-      "steps": [
-        "Define plugin traits/interfaces",
-        "Document plugin API"
-      ],
-      "acceptance": "The `editio-plugin` crate is created and documented.",
-      "priority": 9,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "1.10",
-      "category": "technical",
-      "story": "Implement CLI commands for compiling and checking syntax",
-      "steps": [
-        "Create CLI structure",
-        "Implement compile and check commands"
-      ],
-      "acceptance": "The `editio` command-line tool can compile documents and validate syntax.",
-      "priority": 10,
-      "passes": false,
-      "notes": ""
-    }
-  ]
+   "branchName": "ralph/editio",
+   "userStories": [
+     {
+       "id": "1.1",
+       "category": "technical",
+       "story": "Create the core library for orchestrating everything",
+       "steps": [
+         "Create a new Rust crate named `editio-core`"
+       ],
+       "acceptance": "The `editio-core` crate is created and contains all necessary functions.",
+       "priority": 1,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.2",
+       "category": "technical",
+       "story": "Implement a markdown parser using `pulldown-cmark`",
+       "steps": [
+         "Integrate `pulldown-cmark` into the project",
+         "Create an AST builder"
+       ],
+       "acceptance": "The markdown parser can parse CommonMark and GitHub Flavored Markdown.",
+       "priority": 2,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.3",
+       "category": "technical",
+       "story": "Design a two-pass layout engine with CSS-style float algorithm",
+       "steps": [
+         "Implement the layout calculation pass",
+         "Implement the wrap zone calculations"
+       ],
+       "acceptance": "The layout engine can calculate text flow and figure wrapping.",
+       "priority": 3,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.4",
+       "category": "technical",
+       "story": "Implement PDF generation using `printpdf`",
+       "steps": [
+         "Integrate `printpdf` into the project",
+         "Create a PDF writer"
+       ],
+       "acceptance": "The PDF generator can render AST with layout data.",
+       "priority": 4,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.5",
+       "category": "technical",
+       "story": "Implement basic math support using LaTeX syntax and `pdflatex`",
+       "steps": [
+         "Parse LaTeX math syntax",
+         "Shell out to `pdflatex` for math"
+       ],
+       "acceptance": "Math can be parsed, rendered in PDF, and cross-referenced.",
+       "priority": 5,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.6",
+       "category": "technical",
+       "story": "Implement a bibliography system using BibTeX parsing",
+       "steps": [
+         "Create a BibTeX parser",
+         "Implement citation processing"
+       ],
+       "acceptance": "Bibliographies can be parsed and resolved.",
+       "priority": 6,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.7",
+       "category": "technical",
+       "story": "Implement figure and table support with automatic numbering",
+       "steps": [
+         "Parse YAML-style syntax for figures and tables",
+         "Create a layout representation"
+       ],
+       "acceptance": "Figures and tables can be parsed, rendered in PDF, and cross-referenced.",
+       "priority": 7,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.8",
+       "category": "technical",
+       "story": "Implement basic document formatting with YAML front matter parsing",
+       "steps": [
+         "Parse YAML front matter",
+         "Apply margins and page size"
+       ],
+       "acceptance": "Document metadata can be parsed, and formatting applied.",
+       "priority": 8,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.9",
+       "category": "technical",
+       "story": "Design the plugin system API crate",
+       "steps": [
+         "Define plugin traits/interfaces",
+         "Document plugin API"
+       ],
+       "acceptance": "The `editio-plugin` crate is created and documented.",
+       "priority": 9,
+       "passes": false,
+       "notes": ""
+     },
+     {
+       "id": "1.10",
+       "category": "technical",
+       "story": "Implement CLI commands for compiling and checking syntax",
+       "steps": [
+         "Create CLI structure",
+         "Implement compile and check commands"
+       ],
+       "acceptance": "The `editio` command-line tool can compile documents and validate syntax.",
+       "priority": 10,
+       "passes": false,
+       "notes": ""
+     }
+   ]
 }
