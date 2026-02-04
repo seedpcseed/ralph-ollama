@@ -14,15 +14,17 @@ check_cursor_cli() {
 
 # Check if Cursor Agent command exists
 check_cursor_agent() {
-    # Check for 'agent' command (may be separate from cursor CLI)
+    # Check for 'agent' command (this is the Cursor Agent CLI)
     if command -v agent >/dev/null 2>&1; then
+        log "INFO" "Cursor Agent CLI found: $(which agent)"
         return 0
     else
         # Check if cursor has agent subcommand
         if cursor agent --help >/dev/null 2>&1; then
+            log "INFO" "Cursor Agent found via 'cursor agent' subcommand"
             return 0
         else
-            log "WARN" "Cursor Agent command not found. May need to use alternative approach."
+            log "WARN" "Cursor Agent command not found. Install from: curl https://cursor.com/install -fsS | bash"
             return 1
         fi
     fi
@@ -35,22 +37,28 @@ invoke_cursor_agent() {
     shift
     local files=("$@")
     
-    if ! check_cursor_cli; then
-        return 1
-    fi
-    
-    # Try agent command first
+    # Try agent command first (this is the Cursor Agent CLI)
     if command -v agent >/dev/null 2>&1; then
-        log "INFO" "Using 'agent' command"
-        # Headless mode with print output
-        agent -p --force "$prompt" "${files[@]}"
+        log "INFO" "Using Cursor Agent CLI (agent command)"
+        # Headless mode with print output and force flag for file modifications
+        # -p, --print: Non-interactive mode for automation
+        # --force: Allow file modifications in scripts
+        if [[ ${#files[@]} -gt 0 ]]; then
+            agent -p --force "$prompt" "${files[@]}"
+        else
+            agent -p --force "$prompt"
+        fi
         return $?
     fi
     
-    # Fallback: Try cursor with agent subcommand
+    # Fallback: Try cursor with agent subcommand (if exists)
     if cursor agent --help >/dev/null 2>&1; then
         log "INFO" "Using 'cursor agent' command"
-        cursor agent -p --force "$prompt" "${files[@]}"
+        if [[ ${#files[@]} -gt 0 ]]; then
+            cursor agent -p --force "$prompt" "${files[@]}"
+        else
+            cursor agent -p --force "$prompt"
+        fi
         return $?
     fi
     
