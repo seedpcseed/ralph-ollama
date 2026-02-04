@@ -1,0 +1,8 @@
+[package]
+name = "editio"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+editio-core = { path = "../editio-core" }
+clap = { workspace = true }
