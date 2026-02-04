@@ -1750,7 +1750,7 @@
       "story": "Implement LaTeX syntax support",
       "steps": [
         "Open src/lib.rs in editio-math",
-        "Implement support for LaTeX syntax like \frac, \sum"
+        "Implement support for LaTeX syntax like \\frac, \\sum"
       ],
       "acceptance": "LaTeX syntax support is implemented.",
       "priority": 1,

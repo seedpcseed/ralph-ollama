@@ -431,12 +431,47 @@ invoke_agent() {
             aider_cmd+=(--auto-commits)
         fi
         
-        # Run Aider and capture output
-        if "${aider_cmd[@]}" > "$output_file" 2>&1; then
-            return 0
+        # Use timeout to prevent hanging (default 20 minutes from config.sh)
+        local timeout_minutes="${AGENT_TIMEOUT_MINUTES:-20}"
+        local timeout_seconds=$((timeout_minutes * 60))
+        
+        # Check for timeout command
+        local timeout_cmd=""
+        if command -v timeout >/dev/null 2>&1; then
+            timeout_cmd="timeout"
+        elif command -v gtimeout >/dev/null 2>&1; then
+            timeout_cmd="gtimeout"
+        fi
+        
+        # Run Aider with timeout if available
+        if [[ -n "$timeout_cmd" ]]; then
+            log "INFO" "Running Aider with ${timeout_minutes} minute timeout..."
+            if $timeout_cmd ${timeout_seconds}s "${aider_cmd[@]}" > "$output_file" 2>&1; then
+                return 0
+            else
+                local exit_code=$?
+                if [[ $exit_code -eq 124 ]]; then
+                    log "WARN" "Aider timed out after ${timeout_minutes} minutes"
+                    log "INFO" "Checking if prd.json was written before timeout..."
+                    # Check if prd.json exists and has content
+                    if [[ -f "${files[0]}" ]] && jq -e '.userStories | length > 0' "${files[0]}" >/dev/null 2>&1; then
+                        log "SUCCESS" "prd.json was written before timeout - extraction may recover it"
+                        return 0  # Consider it success if file was written
+                    fi
+                fi
+                log "ERROR" "Aider execution failed (exit code: $exit_code). Check log: $output_file"
+                return 1
+            fi
         else
-            log "ERROR" "Aider execution failed. Check log: $output_file"
-            return 1
+            # No timeout command available - warn user
+            log "WARN" "No timeout command available - Aider may hang indefinitely"
+            log "WARN" "Install timeout: sudo apt install coreutils (Linux) or brew install coreutils (macOS)"
+            if "${aider_cmd[@]}" > "$output_file" 2>&1; then
+                return 0
+            else
+                log "ERROR" "Aider execution failed. Check log: $output_file"
+                return 1
+            fi
         fi
     fi
     
