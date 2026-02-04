@@ -1,39 +1,37 @@
-// entire file content 
 {
-      "version": "2.0",
-      "branchName": "ralph/editio",
-      "createdAt": "2023-04-15T12:00:00Z",
-      "updatedAt": "2026-02-04T14:14:03Z",
-      "userStories": [
-        {
-          "id": "1.1",
-          "category": "technical",
-          "story": "Add pulldown-cmark dependency to Cargo.toml",
-          "steps": [
-            "Open Cargo.toml in a text editor"
-          ],
-          "acceptance": "RUN 'grep -q pulldown-cmark Cargo.toml' must pass.",
-          "priority": 1,
-          "status": "pending",
-          "progress": 0,
-          "lastAttempt": null,
-          "attemptCount": 0,
-          "dependsOn": [],
-          "blocks": [],
-          "verify": {
-            "command": "grep -q pulldown-cmark Cargo.toml",
-            "lastRun": null,
-            "lastResult": "not_run",
-            "expectedResult": "pass"
-          },
-          "files": [],
-          "tests": [],
-          "errors": [],
-          "notes": "",
-          "createdAt": "2023-04-15T12:00:00Z",
-          "updatedAt": "2026-02-04T14:14:03Z"
-        },
-        //   ... rest of the file content …
-      ]
+  "version": "2.0",
+  "branchName": "ralph/editio",
+  "createdAt": "2026-02-04T14:56:17Z",
+  "updatedAt": "2026-02-04T15:24:37Z",
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Add pulldown-cmark dependency to Cargo.toml",
+      "steps": [
+        "Open Cargo.toml",
+        "Add pulldown-cmark = \"0.9\" to [dependencies]"
+      ],
+      "acceptance": "Cargo.toml includes pulldown-cmark dependency.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": [],
+      "blocks": [],
+      "verify": {
+        "command": "grep -q puldown-cmark Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T14:56:17Z",
+      "updatedAt": "2026-02-04T15:24:37Z"
     }
-//     ... goes in between
+  ]
+}
