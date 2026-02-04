@@ -118,7 +118,28 @@ Core functionality for Ralph 2.0 with Cursor Agent and verification loop.
 
 ## 5. Technical Architecture
 
-### 5.1 Core Components
+### 5.1 Data Model (Enhanced Schema)
+
+**Decision**: Use Option 4 - Hybrid Approach with enhanced JSON schema.
+
+**Files**:
+- `prd.json` - Enhanced story definitions (v2.0 schema)
+- `progress.json` - Structured progress tracking (NEW)
+- `verification-results.json` - Verification history (NEW)
+- `file-mapping.json` - File-to-story relationships (NEW)
+- `requirements.md` - Technical specs (unchanged)
+
+**Key Enhancements**:
+- Status tracking: `complete`, `in_progress`, `blocked`, `failed`, `pending`
+- Progress percentage: 0-100 (not just binary)
+- Dependency tracking: `dependsOn` and `blocks` arrays
+- Verification history: Track all verification attempts
+- File mapping: Know which files relate to which stories
+- Error tracking: Structured error history
+
+See `ENHANCED-SCHEMA-DESIGN.md` for complete schema specification.
+
+### 5.2 Core Components
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -235,47 +256,65 @@ if attempt >= max_attempts:
 
 ### Phase 1: Proof of Concept (Days 1-2)
 
-**Goal**: Validate Cursor Agent + MCP approach
+**Goal**: Validate Cursor Agent + MCP approach and enhanced data model
 
 1. **Research & Setup**
    - [ ] Research Cursor Agent invocation methods
    - [ ] Set up MCP server/tools
    - [ ] Test Cursor Agent with simple task
 
-2. **convert-v2.sh Prototype**
+2. **Enhanced Schema Design**
+   - [ ] Finalize enhanced schema (see ENHANCED-SCHEMA-DESIGN.md)
+   - [ ] Create migration script (migrate-v1-to-v2.sh)
+   - [ ] Test migration with existing projects
+
+3. **convert-v2.sh Prototype**
    - [ ] Create basic convert-v2.sh using Cursor Agent
+   - [ ] Generate v2.0 format prd.json with enhanced fields
    - [ ] Test PRD → prd.json conversion
    - [ ] Compare quality with current convert.sh
 
-3. **Validation**
+4. **Validation**
    - [ ] Test with editio PRD
    - [ ] Verify story count (should be 80-120+)
    - [ ] Verify story granularity
+   - [ ] Verify enhanced schema fields
 
-**Deliverable**: Working convert-v2.sh that generates better stories
+**Deliverable**: Working convert-v2.sh that generates v2.0 format stories
 
 ### Phase 2: Core Loop Refactor (Days 3-7)
 
-**Goal**: Implement start-v2.sh with verification loop
+**Goal**: Implement start-v2.sh with verification loop and enhanced data model
 
-1. **start-v2.sh Implementation**
+1. **Data Model Library**
+   - [ ] Create lib/data-model.sh with API functions
+   - [ ] Implement story management functions
+   - [ ] Implement progress tracking functions
+   - [ ] Implement verification tracking functions
+   - [ ] Implement file mapping functions
+
+2. **start-v2.sh Implementation**
    - [ ] Create basic loop structure
-   - [ ] Implement story selection
-   - [ ] Implement context building
+   - [ ] Implement story selection (with dependency checking)
+   - [ ] Implement context building (using file-mapping.json)
    - [ ] Implement model selection logic
+   - [ ] Update story status/progress tracking
 
-2. **Cursor Agent Integration**
+3. **Cursor Agent Integration**
    - [ ] Integrate Cursor Agent for code editing
    - [ ] Use MCP tools for file operations
    - [ ] Use MCP tools for git operations
+   - [ ] Update file-mapping.json after edits
 
-3. **Verification Loop**
+4. **Verification Loop**
    - [ ] Implement compilation check
    - [ ] Implement test execution
    - [ ] Implement story-specific verification
+   - [ ] Record results in verification-results.json
    - [ ] Implement error feedback loop
+   - [ ] Update progress.json with attempts
 
-**Deliverable**: Working start-v2.sh with verification
+**Deliverable**: Working start-v2.sh with verification and enhanced data model
 
 ### Phase 3: MCP Integration (Days 8-10)
 
@@ -360,17 +399,27 @@ if attempt >= max_attempts:
 ralph-ollama/
 ├── convert-v2.sh          # New conversion script
 ├── start-v2.sh            # New main loop script
+├── migrate-v1-to-v2.sh   # Migration script for existing projects
 ├── lib/
 │   ├── cursor_agent.sh   # Cursor Agent integration
 │   ├── mcp_tools.sh      # MCP tool wrappers
 │   ├── verification.sh    # Verification loop logic
-│   └── model_selection.sh # Model selection logic
+│   ├── model_selection.sh # Model selection logic
+│   └── data-model.sh     # Enhanced data model API functions
 ├── mcp/
 │   ├── server.py         # MCP server implementation
 │   └── tools/            # Custom MCP tools
 ├── tests/
 │   └── editio-prd.md     # Test PRD (kept from main)
+├── examples/
+│   └── enhanced-schema/   # Example v2.0 schema files
 └── projects/             # Existing project structure
+    └── <project-name>/
+        ├── prd.json              # Enhanced (v2.0)
+        ├── progress.json         # NEW
+        ├── verification-results.json  # NEW
+        ├── file-mapping.json     # NEW
+        └── requirements.md       # Unchanged
 ```
 
 ### 7.3 Backward Compatibility
