@@ -9,7 +9,7 @@ pub fn parse(markdown: &str) -> Vec<Node>  {
         match event  {
             // ... existing matches ...
             
-            Event::Start(_start_data) => {   // Add this block to handle paragraph events
+            Event::Start(_start_data) => {   // Add this block to handle code block events
                 let mut text = String::new();
                 loop  {
                     match parser.next()  {
@@ -17,7 +17,7 @@ pub fn parse(markdown: &str) -> Vec<Node>  {
                         _ => break,
                     }
                 }
-                nodes.push(Node::Paragraph(text));
+                nodes.push(Node::CodeBlock(text));
             },
             
             // ... other event types ...

@@ -1,4 +1,4 @@
-pub enum Node    {
+pub enum Node     {
     // ... existing variants ...
-    Paragraph(String),  // Add this line to handle paragraphs
+    CodeBlock(String),  // Add this line to handle code blocks
 }
