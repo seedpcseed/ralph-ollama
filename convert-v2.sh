@@ -130,21 +130,9 @@ create_conversion_prompt_v2() {
     cat << 'PROMPTEOF' | sed "s|\$project_name|$project_name|g"
 # PRD to Tasks Conversion (v2.0 Format)
 
-You are running inside Aider. Aider has already added these files to the chat: prd.md, prd.json, and requirements.md. 
+You are a JSON generator. Your task is to generate the complete prd.json file content based on the PRD.
 
-**CRITICAL: You MUST edit these files NOW. Do NOT:**
-- Say "I don't have access" - Aider gives you access
-- Give instructions - actually edit the files
-- Provide examples - provide the actual file content
-- Explain how to edit - just edit
-
-**You MUST provide file edits in Aider's format:**
-1. Write the file path (e.g., projects/editio/prd.json)
-2. Write three backticks ```
-3. Write the COMPLETE file content
-4. Write three backticks ```
-
-**DO THIS NOW - Edit prd.json and requirements.md with actual content, not instructions.**
+**IMPORTANT:** Generate the complete JSON content. You can provide it in any format - we will extract it. Just make sure the JSON is valid and complete.
 
 ## Your task
 1. Read projects/$project_name/prd.md (it is in the chat) to understand ALL requirements.
@@ -265,14 +253,12 @@ Categories: technical = DB/API/backend/schemas/infrastructure; functional = busi
 - **Go**: go test ./parser, go build
 - **File checks**: grep -q 'function_name' file.rs, test -f path/to/file
 
-## Edit format (required) - PROVIDE ACTUAL FILE CONTENT
+## Output Format
 
-You MUST provide the complete file content in Aider's format. Here's the EXACT format:
+Provide the complete prd.json content as valid JSON. You can wrap it in markdown code blocks or provide it directly - we will extract it.
 
-**For prd.json:**
-```
-projects/$project_name/prd.json
-```
+**Example structure:**
+```json
 {
   "version": "2.0",
   "branchName": "ralph/$project_name",
@@ -305,18 +291,16 @@ projects/$project_name/prd.json
       "createdAt": "2026-02-04T08:00:00Z",
       "updatedAt": "2026-02-04T08:00:00Z"
     }
-    // ... MORE STORIES HERE - generate 50-150+ stories based on PRD
+    // Generate 50-150+ more stories covering ALL features in the PRD
   ]
 }
 ```
 
 **CRITICAL:**
-- Provide the COMPLETE JSON with ALL stories (50-150+ stories)
-- Do NOT use "..." or "rest of code" - provide FULL content
-- Do NOT give instructions - provide the actual file content
-- Do NOT say you can't access files - just provide the content
-
-**Now provide the complete prd.json file content above, then provide requirements.md content.**
+- Generate 50-150+ stories covering ALL features in the PRD
+- Each P0 feature should become 5-15 granular stories
+- Provide COMPLETE JSON - we will extract and write it to the file
+- Also provide requirements.md content (markdown format)
 PROMPTEOF
 }
 
@@ -670,20 +654,18 @@ main() {
     if [[ "$story_count" -eq 0 ]] && [[ -f "$convert_log" ]]; then
         log "WARN" "No stories found in prd.json, attempting to extract from log..."
         
-        # Try to extract JSON from log
-        local extracted
-        extracted=$(grep -oP '(?<=```json\n|```\n)\{.*"branchName".*"userStories".*?\}' "$convert_log" 2>/dev/null | head -1 || \
-                   grep -A 1000 'projects/.*/prd.json' "$convert_log" | grep -A 1000 '```' | grep -B 1000 '```' | sed '1d;$d' | jq -c . 2>/dev/null || true)
+        # Source extraction library
+        source "$SCRIPT_DIR/lib/extract_json.sh" 2>/dev/null || true
         
-        if [[ -n "$extracted" ]]; then
-            local count
-            count=$(echo "$extracted" | jq -r '.userStories | length' 2>/dev/null || echo "0")
-            if [[ "${count:-0}" -gt 0 ]]; then
-                echo "$extracted" | jq '.' > "$json_file"
+        # Try to extract JSON from log using multiple strategies
+        if extract_json_from_output "$convert_log" "$json_file"; then
+            story_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
+            if [[ "${story_count:-0}" -gt 0 ]]; then
                 normalize_prd_json_v2 "$json_file"
-                story_count=$count
-                log "INFO" "Recovered prd.json from log ($count stories)"
+                log "INFO" "Recovered prd.json from log ($story_count stories)"
             fi
+        else
+            log "WARN" "Could not extract JSON from log - model may not have generated valid JSON"
         fi
     fi
     
