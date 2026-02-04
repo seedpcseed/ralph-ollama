@@ -296,11 +296,27 @@ Provide the complete prd.json content as valid JSON. You can wrap it in markdown
 }
 ```
 
-**CRITICAL:**
+**CRITICAL REQUIREMENTS:**
 - Generate 50-150+ stories covering ALL features in the PRD
 - Each P0 feature should become 5-15 granular stories
-- Provide COMPLETE JSON - we will extract and write it to the file
+- **DO NOT use "..." or "more stories here" - generate ALL stories NOW**
+- **DO NOT skip stories - generate the complete list**
+- Provide COMPLETE JSON with ALL stories - we will extract and write it to the file
 - Also provide requirements.md content (markdown format)
+
+**You MUST generate stories for ALL features mentioned in the PRD:**
+- Markdown parsing (15+ stories)
+- CLI interface (8+ stories)
+- Layout engine (20+ stories)
+- PDF generation (10+ stories)
+- Cross-references (8+ stories)
+- Bibliography (8+ stories)
+- Math rendering (8+ stories)
+- Templates (5+ stories)
+- Plugins (5+ stories)
+- And any other features in the PRD
+
+**Generate ALL stories now - do not leave placeholders.**
 PROMPTEOF
 }
 
