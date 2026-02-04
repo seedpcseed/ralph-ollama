@@ -27,6 +27,7 @@ Planning, architecture, and supporting docs for the Ralph 2.0 refactor and desig
 |-----|-------------|
 | [GUIDE.md](GUIDE.md) | Development guide |
 | [AGENT-STRATEGY.md](AGENT-STRATEGY.md) | Agent (Aider / Cursor) strategy |
+| [AIDER-PROMPTING.md](AIDER-PROMPTING.md) | Aider prompt tuning for the implementation loop |
 | [AIDER-CODER-ADAPTION.md](AIDER-CODER-ADAPTION.md) | Aider/coder adaption notes |
 | [CONVERSION-STRATEGY.md](CONVERSION-STRATEGY.md) | PRD conversion strategy |
 | [LOCAL-MODELS.md](LOCAL-MODELS.md) | Local models (Ollama) notes |

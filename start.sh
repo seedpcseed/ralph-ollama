@@ -157,6 +157,11 @@ All files for this project live under **$project_path/** (paths are relative to 
 - Create new files with path **$project_path/<filename>** (e.g. $project_path/Cargo.toml, $project_path/src/lib.rs).
 - Do NOT create files at the repo root (e.g. not Cargo.toml or crates/ at top level). Only under $project_path/.
 
+## Rust projects (if this is or becomes a Rust workspace)
+- Every crate (each directory with a Cargo.toml) must have at least one target: **src/lib.rs** or **src/main.rs**. Creating only Cargo.toml for a crate will cause \`cargo build\` to fail with "no targets specified".
+- When adding a new crate under $project_path/crates/<crate_name>/, create both \`$project_path/crates/<crate_name>/Cargo.toml\` and \`$project_path/crates/<crate_name>/src/lib.rs\` (or src/main.rs).
+- Paths Aider sees are relative to repo root: use $project_path/... exactly (e.g. $project_path/crates/editio-core/src/lib.rs).
+
 ## Instructions
 1. **Create any files that do not exist** under $project_path/. Use paths like $project_path/Cargo.toml—do NOT ask the user to add files. You have permission to create and edit files.
 2. Implement the story completely.
@@ -164,7 +169,7 @@ All files for this project live under **$project_path/** (paths are relative to 
 4. Run verification command: ${verify_cmd:-"N/A"}
 5. Only mark complete when verification passes.
 
-Use your edit capability. For Rust: create $project_path/Cargo.toml and $project_path/src/*.rs (or $project_path/crates/...) as required by the steps.
+Use your edit capability. For Rust: create $project_path/Cargo.toml and $project_path/src/*.rs (or $project_path/crates/<name>/Cargo.toml and $project_path/crates/<name>/src/lib.rs) as required by the steps.
 PROMPTEOF
 }
 
@@ -570,6 +575,7 @@ main_loop() {
             local aider_files=(
                 "projects/$project_name_loop/prd.json"
                 "projects/$project_name_loop/requirements.md"
+                "projects/$project_name_loop/PROMPT.md"
             )
             # Include any existing project files so Aider can edit them
             for f in "$project_dir"/*.toml "$project_dir"/*.rs "$project_dir"/src/*.rs "$project_dir"/crates/*/Cargo.toml "$project_dir"/crates/*/src/*.rs; do
@@ -587,6 +593,10 @@ main_loop() {
                 aider_file_args+=("$f")
             done
 
+            # Ollama/litellm default timeout is 600s; allow longer for implementation
+            local timeout_seconds=$((AGENT_TIMEOUT_MINUTES * 60))
+            export LITELLM_REQUEST_TIMEOUT="${LITELLM_REQUEST_TIMEOUT:-$timeout_seconds}"
+
             # Build Aider command with project files so paths resolve under projects/<name>/
             local aider_cmd=(
                 aider
@@ -595,9 +605,14 @@ main_loop() {
                 --yes
                 --no-stream
                 --no-show-model-warnings
+                --no-auto-lint
                 --message-file "$prompt_file"
+                --timeout "$timeout_seconds"
             )
-            
+            if [[ "${AIDER_NO_GIT:-false}" == "true" ]]; then
+                aider_cmd+=(--no-git)
+                log "INFO" "Aider running with --no-git (repo-map disabled; only passed files in chat)"
+            fi
             if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
                 aider_cmd+=(--auto-commits)
             fi
@@ -691,20 +706,25 @@ $(echo "$story_json" | jq -r '.story')
 ## CRITICAL: File paths
 All project files must be under **$project_path_fix/** (e.g. $project_path_fix/Cargo.toml). Do NOT create files at repo root.
 
+## Rust: "no targets specified"
+If the error says "no targets specified" for a crate, that crate needs at least \`src/lib.rs\` or \`src/main.rs\`. Create the missing file under that crate (e.g. $project_path_fix/crates/<crate_name>/src/lib.rs).
+
 ## Instructions
 - Fix the errors so verification passes.
-- Create any missing files under $project_path_fix/ (e.g. $project_path_fix/Cargo.toml). Do NOT ask the user to add files—create them with your edit capability.
+- Create any missing files under $project_path_fix/. Do NOT ask the user to add files—create them with your edit capability.
 EOF
                     
                     # Invoke agent to fix (use same logic as main: run from repo root with project files)
                     if [[ "$current_model" == ollama/* ]]; then
                         cd "$REPO_ROOT"
-                        local fix_aider_files=("$project_path_fix/prd.json" "$project_path_fix/requirements.md")
+                        local fix_aider_files=("$project_path_fix/prd.json" "$project_path_fix/requirements.md" "$project_path_fix/PROMPT.md")
                         for f in "$project_dir"/*.toml "$project_dir"/*.rs "$project_dir"/src/*.rs "$project_dir"/crates/*/Cargo.toml "$project_dir"/crates/*/src/*.rs; do
                             [[ -f "$f" ]] || continue
                             f_rel="${f#$REPO_ROOT/}"
                             [[ -n "$f_rel" ]] && fix_aider_files+=("$f_rel")
                         done
+                        local fix_timeout_seconds=$((AGENT_TIMEOUT_MINUTES * 60))
+                        export LITELLM_REQUEST_TIMEOUT="${LITELLM_REQUEST_TIMEOUT:-$fix_timeout_seconds}"
                         local aider_cmd=(
                             aider
                             "${fix_aider_files[@]}"
@@ -712,8 +732,13 @@ EOF
                             --yes
                             --no-stream
                             --no-show-model-warnings
+                            --no-auto-lint
                             --message-file "$fix_prompt"
+                            --timeout "$fix_timeout_seconds"
                         )
+                        if [[ "${AIDER_NO_GIT:-false}" == "true" ]]; then
+                            aider_cmd+=(--no-git)
+                        fi
                         if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
                             aider_cmd+=(--auto-commits)
                         fi
