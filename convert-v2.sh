@@ -345,8 +345,13 @@ invoke_agent() {
     local files=("$@")
     
     # For local models, use Aider (which supports Ollama)
+    # NOTE: Aider had issues in v1.0, but v2.0's verification loop addresses them:
+    # - v1.0 problem: No verification → v2.0 fix: We verify (compile + test)
+    # - v1.0 problem: No iterative refinement → v2.0 fix: Up to 5 attempts with error feedback
+    # - v1.0 problem: Poor context → v2.0 fix: Better prompts and file context
     if [[ "$model" == ollama/* ]] || [[ "$model" == "hybrid" && "$MODE" == "local" ]]; then
         log "INFO" "Using Aider for local model: $model"
+        log "INFO" "Note: v2.0 verification loop will catch and fix any issues Aider might introduce"
         
         # Check if Aider is available
         if ! command -v aider >/dev/null 2>&1; then
