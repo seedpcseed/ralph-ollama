@@ -252,23 +252,26 @@ Categories: technical = DB/API/backend/schemas/infrastructure; functional = busi
 - **File checks**: grep -q 'function_name' file.rs, test -f path/to/file
 
 ## Edit format (required)
-You are using Cursor Agent's edit format. To edit a file you MUST use this exact format:
-- One line with ONLY the file path (no blank line after it).
-- The very next line must be exactly \`\`\` (triple backticks, no word after them).
-- Then the complete file contents.
-- Then a line with exactly \`\`\`.
+You are using Aider's edit format. You MUST edit the files directly using Aider's file editing capabilities.
 
-CRITICAL: There must be NO blank line between the path and the \`\`\`. The path must be the line immediately above the opening \`\`\`.
+**CRITICAL INSTRUCTIONS:**
+1. You have access to the files: projects/$project_name/prd.md, projects/$project_name/prd.json, and projects/$project_name/requirements.md
+2. You MUST edit these files using Aider's edit commands
+3. Do NOT just provide instructions or examples - actually EDIT the files
+4. For prd.json: Replace the entire contents with the v2.0 format JSON
+5. For requirements.md: Replace the entire contents with technical specifications from the PRD
 
-Example (no blank line between path and backticks):
-projects/$project_name/prd.json
-\`\`\`
-{"version":"2.0","branchName":"ralph/$project_name","userStories":[{"id":"1.1",...}]}
-\`\`\`
+**Aider Edit Format:**
+When Aider asks what you want to do, respond with clear edit commands like:
+- "Edit projects/$project_name/prd.json: Replace entire file with [your JSON]"
+- "Edit projects/$project_name/requirements.md: Replace entire file with [your markdown]"
 
-Use paths: projects/$project_name/prd.json and projects/$project_name/requirements.md. For requirements.md use the same format (path, then \`\`\` on next line, then full file content). Do not use \`\`\`json or \`\`\`diff.
+**DO NOT:**
+- Say "I don't have access to files" - you do through Aider
+- Provide examples without editing - actually make the edits
+- Skip editing - the files must be modified
 
-Apply both file edits, then a one-line summary.
+Apply both file edits now.
 PROMPTEOF
 }
 
