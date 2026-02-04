@@ -1,1 +1,20 @@
-{"branchName":"ralph/editio","userStories":[]}
+{
+    "branchName": "ralph/editio",
+    "userStories": [
+        {"id":"1.1","category":"technical","story":"Add pulldown-cmark dependency to Cargo.toml","steps":["Open Cargo.toml"],"acceptance":"Cargo.toml includes pulldown-cmark dependency.","verify":"grep -q pulldown-cmark Cargo.toml","priority":10,"passes":false,"notes":""},
+        {"id":"1.2","category":"technical","story":"Create AST Node enum with Headline variant","steps":["Open src/ast.rs"],"acceptance":"AST Node enum includes Headline variant.","verify":"grep -q 'Headline' src/ast.rs && cargo build --lib","priority":10,"passes":false,"notes":""},
+        {"id":"1.3","category":"technical","story":"Add Paragraph variant to AST Node enum","steps":["Open src/ast.rs"],"acceptance":"AST Node enum includes Paragraph variant.","verify":"grep -q 'Paragraph' src/ast.rs && cargo build --lib","priority":10,"passes":false,"notes":""},
+        {"id":"1.4","category":"technical","story":"Add CodeBlock variant to AST Node enum","steps":["Open src/ast.rs"],"acceptance":"AST Node enum includes CodeBlock variant.","verify":"grep -q 'CodeBlock' src/ast.rs && cargo build --lib","priority":10,"passes":false,"notes":""},
+        {"id":"1.5","category":"technical","story":"Add Table variant to AST Node enum","steps":["Open src/ast.rs"],"acceptance":"AST Node enum includes Table variant.","verify":"grep -q 'Table' src/ast.rs && cargo build --lib","priority":10,"passes":false,"notes":""},
+        {"id":"1.6","category":"technical","story":"Add Image variant with YAML attributes support","steps":["Open src/ast.rs"],"acceptance":"AST Node enum includes Image variant with YAML attributes support.","verify":"grep -q 'Image' src/ast.rs && cargo build --lib","priority":10,"passes":false,"notes":""},
+        {"id":"1.7","category":"technical","story":"Implement parse_headings() for # headings","steps":["Open src/parser.rs"],"acceptance":"parse_headings() function handles # syntax.","verify":"cargo test test_parse_headings","priority":10,"passes":false,"notes":""},
+        {"id":"1.8","category":"technical","story":"Implement parse_paragraphs() for text blocks","steps":["Open src/parser.rs"],"acceptance":"parse_paragraphs() function handles text blocks.","verify":"cargo test test_parse_paragraphs","priority":10,"passes":false,"notes":""},
+        {"id":"1.9","category":"technical","story":"Implement parse_code_blocks() for ``` blocks","steps":["Open src/parser.rs"],"acceptance":"parse_code_blocks() function handles ``` blocks.","verify":"cargo test test_parse_code_blocks","priority":10,"passes":false,"notes":""},
+        {"id":"1.10","category":"technical","story":"Implement parse_tables() for markdown tables","steps":["Open src/parser.rs"],"acceptance":"parse_tables() function handles markdown tables.","verify":"cargo test test_parse_tables","priority":10,"passes":false,"notes":""},
+        {"id":"1.11","category":"technical","story":"Implement parse_images() with YAML attribute parsing","steps":["Open src/parser.rs"],"acceptance":"parse_images() function handles images with YAML attributes.","verify":"cargo test test_parse_images_with_attrs","priority":10,"passes":false,"notes":""},
+        {"id":"1.12","category":"technical","story":"Implement parse_links() for [text](url) syntax","steps":["Open src/parser.rs"],"acceptance":"parse_links() function handles [text](url) syntax.","verify":"cargo test test_parse_links","priority":10,"passes":false,"notes":""},
+        {"id":"1.13","category":"technical","story":"Implement parse_lists() for ordered and unordered lists","steps":["Open src/parser.rs"],"acceptance":"parse_lists() function handles ordered and unordered lists.","verify":"cargo test test_parse_lists","priority":10,"passes":false,"notes":""},
+        {"id":"1.14","category":"technical","story":"Add CommonMark compliance tests","steps":["Open src/parser.rs"],"acceptance":"CommonMark compliance tests pass.","verify":"cargo test commonmark_compliance","priority":10,"passes":false,"notes":""},
+        {"id":"1.15","category":"technical","story":"Add GFM extension tests (strikethrough, tables, task lists)","steps":["Open src/parser.rs"],"acceptance":"GFM extension tests pass.","verify":"cargo test gfm_extensions","priority":10,"passes":false,"notes":""}
+    ]
+}
