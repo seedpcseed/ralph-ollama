@@ -1,1 +1,10 @@
-{"branchName":"ralph/editio","userStories":[]}
+{
+    "branchName": "ralph/editio",
+    "userStories": [
+        {"id":"1.1","category":"infrastructure","story":"Add pulldown-cmark dependency to Cargo.toml","steps":["Open Cargo.toml"],"acceptance":"RUN 'grep -q puldown-cmark Cargo.toml' must pass.","priority":1,"passes":false,"notes":""},
+        {"id":"1.2","category":"infrastructure","story":"Create AST node enum with variants","steps":["Open lib.rs"],"acceptance":"RUN 'cargo build --lib' must pass.","priority":2,"passes":false,"notes":""},
+        {"id":"1.3","category":"infrastructure","story":"Implement parse_markdown() function","steps":["Open parser.rs"],"acceptance":"RUN 'cargo test parser' must pass.","priority":3,"passes":false,"notes":""},
+        {"id":"1.4","category":"infrastructure","story":"Add tests for CommonMark features","steps":["Open parser.rs"],"acceptance":"RUN 'cargo test parser_commonmark' must pass.","priority":4,"passes":false,"notes":""},
+        {"id":"1.5","category":"infrastructure","story":"Add tests for GFM extensions","steps":["Open parser.rs"],"acceptance":"RUN 'cargo test parser_gfm' must pass.","priority":5,"passes":false,"notes":""}
+    ]
+}
