@@ -3,5 +3,355 @@
   "branchName": "ralph/editio",
   "createdAt": "2026-02-04T16:18:49Z",
   "updatedAt": "2026-02-04T16:18:49Z",
-  "userStories": []
-}
+  "userStories": [
+    {
+      "id": "1.1",
+      "category": "technical",
+      "story": "Initialize Rust workspace with Cargo.toml",
+      "steps": [
+        "Create root Cargo.toml with [workspace] section",
+        "Add members array listing all crates",
+        "Set workspace-level dependencies"
+      ],
+      "acceptance": "Cargo.toml exists with workspace configuration. RUN 'cargo check' must pass.",
+      "priority": 1,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": [],
+      "blocks": ["1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"],
+      "verify": {
+        "command": "test -f Cargo.toml && grep -q '\\[workspace\\]' Cargo.toml",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.2",
+      "category": "technical",
+      "story": "Create editio-ast crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-ast",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-ast/src/lib.rs exists. RUN 'cargo build -p editio-ast' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["2.1", "2.2", "2.3"],
+      "verify": {
+        "command": "test -f crates/editio-ast/src/lib.rs && cargo build -p editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.3",
+      "category": "technical",
+      "story": "Create editio-parser crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-parser",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-parser/src/lib.rs exists. RUN 'cargo build -p editio-parser' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["3.1"],
+      "verify": {
+        "command": "test -f crates/editio-parser/src/lib.rs && cargo build -p editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.4",
+      "category": "technical",
+      "story": "Create editio-layout crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-layout",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-layout/src/lib.rs exists. RUN 'cargo build -p editio-layout' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["4.1"],
+      "verify": {
+        "command": "test -f crates/editio-layout/src/lib.rs && cargo build -p editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.5",
+      "category": "technical",
+      "story": "Create editio-render crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-render",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-render/src/lib.rs exists. RUN 'cargo build -p editio-render' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["5.1"],
+      "verify": {
+        "command": "test -f crates/editio-render/src/lib.rs && cargo build -p editio-render",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.6",
+      "category": "technical",
+      "story": "Create editio-pdf crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-pdf",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-pdf/src/lib.rs exists. RUN 'cargo build -p editio-pdf' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["5.2"],
+      "verify": {
+        "command": "test -f crates/editio-pdf/src/lib.rs && cargo build -p editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.7",
+      "category": "technical",
+      "story": "Create editio-bib crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-bib",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-bib/src/lib.rs exists. RUN 'cargo build -p editio-bib' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["7.1"],
+      "verify": {
+        "command": "test -f crates/editio-bib/src/lib.rs && cargo build -p editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.8",
+      "category": "technical",
+      "story": "Create editio-math crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-math",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-math/src/lib.rs exists. RUN 'cargo build -p editio-math' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["6.1"],
+      "verify": {
+        "command": "test -f crates/editio-math/src/lib.rs && cargo build -p editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.9",
+      "category": "technical",
+      "story": "Create editio-core crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-core",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-core/src/lib.rs exists. RUN 'cargo build -p editio-core' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["11.1"],
+      "verify": {
+        "command": "test -f crates/editio-core/src/lib.rs && cargo build -p editio-core",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.10",
+      "category": "technical",
+      "story": "Create editio CLI binary crate with main.rs",
+      "steps": [
+        "Run cargo new --bin crates/editio",
+        "Add basic main function to main.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio/src/main.rs exists. RUN 'cargo build -p editio' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": ["11.2"],
+      "verify": {
+        "command": "test -f crates/editio/src/main.rs && cargo build -p editio",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "1.11",
+      "category": "technical",
+      "story": "Create editio-plugin crate with lib.rs",
+      "steps": [
+        "Run cargo new --lib crates/editio-plugin",
+        "Add basic module structure to lib.rs",
+        "Add to workspace members in root Cargo.toml"
+      ],
+      "acceptance": "crates/editio-plugin/src/lib.rs exists. RUN 'cargo build -p editio-plugin' must pass.",
+      "priority": 2,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.1"],
+      "blocks": [],
+      "verify": {
+        "command": "test -f crates/editio-plugin/src/lib.rs && cargo build -p editio-plugin",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2026-02-04T16:18:49Z",
+      "updatedAt": "2026-02-04T16:18:49Z"
+    },
+    {
+      "id": "2.1",
+      "category": "technical",
+      "story": "Define Node enum with Document variant in editio-ast",
+      "steps": [
+        "Create src/node.rs in editio-ast",
+        "Define pub enum Node with Document(Vec<Node>) variant",
+        "Add pub mod node to lib.rs"
+      ],
+      "acceptance": "Node enum exists with Document variant. RUN 'cargo build -p editio-ast' must pass.",
+      "priority": 3,
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["1.2"],
+      "blocks": ["2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8"],
+      "verify": {
+        "command": "grep -q 'enum Node' crates/editio-ast/src/node.rs && grep -qI'll generate the complete prd.json file with all stories for the Editio project. Based on the PRD, I need to create 100+ granular stories covering all 11 P0 features.
+
+projects/editio/prd.json
