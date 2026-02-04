@@ -345,62 +345,43 @@ invoke_agent() {
     shift 3
     local files=("$@")
     
-    # For local models, use Claude CLI with Ollama (better than Aider!)
-    # Claude CLI supports local Ollama models via 'ollama launch claude'
-    # This is better than Aider because:
-    # - Native Anthropic tool (better quality)
-    # - Better tool calling support
-    # - Native Ollama integration
+    # For local models, use Aider (Claude CLI uses API by default, not local models)
+    # NOTE: Claude CLI can be configured for local models via 'ollama launch claude',
+    # but that requires interactive setup. For automation, Aider is more reliable.
+    # v2.0's verification loop addresses Aider's v1.0 issues:
+    # - v1.0 problem: No verification → v2.0 fix: We verify (compile + test)
+    # - v1.0 problem: No iterative refinement → v2.0 fix: Up to 5 attempts with error feedback
+    # - v1.0 problem: Poor context → v2.0 fix: Better prompts and file context
     if [[ "$model" == ollama/* ]] || [[ "$model" == "hybrid" && "$MODE" == "local" ]]; then
-        log "INFO" "Using Claude CLI for local model: $model"
+        log "INFO" "Using Aider for local model: $model"
+        log "INFO" "Note: v2.0 verification loop will catch and fix any issues"
         
-        # Source Claude CLI library
-        source "$SCRIPT_DIR/lib/claude_cli.sh" 2>/dev/null || true
-        
-        # Check if Claude CLI is available
-        if ! check_claude_cli 2>/dev/null; then
-            log "WARN" "Claude CLI not available, falling back to Aider"
-            # Fallback to Aider
-            if ! command -v aider >/dev/null 2>&1; then
-                log "ERROR" "Neither Claude CLI nor Aider available"
-                return 1
-            fi
-            
-            log "INFO" "Using Aider fallback for local model: $model"
-            local aider_cmd=(
-                aider
-                "${files[@]}"
-                --model "$model"
-                --yes
-                --no-stream
-                --no-show-model-warnings
-                --message-file "$prompt_file"
-            )
-            
-            if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
-                aider_cmd+=(--auto-commits)
-            fi
-            
-            if "${aider_cmd[@]}" > "$output_file" 2>&1; then
-                return 0
-            else
-                log "ERROR" "Aider execution failed. Check log: $output_file"
-                return 1
-            fi
+        # Check if Aider is available
+        if ! command -v aider >/dev/null 2>&1; then
+            log "ERROR" "Aider not available. Install with: pip install aider-chat"
+            return 1
         fi
         
-        # Use Claude CLI
-        local claude_output
-        claude_output=$(invoke_claude_cli_file "$prompt_file" "${files[@]}" 2>&1)
-        local claude_exit_code=$?
+        # Build Aider command
+        local aider_cmd=(
+            aider
+            "${files[@]}"
+            --model "$model"
+            --yes
+            --no-stream
+            --no-show-model-warnings
+            --message-file "$prompt_file"
+        )
         
-        # Write output to log file
-        echo "$claude_output" > "$output_file"
+        if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
+            aider_cmd+=(--auto-commits)
+        fi
         
-        if [[ $claude_exit_code -eq 0 ]]; then
+        # Run Aider and capture output
+        if "${aider_cmd[@]}" > "$output_file" 2>&1; then
             return 0
         else
-            log "ERROR" "Claude CLI execution failed. Check log: $output_file"
+            log "ERROR" "Aider execution failed. Check log: $output_file"
             return 1
         fi
     fi
