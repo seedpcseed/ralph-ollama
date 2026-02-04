@@ -338,6 +338,30 @@ You are verifying that a generated prd.json comprehensively covers all requireme
 PROMPTEOF
 }
 
+# Returns 0 if requirements.md is still placeholder (empty or only the default header)
+is_requirements_placeholder() {
+    local req_file=$1
+    [[ ! -f "$req_file" ]] && return 0
+    local lines
+    lines=$(wc -l < "$req_file" 2>/dev/null || echo "0")
+    [[ "${lines:-0}" -gt 3 ]] && return 1
+    grep -q "^# Technical requirements (generated from PRD)" "$req_file" 2>/dev/null && \
+        ! grep -v "^#" "$req_file" 2>/dev/null | grep -q . && return 0
+    return 1
+}
+
+# Prompt for filling only requirements.md from the PRD (used when Phase 1 didn't populate it)
+create_requirements_fill_prompt() {
+    local project_name=$1
+    cat << PROMPTEOF
+You are running inside Aider. The files prd.md and requirements.md are in this chat. You MUST edit requirements.md.
+
+TASK: Replace the contents of projects/$project_name/requirements.md with technical specifications extracted from the PRD. Include: architecture, data models, APIs, UI/UX constraints, performance and security requirements, tech stack, and any other technical details from the PRD. Write in clear markdown sections.
+
+Use Aider's whole-file edit format: on one line the path projects/$project_name/requirements.md, then a line with \`\`\`, then the full file content, then \`\`\`. Do not use \`\`\`json or \`\`\`diff. Apply the edit now.
+PROMPTEOF
+}
+
 main() {
     local project_name="$1"
 
@@ -497,6 +521,39 @@ main() {
 
     log "SUCCESS" "Phase 1 complete: Generated $story_count stories"
     echo ""
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # PHASE 1.5: Populate requirements.md if Phase 1 left it as placeholder
+    # ═══════════════════════════════════════════════════════════════════════════
+    if is_requirements_placeholder "$req_file"; then
+        log "INFO" "requirements.md still placeholder — running dedicated fill pass..."
+        local req_prompt=$(mktemp)
+        create_requirements_fill_prompt "$project_name" > "$req_prompt"
+        local req_log="$project_dir/logs/requirements_${timestamp}.log"
+        start_spinner "(Populating requirements.md)..."
+        cd "$REPO_ROOT"
+        local prd_rel="projects/$project_name/prd.md"
+        local req_rel="projects/$project_name/requirements.md"
+        if aider "$prd_rel" "$req_rel" --model "$AIDER_MODEL" --yes --no-stream --no-show-model-warnings --message-file "$req_prompt" > "$req_log" 2>&1; then
+            log "SUCCESS" "requirements.md populated"
+        else
+            log "WARN" "requirements fill pass failed — check $(get_relative_path "$req_log")"
+        fi
+        stop_spinner
+        rm -f "$req_prompt"
+        # Fallback: if Aider showed a diff but didn't apply it, extract from log and write
+        if is_requirements_placeholder "$req_file" && [[ -f "$req_log" ]]; then
+            local extracted
+            extracted=$(awk '/^[[:space:]]*@@.*@@[[:space:]]*$/{ in_diff=1; next }
+                in_diff && /^[[:space:]]*\+/ { sub(/^[[:space:]]*\+[[:space:]]?/, ""); print }
+                in_diff && /^[[:space:]]* [^+-]/ { sub(/^[[:space:]]+ ?/, ""); print }' "$req_log" | sed 's/[[:space:]]*$//')
+            if [[ -n "$extracted" ]] && [[ $(echo "$extracted" | wc -l) -gt 2 ]]; then
+                echo "$extracted" > "$req_file"
+                log "INFO" "Recovered requirements.md from log ($(echo "$extracted" | wc -l) lines)"
+            fi
+        fi
+        echo ""
+    fi
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PHASE 2: Verification Loop
