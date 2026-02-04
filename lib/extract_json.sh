@@ -15,47 +15,77 @@ extract_json_from_output() {
     # Try multiple extraction strategies
     local extracted_json=""
     
-    # Strategy 1: Find JSON object with "userStories" - look for opening brace
-    local json_start=$(grep -n '"userStories"' "$output_file" | head -1 | cut -d: -f1)
-    if [[ -n "$json_start" ]]; then
-        # Go backwards to find opening brace
-        local brace_line=$(sed -n "1,${json_start}p" "$output_file" | tac | grep -n '^{' | head -1 | cut -d: -f1)
-        if [[ -n "$brace_line" ]]; then
-            local actual_start=$((json_start - brace_line + 1))
-            # Extract JSON block (look for closing brace)
-            local json_block=$(sed -n "${actual_start},\$p" "$output_file")
-            
-            # Find the matching closing brace (simplified - take first 500 lines)
-            local brace_count=0
-            local json_lines=""
-            while IFS= read -r line; do
-                json_lines+="$line"$'\n'
-                # Count braces
-                brace_count=$((brace_count + $(echo "$line" | grep -o '{' | wc -l) - $(echo "$line" | grep -o '}' | wc -l)))
-                # Stop when braces balance
-                if [[ $brace_count -eq 0 ]] && [[ -n "$json_lines" ]]; then
+    # Strategy 1: Use Python to extract JSON (more reliable for brace matching)
+    if command -v python3 >/dev/null 2>&1; then
+        extracted_json=$(python3 << 'PYEOF'
+import json
+import re
+import sys
+
+try:
+    with open(sys.argv[1], 'r') as f:
+        content = f.read()
+    
+    # Find JSON block starting with {
+    start = content.find('{\n')
+    if start == -1:
+        start = content.find('{')
+    
+    if start != -1:
+        # Find matching closing brace
+        brace_count = 0
+        end = start
+        for i, char in enumerate(content[start:], start):
+            if char == '{':
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    end = i + 1
                     break
-                fi
-                # Safety limit
-                if [[ $(echo "$json_lines" | wc -l) -gt 500 ]]; then
-                    break
-                fi
-            done <<< "$json_block"
+        
+        if end > start:
+            json_str = content[start:end]
+            # Remove comments
+            json_str = re.sub(r'//.*', '', json_str, flags=re.MULTILINE)
+            # Remove trailing commas
+            json_str = re.sub(r',\s*}', '}', json_str)
+            json_str = re.sub(r',\s*]', ']', json_str)
             
-            extracted_json="$json_lines"
-        fi
+            try:
+                data = json.loads(json_str)
+                # Validate it has userStories
+                if 'userStories' in data and isinstance(data['userStories'], list):
+                    print(json.dumps(data))
+                    sys.exit(0)
+            except:
+                pass
+except:
+    pass
+sys.exit(1)
+PYEOF
+"$output_file" 2>/dev/null || echo "")
     fi
     
-    # Clean up: remove comments, fix JSON
-    if [[ -n "$extracted_json" ]]; then
-        # Remove // comments (entire lines and inline)
-        extracted_json=$(echo "$extracted_json" | sed '/^\s*\/\//d' | sed 's|//.*$||g')
-        # Remove trailing commas before } or ]
-        extracted_json=$(echo "$extracted_json" | sed 's|,\s*}|}|g' | sed 's|,\s*]|]|g')
-        # Remove empty lines
-        extracted_json=$(echo "$extracted_json" | grep -v '^[[:space:]]*$')
-        # Try to parse
-        extracted_json=$(echo "$extracted_json" | jq -c . 2>/dev/null || echo "")
+    # Strategy 2: Fallback to bash-based extraction
+    if [[ -z "$extracted_json" ]] || ! echo "$extracted_json" | jq -e '.userStories' >/dev/null 2>&1; then
+        # Find JSON object with "userStories"
+        local json_start=$(grep -n '"userStories"' "$output_file" | head -1 | cut -d: -f1)
+        if [[ -n "$json_start" ]]; then
+            # Go backwards to find opening brace
+            local brace_line=$(sed -n "1,${json_start}p" "$output_file" | tac | grep -n '^{' | head -1 | cut -d: -f1)
+            if [[ -n "$brace_line" ]]; then
+                local actual_start=$((json_start - brace_line + 1))
+                # Extract a large block and try to parse
+                extracted_json=$(sed -n "${actual_start},\$p" "$output_file" | head -500)
+                
+                # Clean up: remove comments, fix JSON
+                extracted_json=$(echo "$extracted_json" | sed '/^\s*\/\//d' | sed 's|//.*$||g')
+                extracted_json=$(echo "$extracted_json" | sed 's|,\s*}|}|g' | sed 's|,\s*]|]|g')
+                extracted_json=$(echo "$extracted_json" | grep -v '^[[:space:]]*$')
+                extracted_json=$(echo "$extracted_json" | jq -c . 2>/dev/null || echo "")
+            fi
+        fi
     fi
     
     # Strategy 2: Extract JSON between ```json and ```
