@@ -9,15 +9,18 @@ pub fn parse(markdown: &str) -> Vec<Node>  {
         match event  {
             // ... existing matches ...
             
-            Event::Start(_start_data) => {   // Add this block to handle code block events
-                let mut text = String::new();
+            Event::Start(_start_data) => {   // Add this block to handle table events
+                let mut rows = Vec::new();
                 loop  {
                     match parser.next()  {
-                        Some(Event::Text(text)) => text.push_str(&text),
+                        Some(Event::TableRow(row)) => {
+                            let cells: Vec<String> = row.into_iter().map(|cell| cell.as_str().to_string()).collect();
+                            rows.push(cells);
+                        },
                         _ => break,
                     }
                 }
-                nodes.push(Node::CodeBlock(text));
+                nodes.push(Node::Table(rows));
             },
             
             // ... other event types ...

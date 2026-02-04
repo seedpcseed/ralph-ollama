@@ -1,4 +1,4 @@
-pub enum Node     {
+pub enum Node      {
     // ... existing variants ...
-    CodeBlock(String),  // Add this line to handle code blocks
+    Table(Vec<Vec<String>>),  // Add this line to handle table events
 }
