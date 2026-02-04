@@ -17,7 +17,7 @@ extract_json_from_output() {
     
     # Strategy 1: Use Python to extract JSON (more reliable for brace matching)
     if command -v python3 >/dev/null 2>&1; then
-        extracted_json=$(python3 << 'PYEOF'
+        extracted_json=$(python3 - "$output_file" << 'PYEOF'
 import json
 import re
 import sys
@@ -58,13 +58,15 @@ try:
                 if 'userStories' in data and isinstance(data['userStories'], list):
                     print(json.dumps(data))
                     sys.exit(0)
-            except:
+            except Exception as e:
+                print(f"Parse error: {e}", file=sys.stderr)
                 pass
-except:
+except Exception as e:
+    print(f"Error: {e}", file=sys.stderr)
     pass
 sys.exit(1)
 PYEOF
-"$output_file" 2>/dev/null || echo "")
+2>/dev/null || echo "")
     fi
     
     # Strategy 2: Fallback to bash-based extraction
