@@ -2,7 +2,7 @@ pub struct Bibliography {
     // TODO: Implement bibliography system here
 }
 
-impl Bibliography {
+impl Bibliography  {
     pub fn new() -> Self {
         // TODO: Initialize bibliography system
         unimplemented!();

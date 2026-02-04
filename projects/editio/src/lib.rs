@@ -2,7 +2,15 @@ pub mod bibliography;
 
 // ... other code ...
 
-impl Editio {
+pub struct Figure {
+    // TODO: Implement figure structure here
+}
+
+pub struct Table {
+    // TODO: Implement table structure here
+}
+
+impl Editio  {
     pub fn new() -> Self {
         // ... other initialization ...
         
@@ -10,6 +18,8 @@ impl Editio {
 
         Self {
             // ... other fields ...
+            figures: Vec::new(),
+            tables: Vec::new(),
             bibliography: bib,
         }
     }
