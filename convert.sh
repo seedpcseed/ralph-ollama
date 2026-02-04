@@ -144,8 +144,9 @@ setup_aider() {
             log "INFO" "Using Claude Sonnet 4.5 via API"
             ;;
         local)
-            AIDER_MODEL="ollama/$LOCAL_MODEL"
-            log "INFO" "Using local model: $LOCAL_MODEL"
+            local convert_model="${LOCAL_CONVERT_MODEL:-$LOCAL_MODEL}"
+            AIDER_MODEL="ollama/$convert_model"
+            log "INFO" "Using local model for convert: $convert_model"
             
             # Check if Ollama is running, start if not
             if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
@@ -179,14 +180,14 @@ setup_aider() {
             fi
             
             # Check if model is available
-            if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
-                log "WARN" "Model '$LOCAL_MODEL' is not available locally"
+            if ! ollama list 2>/dev/null | grep -q "$convert_model"; then
+                log "WARN" "Model '$convert_model' is not available locally"
                 log "INFO" "Pulling model (this may take several minutes)..."
-                if ollama pull "$LOCAL_MODEL" 2>&1 | tee /tmp/ollama_pull.log; then
-                    log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                if ollama pull "$convert_model" 2>&1 | tee /tmp/ollama_pull.log; then
+                    log "SUCCESS" "Model '$convert_model' pulled successfully"
                     rm -f /tmp/ollama_pull.log
                 else
-                    log "ERROR" "Failed to pull model '$LOCAL_MODEL'"
+                    log "ERROR" "Failed to pull model '$convert_model'"
                     if grep -q "connection reset\|max retries exceeded" /tmp/ollama_pull.log 2>/dev/null; then
                         log "ERROR" "Network/firewall blocking Cloudflare R2 storage"
                         log "INFO" ""
@@ -199,12 +200,12 @@ setup_aider() {
                         exit 1
                     else
                         log "WARN" "Pull failed for unknown reason"
-                        log "INFO" "Try manually: ollama pull $LOCAL_MODEL"
+                        log "INFO" "Try manually: ollama pull $convert_model"
                         rm -f /tmp/ollama_pull.log
                     fi
                 fi
             else
-                log "INFO" "Model '$LOCAL_MODEL' is available"
+                log "INFO" "Model '$convert_model' is available"
             fi
             ;;
         hybrid)
@@ -490,9 +491,10 @@ main() {
         story_count=$(jq '.userStories | length' "$json_file" 2>/dev/null || echo "0")
     fi
 
-    # Fallback: if model output prd.json in the log but Aider didn't apply it (e.g. blank line before ```), extract and write
+    # Fallback: if model output prd.json in the log but Aider didn't apply it, extract and write
     if [[ "$story_count" -eq 0 ]] && [[ -f "$convert_log" ]]; then
         local json_extract
+        # Try 1: JSON in code block (path then ``` then JSON)
         json_extract=$(awk -v path="projects/$project_name/prd.json" '
             $0 ~ "^" path " *$" { want=1; next }
             want && $0 ~ "^```" && !capturing { capturing=1; buf=""; next }
@@ -500,14 +502,56 @@ main() {
             capturing { buf = (buf == "" ? $0 : buf "\n" $0) }
         ' "$convert_log")
         if [[ -n "$json_extract" ]]; then
-            # Sanitize: model often puts literal newlines inside string values; collapse so JSON is valid
             json_extract=$(echo "$json_extract" | perl -0777 -pe 's/\n\s*([a-zA-Z])/ \1/g' 2>/dev/null || echo "$json_extract")
             local count
             count=$(echo "$json_extract" | jq -r '.userStories | length' 2>/dev/null || echo "0")
             if [[ "$count" != "" && "$count" != "null" && "${count:-0}" -gt 0 ]]; then
                 if echo "$json_extract" | jq -c . > "$json_file" 2>/dev/null; then
                     story_count=$count
-                    log "INFO" "Recovered prd.json from log ($count stories)"
+                    log "INFO" "Recovered prd.json from log (JSON block, $count stories)"
+                fi
+            fi
+        fi
+        # Try 2: structured list format (- id: "1.1", - category: ..., - story: ..., etc.)
+        if [[ "$story_count" -eq 0 ]] && [[ -f "$convert_log" ]]; then
+            local parsed
+            parsed=$(PROJECT_NAME="$project_name" perl -0777 -n -e '
+                use JSON::PP qw(encode_json);
+                use JSON::PP (); my $false = JSON::PP::false; my $true = JSON::PP::true;
+                my $proj = $ENV{PROJECT_NAME} || "project";
+                my @stories;
+                while (m/- id:\s*"([^"]+)"\s*\n(.*?)(?=- id:\s*"|\z)/gs) {
+                    my ($id, $block) = ($1, $2);
+                    my %s = (id => $id, category => "technical", story => "", steps => [], acceptance => "", priority => 999, passes => $false, notes => "");
+                    $block =~ s/\n\s*\n/\n/g;
+                    $s{category} = $1 if $block =~ /- category:\s*"([^"]*)"/;
+                    $s{story} = $1 if $block =~ /- story:\s*"([^"]*)"/s;
+                    $s{story} =~ s/\s+/ /g;
+                    $s{acceptance} = $1 if $block =~ /- acceptance:\s*"([^"]*)"/s;
+                    $s{acceptance} =~ s/\s+/ /g;
+                    if ($block =~ /- steps:\s*\[(.*?)\]/s) {
+                        my $steps = $1;
+                        $steps =~ s/\s+/ /g;
+                        $s{steps} = [ map { s/^"|"$//g; $_ } split /",\s*"/, $steps ];
+                    }
+                    $s{priority} = int($1) if $block =~ /- priority:\s*(\d+)/;
+                    $s{passes} = ($block =~ /- passes:\s*true/i) ? $true : $false;
+                    $s{notes} = $1 if $block =~ /- notes:\s*"([^"]*)"/;
+                    push @stories, \%s;
+                }
+                if (@stories) {
+                    my $out = { branchName => "ralph/" . $proj, userStories => \@stories };
+                    print encode_json($out);
+                }
+            ' "$convert_log" 2>/dev/null)
+            if [[ -n "$parsed" ]]; then
+                local count
+                count=$(echo "$parsed" | jq -r '.userStories | length' 2>/dev/null || echo "0")
+                if [[ "${count:-0}" -gt 0 ]]; then
+                    if echo "$parsed" | jq -c . > "$json_file" 2>/dev/null; then
+                        story_count=$count
+                        log "INFO" "Recovered prd.json from log (structured list, $count stories)"
+                    fi
                 fi
             fi
         fi
@@ -517,6 +561,14 @@ main() {
         log "ERROR" "prd.json has no stories - conversion failed"
         log "INFO" "Check the log file: $(get_relative_path "$convert_log")"
         exit 1
+    fi
+
+    # Normalize prd.json: pretty-print and consistent field order (id, category, story, steps, acceptance, priority, passes, notes)
+    if jq -e '.userStories | length > 0' "$json_file" >/dev/null 2>&1; then
+        jq '{
+            branchName,
+            userStories: [.userStories[] | {id, category, story, steps, acceptance, priority, passes, notes}]
+        }' "$json_file" > "${json_file}.tmp" 2>/dev/null && mv "${json_file}.tmp" "$json_file"
     fi
 
     log "SUCCESS" "Phase 1 complete: Generated $story_count stories"

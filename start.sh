@@ -52,8 +52,9 @@ setup_aider() {
             log "INFO" "Using Claude Sonnet 4.5 via API"
             ;;
         local)
-            AIDER_MODEL="ollama/$LOCAL_MODEL"
-            log "INFO" "Using local model: $LOCAL_MODEL"
+            local start_model="${LOCAL_START_MODEL:-$LOCAL_MODEL}"
+            AIDER_MODEL="ollama/$start_model"
+            log "INFO" "Using local model for start loop: $start_model"
             
             # Check if Ollama is running, start if not
             if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
@@ -87,14 +88,14 @@ setup_aider() {
             fi
             
             # Check if model is available
-            if ! ollama list 2>/dev/null | grep -q "$LOCAL_MODEL"; then
-                log "WARN" "Model '$LOCAL_MODEL' is not available locally"
+            if ! ollama list 2>/dev/null | grep -q "$start_model"; then
+                log "WARN" "Model '$start_model' is not available locally"
                 log "INFO" "Pulling model (this may take several minutes)..."
-                if ollama pull "$LOCAL_MODEL" 2>&1 | tee /tmp/ollama_pull.log; then
-                    log "SUCCESS" "Model '$LOCAL_MODEL' pulled successfully"
+                if ollama pull "$start_model" 2>&1 | tee /tmp/ollama_pull.log; then
+                    log "SUCCESS" "Model '$start_model' pulled successfully"
                     rm -f /tmp/ollama_pull.log
                 else
-                    log "ERROR" "Failed to pull model '$LOCAL_MODEL'"
+                    log "ERROR" "Failed to pull model '$start_model'"
                     if grep -q "connection reset\|max retries exceeded" /tmp/ollama_pull.log 2>/dev/null; then
                         log "ERROR" "Network/firewall blocking Cloudflare R2 storage"
                         log "INFO" ""
@@ -107,12 +108,12 @@ setup_aider() {
                         exit 1
                     else
                         log "WARN" "Pull failed for unknown reason"
-                        log "INFO" "Try manually: ollama pull $LOCAL_MODEL"
+                        log "INFO" "Try manually: ollama pull $start_model"
                         rm -f /tmp/ollama_pull.log
                     fi
                 fi
             else
-                log "INFO" "Model '$LOCAL_MODEL' is available"
+                log "INFO" "Model '$start_model' is available"
             fi
             ;;
         hybrid)
@@ -356,7 +357,7 @@ execute_aider() {
             current_model="anthropic/claude-sonnet-4-5"
             log "INFO" "   Using Claude (high priority)"
         else
-            current_model="ollama/$LOCAL_MODEL"
+            current_model="ollama/${LOCAL_START_MODEL:-$LOCAL_MODEL}"
             log "INFO" "   Using local model (lower priority)"
         fi
     fi
