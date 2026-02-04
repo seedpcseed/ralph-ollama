@@ -1,4 +1,6 @@
-pub enum Node       {
-    // ... existing variants ...
-    Image(String, Vec<(String, String)>),   // Add this line to handle image events with YAML attributes support
+pub enum Node {
+    //  ... existing variants ...
+    Heading1(String),   // Add this line for level 1 headings
+    Heading2(String),   // Add this line for level 2 headings
+    // Add more levels as needed
 }
