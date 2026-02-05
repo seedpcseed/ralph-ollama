@@ -1,0 +1,1 @@
+//! Editio plugin manager.

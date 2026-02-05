@@ -5,3 +5,6 @@ edition = "2021"
 description = "Editio markdown and document parser"
 
 [dependencies]
+pulldown-cmark = "0.9"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"

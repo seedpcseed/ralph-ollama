@@ -47,18 +47,18 @@
       "steps": "1. Create crate directories: editio-word, editio-latex, editio-bib, editio-math, editio-template, editio-plugin, editio-plugin-manager. 2. Initialize each crate with Cargo.toml and lib.rs. 3. Ensure workspace Cargo.toml includes all members.",
       "acceptance": "All crates exist. Workspace compiles successfully with 'cargo check --workspace'.",
       "priority": "P0",
-      "status": "pending",
-      "progress": 0,
-      "lastAttempt": null,
-      "attemptCount": 0,
+      "status": "complete",
+      "progress": 100,
+      "lastAttempt": "2025-02-05T00:00:00Z",
+      "attemptCount": 1,
       "dependsOn": [
         "INF-001a"
       ],
       "blocks": [],
       "verify": {
         "command": "cargo check --workspace",
-        "lastRun": "not_run",
-        "lastResult": "not_run",
+        "lastRun": "2025-02-05T00:00:00Z",
+        "lastResult": "pass",
         "expectedResult": "pass"
       },
       "files": [
@@ -83,10 +83,10 @@
       "steps": "1. Configure .gitignore for Rust and build artifacts. 2. Create .github/workflows/ci.yml for GitHub Actions. 3. Add pre-commit hooks configuration (optional). 4. Document local development setup instructions.",
       "acceptance": "CI pipeline runs successfully on push. Local development environment is documented.",
       "priority": "P0",
-      "status": "pending",
-      "progress": 0,
-      "lastAttempt": null,
-      "attemptCount": 0,
+      "status": "complete",
+      "progress": 100,
+      "lastAttempt": "2025-02-05T00:00:00Z",
+      "attemptCount": 1,
       "dependsOn": [
         "INF-001b"
       ],
@@ -115,10 +115,10 @@
       "steps": "1. Implement main entry point in editio binary. 2. Define Cli struct with clap attributes. 3. Define Commands enum with subcommands (Compile, Check, Watch, Init, Template, Plugin). 4. Implement basic argument parsing and error handling.",
       "acceptance": "CLI accepts 'editio --help' and displays available commands. 'editio compile --help' works.",
       "priority": "P0",
-      "status": "pending",
-      "progress": 0,
-      "lastAttempt": null,
-      "attemptCount": 0,
+      "status": "complete",
+      "progress": 100,
+      "lastAttempt": "2025-02-05T00:00:00Z",
+      "attemptCount": 1,
       "dependsOn": [
         "INF-001b"
       ],
@@ -145,10 +145,10 @@
       "steps": "1. Add pulldown-cmark dependency to editio-parser. 2. Create parser module. 3. Implement basic markdown to Event stream conversion. 4. Handle standard markdown syntax (paragraphs, headings, lists, tables).",
       "acceptance": "Parser successfully converts standard markdown text to pulldown-cmark Events.",
       "priority": "P0",
-      "status": "pending",
-      "progress": 0,
-      "lastAttempt": null,
-      "attemptCount": 0,
+      "status": "complete",
+      "progress": 100,
+      "lastAttempt": "2025-02-05T00:00:00Z",
+      "attemptCount": 1,
       "dependsOn": [
         "INF-001b"
       ],
