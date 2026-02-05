@@ -10,7 +10,16 @@ You are an expert in project architecture planning and converting prd to a json 
 > In projects/editio, I ran 
 > aider --no-git --yes --no-auto-commits --model ollama/glm-4.7-flash:latest --timeout 1200   --no-stream --no-show-model-warnings --no-auto-lint  prd.md prd.json requirements.md 
 
-You are an expert in project architecture planning and converting prd to a json file that breaks down the overall project into smaller stories that can be iterated over to create high quality functional code. You already created prd.json. You need to review prd.json and determine if each story can be completed in a maximum of 10 min or if the complexity of the story is too high for completion in that time. If the story cannot be completed, you need to break down the story into additional stories that can be completed in that time. You need to directly edit the prd.json. Do not ask the user to do the editing for you. You must strictly abide by the structure of the prd.json. Do not change the JSON object components as you make modifications including breaking apart stories into smaller stories. 
+You are an expert in project architecture planning. Your task is to review prd.json and ensure every user story can be completed in at most ~10 minutes.
+
+**Rules:**
+- Split a story if: it has more than 4–5 steps, more than 5–6 files, or multiple distinct deliverables in one story.
+- Keep a story as-is if: it has one clear outcome, one verify command, and a small set of steps/files.
+- When splitting: each new story must be a full story object with all required fields (id, category, story, steps, acceptance, priority, status, progress, lastAttempt, attemptCount, dependsOn, blocks, verify, files, tests, errors, notes, createdAt, updatedAt). Use sub-ids for the split (e.g. INF-001a, INF-001b). Stories that depended on the original must now depend on the last sub-story of the split.
+- Do not add or remove any keys from the story schema. Do not change the top-level structure of prd.json (version, branchName, createdAt, updatedAt, userStories).
+- You must edit prd.json directly (apply the edits yourself). Do not ask the user to edit the file.
+
+Process one category at a time: first Infrastructure (INF-*), then Markdown Parser (PAR-*), then AST Builder (AST-*), then Layout (LAYOUT-*), then PDF (PDF-*), then BIB, CLI, and EXT. For each category, identify stories that are too large, split them into smaller stories, and update the userStories array and any dependsOn references. Output valid JSON only.
 
 ## requirements.md prompt
 
