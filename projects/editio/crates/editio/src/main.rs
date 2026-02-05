@@ -67,7 +67,32 @@ fn main() {
     }
 }
 
-fn run(_cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
-    // Subcommand dispatch will be implemented in later stories
-    Ok(())
+fn run(cli: Cli) -> Result<(), Box<dyn std::error::Error>> {
+    match cli.command {
+        Commands::Compile { input, output } => {
+            let md = std::fs::read_to_string(&input)
+                .map_err(|e| format!("read {}: {}", input, e))?;
+            let _ast = editio_ast::build_from_markdown(&md);
+            editio_pdf::init_pdf(&output)?;
+            Ok(())
+        }
+        Commands::Check { input } => {
+            let md = std::fs::read_to_string(&input)
+                .map_err(|e| format!("check {}: {}", input, e))?;
+            let _ast = editio_ast::build_from_markdown(&md);
+            Ok(())
+        }
+        _ => Ok(()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_command() {
+        let md = "# Hello\n\nWorld.";
+        let _ast = editio_ast::build_from_markdown(md);
+    }
 }

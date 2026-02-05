@@ -10,3 +10,6 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+editio-ast = { path = "../editio-ast" }
+editio-parser = { path = "../editio-parser" }
+editio-pdf = { path = "../editio-pdf" }
