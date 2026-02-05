@@ -256,6 +256,11 @@ invoke_agent() {
         if [[ "${AIDER_AUTO_COMMITS:-false}" == "true" ]]; then
             aider_cmd+=(--auto-commits)
         fi
+        # Conversion only needs prd.md + prd.json + requirements.md; disable repo map to avoid extra files in context
+        if [[ "${AIDER_NO_GIT:-true}" == "true" ]]; then
+            aider_cmd+=(--no-git)
+            log "INFO" "Aider running with --no-git (repo-map disabled; only passed files in chat)"
+        fi
 
         # LiteLLM (used by Aider for Ollama) defaults to 600s; ensure it allows our timeout
         export LITELLM_REQUEST_TIMEOUT="${LITELLM_REQUEST_TIMEOUT:-$timeout_seconds}"

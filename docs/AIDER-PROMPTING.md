@@ -2,6 +2,27 @@
 
 This doc describes how we build prompts for Aider in the implementation loop and how to improve them for better outcomes when testing.
 
+## Conversion: prevent extra files in chat
+
+When converting prd.md → prd.json, Aider can add **unnecessary files** to the chat (from the repo map or from adding any file it edits). That extra context can confuse the model and hurt conversion quality.
+
+**Do this for conversion:**
+
+1. **Pass only the three conversion files** – include `prd.json` as well as `prd.md` and `requirements.md` so the model has the target file in context from the start:
+   ```bash
+   aider ... --message-file docs/convert-prompt-aider-compact.md \
+     projects/editio/prd.md projects/editio/prd.json projects/editio/requirements.md
+   ```
+2. **Use `--no-git`** – disables the repo map so Aider doesn’t send a summary of the whole repo to the model. Conversion only needs the PRD and the two output files:
+   ```bash
+   aider --no-git --yes --no-auto-commits --model ollama/glm-4.7-flash:latest --timeout 1200 \
+     --no-stream --no-show-model-warnings --no-auto-lint \
+     --message-file docs/convert-prompt-aider-compact.md \
+     projects/editio/prd.md projects/editio/prd.json projects/editio/requirements.md
+   ```
+
+`./convert.sh` uses Aider with `--no-git` by default (when `AIDER_NO_GIT` is not set to `false`) so scripted conversion stays limited to those three files.
+
 ## Context limit (e.g. 16,384 tokens) with Ollama
 
 Some Ollama models (e.g. `deepseek-coder:latest`) default to a 16k context. If Aider says "Your estimated chat context of X tokens exceeds the Y token limit", either:

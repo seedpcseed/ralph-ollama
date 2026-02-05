@@ -1,4 +1,729 @@
 {
+  "version": "2.0",
   "branchName": "ralph/editio",
-  "userStories": []
+  "createdAt": "2025-06-18T10:00:00Z",
+  "updatedAt": "2025-06-18T10:00:00Z",
+  "userStories": [
+    {
+      "id": "US-001",
+      "category": "Infrastructure",
+      "story": "Initialize Rust workspace and project structure",
+      "steps": [
+        "Create root directory 'editio'",
+        "Initialize Cargo workspace with 'Cargo.toml'",
+        "Create directory structure: crates/, tests/, examples/, templates/, docs/",
+        "Add 'editio' binary crate",
+        "Add 'editio-core' library crate",
+        "Add 'editio-ast' library crate",
+        "Add 'editio-parser' library crate",
+        "Add 'editio-layout' library crate",
+        "Add 'editio-render' library crate",
+        "Add 'editio-pdf' library crate",
+        "Add 'editio-html' library crate",
+        "Add 'editio-word' library crate",
+        "Add 'editio-latex' library crate",
+        "Add 'editio-bib' library crate",
+        "Add 'editio-math' library crate",
+        "Add 'editio-template' library crate",
+        "Add 'editio-plugin' library crate",
+        "Add 'editio-plugin-manager' library crate"
+      ],
+      "acceptance": "Workspace compiles successfully. All crates exist in the directory structure.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": [],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo check",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "Cargo.toml",
+        "crates/editio/Cargo.toml",
+        "crates/editio-core/Cargo.toml",
+        "crates/editio-ast/Cargo.toml",
+        "crates/editio-parser/Cargo.toml",
+        "crates/editio-layout/Cargo.toml",
+        "crates/editio-render/Cargo.toml",
+        "crates/editio-pdf/Cargo.toml",
+        "crates/editio-html/Cargo.toml",
+        "crates/editio-word/Cargo.toml",
+        "crates/editio-latex/Cargo.toml",
+        "crates/editio-bib/Cargo.toml",
+        "crates/editio-math/Cargo.toml",
+        "crates/editio-template/Cargo.toml",
+        "crates/editio-plugin/Cargo.toml",
+        "crates/editio-plugin-manager/Cargo.toml"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-002",
+      "category": "Infrastructure",
+      "story": "Define core data models and AST structure",
+      "steps": [
+        "Define Node enum in editio-ast crate",
+        "Define Inline enum in editio-ast crate",
+        "Define LayoutMetadata struct",
+        "Define Attributes struct",
+        "Define CitationStyle enum",
+        "Define DocumentMetadata struct",
+        "Define OutputFormat enum",
+        "Implement serialization/deserialization traits (serde)"
+      ],
+      "acceptance": "AST types compile and can be instantiated. serde derives are present.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-001"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-ast",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-ast/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-003",
+      "category": "Infrastructure",
+      "story": "Implement CLI framework using clap",
+      "steps": [
+        "Add clap dependency to editio binary",
+        "Define main Cli struct with subcommands",
+        "Implement 'compile' subcommand",
+        "Implement 'check' subcommand",
+        "Implement 'watch' subcommand",
+        "Implement 'init' subcommand",
+        "Implement 'template' subcommand",
+        "Implement 'plugin' subcommand"
+      ],
+      "acceptance": "CLI accepts --help and shows all subcommands. Subcommands parse arguments correctly.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-001"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && editio --help",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio/src/main.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-004",
+      "category": "Core",
+      "story": "Integrate pulldown-cmark for Markdown parsing",
+      "steps": [
+        "Add pulldown-cmark dependency to editio-parser",
+        "Implement parse_markdown function",
+        "Handle CommonMark standard syntax",
+        "Handle GitHub Flavored Markdown features",
+        "Implement YAML front matter extraction"
+      ],
+      "acceptance": "Markdown input is parsed into events. Front matter is extracted correctly.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-001", "US-002"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-parser/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-005",
+      "category": "Core",
+      "story": "Build AST from parsed markdown events",
+      "steps": [
+        "Implement build_ast function",
+        "Convert pulldown-cmark events to AST Nodes",
+        "Handle Paragraph, Heading, Image, Table nodes",
+        "Handle Math nodes (preprocessing placeholders)",
+        "Handle Citation nodes",
+        "Handle CrossReference nodes"
+      ],
+      "acceptance": "Markdown string converts to valid AST structure matching Node enum.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-004"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-parser/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-006",
+      "category": "Core",
+      "story": "Implement YAML front matter parsing",
+      "steps": [
+        "Add serde_yaml dependency",
+        "Parse YAML block at start of document",
+        "Extract metadata (title, author, date, page settings)",
+        "Validate metadata fields",
+        "Handle invalid YAML gracefully"
+      ],
+      "acceptance": "Front matter is parsed into DocumentMetadata struct.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-004"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-parser",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-parser/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-007",
+      "category": "Core",
+      "story": "Implement Two-Pass Layout Engine (Pass 1)",
+      "steps": [
+        "Collect all floating elements (images, tables) with attributes",
+        "Calculate text flow and paragraph boundaries",
+        "Implement CSS-style float algorithm",
+        "Calculate wrap zones for each float",
+        "Handle figure placement optimization",
+        "Identify page break points"
+      ],
+      "acceptance": "Layout engine returns LayoutMetadata with calculated wrap zones and page breaks.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-002", "US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-layout/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-008",
+      "category": "Core",
+      "story": "Implement CSS-Style Float Algorithm",
+      "steps": [
+        "Define FloatPosition enum (left, right, none)",
+        "Define Dimension struct (width, height, units)",
+        "Implement float placement logic",
+        "Handle text wrapping around floats",
+        "Handle floats adjacent to lists (key differentiator)",
+        "Optimize float placement to minimize page breaks"
+      ],
+      "acceptance": "Floats are placed correctly, and text wraps around them without overlapping.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-007"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-layout",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-layout/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-009",
+      "category": "Core",
+      "story": "Implement PDF Renderer using printpdf",
+      "steps": [
+        "Add printpdf dependency to editio-pdf",
+        "Implement render_pdf function",
+        "Create PDF document with custom page size",
+        "Apply margins and font settings",
+        "Render text with wrap zones",
+        "Render floats (images, tables) at calculated positions"
+      ],
+      "acceptance": "AST compiles to a valid PDF file.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-002", "US-008"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-pdf/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-010",
+      "category": "Core",
+      "story": "Implement Text Wrapping and Float Placement",
+      "steps": [
+        "Calculate text width based on margins and float zones",
+        "Implement line breaking logic",
+        "Handle text flow around floats",
+        "Handle floats adjacent to lists",
+        "Render text sequentially through pages"
+      ],
+      "acceptance": "Text flows naturally around floats and lists without overlapping.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-009"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-pdf",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-pdf/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-011",
+      "category": "Features",
+      "story": "Implement Cross-Reference System",
+      "steps": [
+        "Implement label tracking (parse {label=...})",
+        "Implement reference syntax (parse [@label])",
+        "Resolve references during compilation",
+        "Generate automatic numbering",
+        "Handle missing labels with error messages"
+      ],
+      "acceptance": "References resolve to correct numbers/labels. Errors for missing labels.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-core",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-core/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-012",
+      "category": "Features",
+      "story": "Implement Theorem/Proof Environments",
+      "steps": [
+        "Parse block directive syntax (:::{theorem}...:::)",
+        "Add Theorem and Proof nodes to AST",
+        "Implement automatic numbering",
+        "Render theorem environments in PDF",
+        "Handle cross-references to theorems"
+      ],
+      "acceptance": "Theorem and Proof blocks render with correct numbering and formatting.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-core",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-core/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-013",
+      "category": "Features",
+      "story": "Implement Math Typesetting (Level 1)",
+      "steps": [
+        "Preprocess math expressions ($...$ and $$...$$)",
+        "Replace math with placeholders",
+        "Shell out to pdflatex for rendering",
+        "Extract PDF fragments",
+        "Embed fragments into main PDF",
+        "Handle missing pdflatex gracefully"
+      ],
+      "acceptance": "Math expressions render in PDF. Fallback if pdflatex missing.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-009"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-math",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-math/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-014",
+      "category": "Features",
+      "story": "Implement Bibliography System",
+      "steps": [
+        "Add bibtex-parser dependency",
+        "Parse .bib files",
+        "Parse inline citations ([@author2024])",
+        "Resolve citations from bibliography",
+        "Format citations (Author-Year and Numeric)",
+        "Generate bibliography section"
+      ],
+      "acceptance": "Citations are resolved and formatted correctly.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-bib",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-bib/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-015",
+      "category": "Features",
+      "story": "Implement Figure and Table Support",
+      "steps": [
+        "Parse YAML attributes for images (float, width, label)",
+        "Parse YAML attributes for tables (label, caption)",
+        "Implement automatic numbering",
+        "Render figures with captions",
+        "Render tables with captions",
+        "Handle cross-references"
+      ],
+      "acceptance": "Figures and tables render with correct captions and numbering.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-core",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-core/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-016",
+      "category": "Features",
+      "story": "Implement CLI Commands",
+      "steps": [
+        "Implement 'editio compile <file> -o <output>'",
+        "Implement 'editio check <file>'",
+        "Implement 'editio watch <file> -o <output>'",
+        "Implement 'editio init --template <name>'",
+        "Implement 'editio template list'",
+        "Implement 'editio template install <name>'",
+        "Implement 'editio plugin list'"
+      ],
+      "acceptance": "All CLI commands execute successfully and produce expected output.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-003", "US-009", "US-014"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && editio compile test.md -o test.pdf && editio check test.md",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio/src/main.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-017",
+      "category": "Features",
+      "story": "Implement Configuration File Support",
+      "steps": [
+        "Add toml dependency",
+        "Parse editio.toml",
+        "Define configuration structure",
+        "Merge config file with CLI args",
+        "Handle missing config file gracefully"
+      ],
+      "acceptance": "Configuration file is parsed and settings are applied.",
+      "priority": "P0",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-003"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-core",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-core/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-018",
+      "category": "Features",
+      "story": "Implement HTML Output Generation",
+      "steps": [
+        "Add HTML generation logic",
+        "Generate semantic HTML5",
+        "Integrate KaTeX for math rendering",
+        "Add CSS styling",
+        "Implement interactive cross-references"
+      ],
+      "acceptance": "Markdown compiles to valid HTML with math and styles.",
+      "priority": "P1",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-html",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-html/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-019",
+      "category": "Features",
+      "story": "Implement Word Output Generation",
+      "steps": [
+        "Add docx-rs dependency",
+        "Generate DOCX structure",
+        "Apply styles and formatting",
+        "Handle figures and tables",
+        "Handle math (placeholders or images)"
+      ],
+      "acceptance": "Markdown compiles to valid DOCX file.",
+      "priority": "P1",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-005"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo test --package editio-word",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [
+        "crates/editio-word/src/lib.rs"
+      ],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    },
+    {
+      "id": "US-020",
+      "category": "Polish",
+      "story": "Performance Optimization",
+      "steps": [
+        "Profile compilation time",
+        "Optimize layout engine calculations",
+        "Implement caching for layout data",
+        "Parallelize AST building",
+        "Benchmark against LaTeX"
+      ],
+      "acceptance": "Compilation time for 20-page paper is <1 second.",
+      "priority": "P2",
+      "status": "pending",
+      "progress": 0,
+      "lastAttempt": null,
+      "attemptCount": 0,
+      "dependsOn": ["US-016"],
+      "blocks": [],
+      "verify": {
+        "command": "cd editio && cargo bench",
+        "lastRun": null,
+        "lastResult": "not_run",
+        "expectedResult": "pass"
+      },
+      "files": [],
+      "tests": [],
+      "errors": [],
+      "notes": "",
+      "createdAt": "2025-06-18T10:00:00Z",
+      "updatedAt": "2025-06-18T10:00:00Z"
+    }
+  ]
 }

@@ -1,10 +1,8 @@
-# PRD → prd.json (v2.0) – compact
-
-Use when the model has a small context (e.g. 16k). For 32k+ use `docs/convert-prompt-aider.md`. **convert.sh uses this compact prompt by default.**
+# prd.md → prd.json (v2.0) – compact
 
 ## Task
-1. Read projects/editio/prd.md (in chat); understand ALL requirements.
-2. Edit projects/editio/prd.json: replace entire file with one JSON: "version":"2.0", "branchName":"ralph/editio", "createdAt", "updatedAt", "userStories":[ ... ].
+1. Read projects/editio/prd.md (in chat); understand ALL requirements; message "All requirements read and understood" when completed.
+2. Edit projects/editio/prd.json: replace entire file with one JSON: "version":"2.0", "branchName":"ralph/editio", "createdAt", "updatedAt", "userStories":[ ... ]; message "Working on prd.json" when doing so and "Completed prd.json" when done
 3. Edit projects/editio/requirements.md: replace with technical specs from PRD.
 
 ## Story rules
