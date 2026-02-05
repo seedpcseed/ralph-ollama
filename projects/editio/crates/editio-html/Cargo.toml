@@ -1,0 +1,7 @@
+[package]
+name = "editio-html"
+version = "0.1.0"
+edition = "2021"
+description = "Editio HTML renderer"
+
+[dependencies]

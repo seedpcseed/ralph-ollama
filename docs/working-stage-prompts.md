@@ -43,3 +43,5 @@ RECOMMENDATION: <one line>
 You will set the EXIT_SIGNAL: true only when all the stories are done and the verifications have passed. Use BLOCKED when stuck on same error; RECOMMENDATION should say what's needed next.
 
 Work on only one story at a time where the lower number is the highest priority. You must create and edit files. Do not ask the user to add or edit the files for you. this is your job. Do not put information into logs or alternative files. Put them into the files instructed. Implementation is greater than tests for new code. No placeholder implementations.
+
+please work through the entire prd.json until it is complete.

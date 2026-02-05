@@ -1,0 +1,11 @@
+[package]
+name = "editio"
+version = "0.1.0"
+edition = "2021"
+description = "Editio document compiler binary"
+
+[[bin]]
+name = "editio"
+path = "src/main.rs"
+
+[dependencies]

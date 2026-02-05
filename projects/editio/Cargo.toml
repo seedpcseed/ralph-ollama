@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/editio",
+    "crates/editio-core",
+    "crates/editio-ast",
+    "crates/editio-parser",
+    "crates/editio-layout",
+    "crates/editio-render",
+    "crates/editio-pdf",
+    "crates/editio-html",
+    "crates/editio-word",
+    "crates/editio-latex",
+    "crates/editio-bib",
+    "crates/editio-math",
+    "crates/editio-template",
+    "crates/editio-plugin",
+    "crates/editio-plugin-manager",
+]
