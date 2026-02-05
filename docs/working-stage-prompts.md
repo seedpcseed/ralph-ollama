@@ -50,5 +50,47 @@ please work through the entire prd.json until it is complete.
 ### Set up Testing
 I want you to create a feature test-plan.json from basic rendering, markdown syntax support, table support, figure / word wrap support, YAML document structure support. The JSON should have ID, test type, test name,  status, test resources [like .md docs etc], errors, assessment [for iterative work needs/ideas]. please add additional test areas as you think are appropriate based on @projects/editio/prd.md 
 
-### Execute Testing
-Now I want you to read and comprehend the test-plan.json. I want you to perform each test, evaluate the results, troubleshoot-recode-retest until a feature is working, and when a feature has passed the validation, mark that step's status as COMPLETE. Proceed through all the steps until the status on all of the steps in COMPLETE. You should continue through all of the steps without stopping. Do not ask the user to do these steps for you. 
+### Execute testing (render–vision validation)
+You will read and follow **projects/editio/test-plan.json** and run the full validation workflow for each test until every step’s status is **complete**. You are ensuring that the tests perform as expected based on **typesetting standards** and the requirements in **projects/editio/prd.md**. Do not ask the user to run builds, scripts, or checks for you.
+
+**Validation requirements (all must pass for a step to be complete):**
+
+1. **Build** – The package builds successfully: `cargo build --release` from **projects/editio**.
+2. **Render** – The test’s fixture compiles to PDF without error:  
+   `./target/release/editio compile -i <testResources[0]> -o render/<test-id>.pdf`  
+   (Use the test’s `id` and first entry in `testResources` from test-plan.json.)
+3. **Export to PNG** – Run the render–vision script so the PDF can be checked visually:  
+   From **projects/editio**: `./scripts/export-pdf-to-png.sh`  
+   This produces `render/<name>.png` for each PDF in `render/`.  
+   If the script is missing or fails, install `poppler-utils` (pdftoppm) or ImageMagick (convert) or implement an equivalent export step.
+4. **Vision check** – You **must** open and inspect the PNG (e.g. `render/<test-id>.png`) and evaluate it against the test’s **validation.expectedRendering** and **validation.passCriteria** in test-plan.json **and** against the bar below. Only then may you decide pass/fail.
+
+**Completion bar (all must be true before marking a test complete):**
+
+- **Layout and readability:** Text does **not** overlap, run together, or sit on top of other text. Lines are readable and spaced according to normal typesetting. (Example: T004 was incorrectly marked complete when inline segments overlapped—that is a **fail**.)
+- **Formatting matches intent:** If the test expects bold, italic, code, or link styling, the PNG must show those as **visually distinct** (e.g. bold heavier than body text, italic slanted, code monospace or clearly distinct). Raw markdown (e.g. `**`, `*`, `` ` ``, `[...]`) must **not** appear as literal characters where they denote formatting.
+- **Structure matches test type:** Tables appear as grids with rows/columns; code/theorem/algorithm blocks as formatted blocks, not as raw directive or LaTeX; math as typeset or clearly rendered, not as literal `$...$` or `$$...$$`.
+- **PRD alignment:** The result is consistent with **prd.md** (e.g. CommonMark compatibility, professional typesetting, no “placeholder” or broken layout). When in doubt, treat ambiguous output as **fail** and fix before marking complete.
+
+**Never mark a test complete if:**
+
+- Text or blocks overlap, are illegible, or are clearly mispositioned.
+- Bold/italic/code/link (or other required formatting) is not visually distinct when the test requires it.
+- Raw markdown, directive syntax, or LaTeX delimiters appear in the rendered output where they should have been interpreted.
+- The PNG was not actually inspected (e.g. assuming “compile + export” means pass).
+
+**Per-test loop:**
+
+- For each test in test-plan.json with `status` **incomplete**:
+  1. Build (if needed), compile the fixture to PDF, run `./scripts/export-pdf-to-png.sh`, then **open and vision-check** the resulting PNG.
+  2. Run through the **completion bar** and **never mark complete if** list above. If **any** item fails, do **not** set status to complete; instead troubleshoot, recode, then re-run build → compile → export-PNG → vision check. Repeat until the PNG satisfies all criteria.
+  3. Only when the vision check **passes** (layout readable, formatting distinct, structure correct, PRD-aligned): set that test’s **status** to **complete** in test-plan.json.
+
+**Tests with validation.type "cli"** (e.g. invalid YAML, check command): validate using exit code and stderr only; no PNG required. Mark complete when the CLI behavior matches the test’s validation criteria.
+
+**Rules:**
+
+- Work through every test in order until **all** steps have **status** **complete**.
+- Do not stop early; do not ask the user to perform build, compile, export, or vision steps.
+- Use **scripts/export-pdf-to-png.sh** (or equivalent) so validation is always based on a PNG of the rendered output, not only on compile success.
+- **Evaluation before “complete”:** Before setting any test to **complete**, explicitly confirm in your reasoning that the PNG was inspected and that the completion bar and “never mark complete if” conditions are satisfied. If you cannot inspect the PNG (e.g. no image available), do not mark the test complete—fix the export step or tooling first. 

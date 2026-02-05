@@ -13,6 +13,8 @@ pub struct FrontMatter {
     pub page_size: Option<String>,
     pub margins: Option<MarginSpec>,
     pub font_size: Option<f64>,
+    pub running_header: Option<String>,
+    pub footer: Option<String>,
     /// Raw map for extra keys
     pub extra: HashMap<String, serde_yaml::Value>,
 }
@@ -63,7 +65,7 @@ pub fn parse_yaml_front_matter(yaml: &str) -> Result<FrontMatter, serde_yaml::Er
             "title" => fm.title = v.as_str().map(String::from),
             "author" => fm.author = v.as_str().map(String::from),
             "date" => fm.date = v.as_str().map(String::from),
-            "page-size" | "page_size" => fm.page_size = v.as_str().map(String::from),
+            "page-size" | "page_size" | "papersize" => fm.page_size = v.as_str().map(String::from),
             "margins" => {
                 if let Ok(m) = serde_yaml::from_value::<HashMap<String, f64>>(v) {
                     fm.margins = Some(MarginSpec {
@@ -74,7 +76,32 @@ pub fn parse_yaml_front_matter(yaml: &str) -> Result<FrontMatter, serde_yaml::Er
                     });
                 }
             }
+            "margin" => {
+                let n = v.as_f64().or_else(|| {
+                    v.as_str().and_then(|s| {
+                        let s = s.trim();
+                        let (num, unit) = s.split_at(s.find(|c: char| !c.is_numeric() && c != '.').unwrap_or(s.len()));
+                        let n: f64 = num.trim().parse().ok()?;
+                        let mm = match unit.trim().to_lowercase().as_str() {
+                            "cm" => n * 10.0,
+                            "in" => n * 25.4,
+                            _ => n,
+                        };
+                        Some(mm)
+                    })
+                });
+                if let Some(n) = n {
+                    fm.margins = Some(MarginSpec {
+                        top: Some(n),
+                        bottom: Some(n),
+                        left: Some(n),
+                        right: Some(n),
+                    });
+                }
+            }
             "font-size" | "font_size" => fm.font_size = v.as_f64(),
+            "running_header" | "runningHeader" => fm.running_header = v.as_str().map(String::from),
+            "footer" => fm.footer = v.as_str().map(String::from),
             _ => {
                 fm.extra.insert(k, v);
             }

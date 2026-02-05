@@ -6,6 +6,17 @@ pub mod cross_ref_parser;
 pub mod label_registry;
 
 pub use builder::{build_from_events, build_from_markdown};
+
+/// Attach metadata to the root Document node.
+pub fn with_metadata(node: Node, metadata: DocumentMetadata) -> Node {
+    match node {
+        Node::Document { children, .. } => Node::Document {
+            children,
+            metadata: Some(metadata),
+        },
+        other => other,
+    }
+}
 pub use citation_parser::{citation_node, find_citation_keys};
 pub use cross_ref_parser::{cross_ref_node, find_cross_ref_targets};
 pub use label_registry::{LabelMeta, LabelRegistry, LabelType};
@@ -63,6 +74,13 @@ pub enum Node {
         caption: Option<String>,
         content: String,
     },
+    List {
+        ordered: bool,
+        items: Vec<Vec<Inline>>,
+    },
+    BlockQuote {
+        content: Vec<Node>,
+    },
 }
 
 /// Document-level metadata (from front matter).
@@ -74,6 +92,8 @@ pub struct DocumentMetadata {
     pub page_size: Option<String>,
     pub margins: Option<LayoutMetadata>,
     pub font_size: Option<f64>,
+    pub running_header: Option<String>,
+    pub footer: Option<String>,
 }
 
 /// Inline content.
@@ -85,6 +105,8 @@ pub enum Inline {
     Image { alt: String, src: String },
     Strong(Vec<Inline>),
     Emph(Vec<Inline>),
+    CrossReference(String),
+    Citation(String),
 }
 
 /// Generic attributes (e.g. float, width, height, label).

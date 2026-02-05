@@ -5,4 +5,5 @@ edition = "2021"
 description = "Editio PDF renderer"
 
 [dependencies]
+editio-ast = { path = "../editio-ast" }
 printpdf = "0.4"

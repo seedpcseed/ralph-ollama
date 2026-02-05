@@ -84,7 +84,8 @@ impl LabelRegistry {
                 }
             }
             Node::Paragraph { .. } | Node::Heading { .. } | Node::Image { .. } | Node::Table { .. }
-            | Node::Math { .. } | Node::Citation { .. } | Node::CrossReference { .. } | Node::CodeBlock { .. } => {}
+            | Node::Math { .. } | Node::Citation { .. } | Node::CrossReference { .. } | Node::CodeBlock { .. }
+            | Node::List { .. } | Node::BlockQuote { .. } => {}
         }
     }
 }

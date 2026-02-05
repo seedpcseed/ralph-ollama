@@ -267,6 +267,7 @@ dependencies = [
 name = "editio-pdf"
 version = "0.1.0"
 dependencies = [
+ "editio-ast",
  "printpdf",
 ]
 
