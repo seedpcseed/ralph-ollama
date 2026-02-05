@@ -1,0 +1,277 @@
+{
+  "project": "editio",
+  "version": "1.0",
+  "description": "Feature test plan for Editio markdown typesetting. Used for iterative development and regression tracking.",
+  "tests": [
+    {
+      "id": "T001",
+      "testType": "basic-rendering",
+      "testName": "Minimal document produces non-blank PDF",
+      "status": "fail",
+      "testResources": ["tests/fixtures/minimal.md"],
+      "errors": ["Output PDF is blank"],
+      "assessment": "Verify end-to-end pipeline: parse → AST → layout → PDF. Ensure at least title or one paragraph is rendered. Check printpdf integration and coordinate system."
+    },
+    {
+      "id": "T002",
+      "testType": "basic-rendering",
+      "testName": "Plain paragraph text renders to PDF",
+      "status": "pending",
+      "testResources": ["tests/fixtures/paragraphs.md"],
+      "errors": [],
+      "assessment": "Single and multiple paragraphs; confirm font, size, and line breaks. Baseline for text renderer."
+    },
+    {
+      "id": "T003",
+      "testType": "basic-rendering",
+      "testName": "Headings (h1–h6) render with correct hierarchy",
+      "status": "pending",
+      "testResources": ["tests/fixtures/headings.md"],
+      "errors": [],
+      "assessment": "Size/weight differentiation; optional numbering. Feed into section formatting."
+    },
+    {
+      "id": "T004",
+      "testType": "markdown-syntax",
+      "testName": "CommonMark inline: bold, italic, code, links",
+      "status": "pending",
+      "testResources": ["tests/fixtures/inline-markdown.md"],
+      "errors": [],
+      "assessment": "Ensure pulldown-cmark events map to AST Inline types and PDF draws correctly."
+    },
+    {
+      "id": "T005",
+      "testType": "markdown-syntax",
+      "testName": "CommonMark blocks: lists (ordered, unordered), blockquote",
+      "status": "pending",
+      "testResources": ["tests/fixtures/lists-blockquote.md"],
+      "errors": [],
+      "assessment": "List indentation and markers; blockquote styling. Critical for figure wrap with lists (PRD differentiator)."
+    },
+    {
+      "id": "T006",
+      "testType": "markdown-syntax",
+      "testName": "GFM extensions: strikethrough, task lists, autolinks",
+      "status": "pending",
+      "testResources": ["tests/fixtures/gfm.md"],
+      "errors": [],
+      "assessment": "If GFM is in scope; otherwise mark as N/A or low priority."
+    },
+    {
+      "id": "T007",
+      "testType": "table-support",
+      "testName": "Standard markdown table renders with grid",
+      "status": "pending",
+      "testResources": ["tests/fixtures/table-basic.md"],
+      "errors": [],
+      "assessment": "Header row, borders, alignment. Table parser + editio-pdf table_renderer."
+    },
+    {
+      "id": "T008",
+      "testType": "table-support",
+      "testName": "Table with caption and label for cross-reference",
+      "status": "pending",
+      "testResources": ["tests/fixtures/table-caption-label.md"],
+      "errors": [],
+      "assessment": "Caption text, numbering (Table N), label for [@tbl:label]. Integrate with label_registry."
+    },
+    {
+      "id": "T009",
+      "testType": "table-support",
+      "testName": "Table column alignment (left, center, right)",
+      "status": "pending",
+      "testResources": ["tests/fixtures/table-alignment.md"],
+      "errors": [],
+      "assessment": "Alignment from markdown or attributes; pass through to PDF layout."
+    },
+    {
+      "id": "T010",
+      "testType": "figure-word-wrap",
+      "testName": "Image with caption and optional label",
+      "status": "pending",
+      "testResources": ["tests/fixtures/figure-basic.md"],
+      "errors": [],
+      "assessment": "![caption](path){label=fig:x}. Placeholder or real image; caption and numbering."
+    },
+    {
+      "id": "T011",
+      "testType": "figure-word-wrap",
+      "testName": "Float attributes: float=right, width=50%",
+      "status": "pending",
+      "testResources": ["tests/fixtures/figure-float.md"],
+      "errors": [],
+      "assessment": "YAML-style attributes; layout engine must produce wrap zones. Core differentiator."
+    },
+    {
+      "id": "T012",
+      "testType": "figure-word-wrap",
+      "testName": "Text wrapping around floated figure",
+      "status": "pending",
+      "testResources": ["tests/fixtures/figure-wrap.md"],
+      "errors": [],
+      "assessment": "Two-pass layout: wrap zones, text flow around float. Avoid overlap."
+    },
+    {
+      "id": "T013",
+      "testType": "figure-word-wrap",
+      "testName": "List wrapping around floated figure",
+      "status": "pending",
+      "testResources": ["tests/fixtures/figure-list-wrap.md"],
+      "errors": [],
+      "assessment": "PRD key differentiator. Lists + floats; list_wrap and float_collector integration."
+    },
+    {
+      "id": "T014",
+      "testType": "yaml-document-structure",
+      "testName": "YAML front matter parses (title, author, date)",
+      "status": "pending",
+      "testResources": ["tests/fixtures/front-matter-basic.md"],
+      "errors": [],
+      "assessment": "editio-parser front_matter; DocumentMetadata; no invalid YAML crash."
+    },
+    {
+      "id": "T015",
+      "testType": "yaml-document-structure",
+      "testName": "Page settings in front matter (margins, page size, font size)",
+      "status": "pending",
+      "testResources": ["tests/fixtures/front-matter-page.md"],
+      "errors": [],
+      "assessment": "Dimension parsing (mm, in, pt); apply in layout and PDF. A4 vs letter."
+    },
+    {
+      "id": "T016",
+      "testType": "yaml-document-structure",
+      "testName": "Invalid YAML front matter fails with clear error",
+      "status": "pending",
+      "testResources": ["tests/fixtures/front-matter-invalid.md"],
+      "errors": [],
+      "assessment": "Error message with line/context; no panic. Edge case from PRD."
+    },
+    {
+      "id": "T017",
+      "testType": "cross-references",
+      "testName": "Cross-reference to figure [@fig:label]",
+      "status": "pending",
+      "testResources": ["tests/fixtures/crossref-figure.md"],
+      "errors": [],
+      "assessment": "Resolve label to number; render 'Figure 1' or similar. editio-ast cross_ref_parser."
+    },
+    {
+      "id": "T018",
+      "testType": "cross-references",
+      "testName": "Cross-reference to table and section",
+      "status": "pending",
+      "testResources": ["tests/fixtures/crossref-table-section.md"],
+      "errors": [],
+      "assessment": "Unified label registry; section numbering (1, 1.1)."
+    },
+    {
+      "id": "T019",
+      "testType": "math",
+      "testName": "Inline math $E=mc^2$ and display math $$...$$",
+      "status": "pending",
+      "testResources": ["tests/fixtures/math-basic.md"],
+      "errors": [],
+      "assessment": "Math preprocessor; AST Math nodes; pdflatex path or placeholder."
+    },
+    {
+      "id": "T020",
+      "testType": "math",
+      "testName": "Math with label for equation numbering",
+      "status": "pending",
+      "testResources": ["tests/fixtures/math-label.md"],
+      "errors": [],
+      "assessment": "Label parsing; equation numbering; cross-ref to equation."
+    },
+    {
+      "id": "T021",
+      "testType": "academic-extensions",
+      "testName": "Theorem and proof block directives",
+      "status": "pending",
+      "testResources": ["tests/fixtures/theorem-proof.md"],
+      "errors": [],
+      "assessment": ":::{theorem}{label=thm:1}...:::; numbering and optional styling."
+    },
+    {
+      "id": "T022",
+      "testType": "academic-extensions",
+      "testName": "Algorithm block with caption",
+      "status": "pending",
+      "testResources": ["tests/fixtures/algorithm.md"],
+      "errors": [],
+      "assessment": ":::{algorithm}{caption=...}...:::; algorithm_renderer."
+    },
+    {
+      "id": "T023",
+      "testType": "academic-extensions",
+      "testName": "Code block with caption and label",
+      "status": "pending",
+      "testResources": ["tests/fixtures/code-block.md"],
+      "errors": [],
+      "assessment": "code_renderer; listing numbering; cross-ref."
+    },
+    {
+      "id": "T024",
+      "testType": "bibliography",
+      "testName": "Citation [@key] and bibliography resolution",
+      "status": "pending",
+      "testResources": ["tests/fixtures/citation-basic.md", "tests/fixtures/sample.bib"],
+      "errors": [],
+      "assessment": "editio-bib parser; citation_renderer; author-year or numeric."
+    },
+    {
+      "id": "T025",
+      "testType": "cli",
+      "testName": "editio compile -i <input> -o <output> produces file",
+      "status": "pending",
+      "testResources": ["tests/fixtures/minimal.md"],
+      "errors": [],
+      "assessment": "CLI parsing; output path; file exists and non-zero size."
+    },
+    {
+      "id": "T026",
+      "testType": "cli",
+      "testName": "editio check <file> validates without writing output",
+      "status": "pending",
+      "testResources": ["tests/fixtures/minimal.md", "tests/fixtures/invalid-syntax.md"],
+      "errors": [],
+      "assessment": "Exit 0 for valid; non-zero and message for invalid."
+    },
+    {
+      "id": "T027",
+      "testType": "pdf-quality",
+      "testName": "Page margins and size applied",
+      "status": "pending",
+      "testResources": ["tests/fixtures/front-matter-page.md"],
+      "errors": [],
+      "assessment": "Visual or programmatic check; margins in layout engine."
+    },
+    {
+      "id": "T028",
+      "testType": "pdf-quality",
+      "testName": "Headers and footers with page number",
+      "status": "pending",
+      "testResources": ["tests/fixtures/headers-footers.md"],
+      "errors": [],
+      "assessment": "header_footer module; title/author in header; page N in footer."
+    },
+    {
+      "id": "T029",
+      "testType": "edge-cases",
+      "testName": "Empty document or only front matter",
+      "status": "pending",
+      "testResources": ["tests/fixtures/empty-doc.md"],
+      "errors": [],
+      "assessment": "No panic; blank or single page with metadata only."
+    },
+    {
+      "id": "T030",
+      "testType": "edge-cases",
+      "testName": "Missing image file reports clear error",
+      "status": "pending",
+      "testResources": ["tests/fixtures/missing-image.md"],
+      "errors": [],
+      "assessment": "Error with path and suggestion; continue or fail consistently."
+    }
+  ]
+}

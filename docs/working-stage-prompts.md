@@ -45,3 +45,10 @@ You will set the EXIT_SIGNAL: true only when all the stories are done and the ve
 Work on only one story at a time where the lower number is the highest priority. You must create and edit files. Do not ask the user to add or edit the files for you. this is your job. Do not put information into logs or alternative files. Put them into the files instructed. Implementation is greater than tests for new code. No placeholder implementations.
 
 please work through the entire prd.json until it is complete.
+
+## Testing and fixing
+### Set up Testing
+I want you to create a feature test-plan.json from basic rendering, markdown syntax support, table support, figure / word wrap support, YAML document structure support. The JSON should have ID, test type, test name,  status, test resources [like .md docs etc], errors, assessment [for iterative work needs/ideas]. please add additional test areas as you think are appropriate based on @projects/editio/prd.md 
+
+### Execute Testing
+Now I want you to read and comprehend the test-plan.json. I want you to perform each test, evaluate the results, troubleshoot-recode-retest until a feature is working, and when a feature has passed the validation, mark that step's status as COMPLETE. Proceed through all the steps until the status on all of the steps in COMPLETE. You should continue through all of the steps without stopping. Do not ask the user to do these steps for you. 

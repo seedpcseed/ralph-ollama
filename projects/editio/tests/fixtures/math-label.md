@@ -1,0 +1,7 @@
+# Math Label
+
+$$
+\sum_{i=1}^n i = \frac{n(n+1)}{2} \tag{eq:sum}
+$$
+
+Refer to equation @eq:sum.
